@@ -16,26 +16,29 @@
 
 ## Fase 0: Setup del Proyecto (Semana 1)
 
-> **Estado**: NO INICIADA
+> **Estado**: EN PROGRESO
 > **Estimacion**: ~17h
 
 ### Infraestructura
 
-- [ ] **F0-01** Inicializar proyecto Expo SDK 55 con TypeScript
+- [x] **F0-01** Inicializar proyecto Expo SDK 53 con TypeScript
   - Criterio: Proyecto corriendo en simulador
   - Esfuerzo: 2h
+  - Notas: Expo SDK 53 (ultimo estable). tsconfig strict mode + path aliases (@/\*, @components/\*, etc.)
 
 - [ ] **F0-02** Configurar Supabase (proyecto + auth providers)
   - Criterio: Proyecto Supabase creado, Google y Apple auth configurados
   - Esfuerzo: 2h
 
-- [ ] **F0-03** Configurar ESLint + Prettier
+- [x] **F0-03** Configurar ESLint + Prettier
   - Criterio: Linting automatico funcionando
   - Esfuerzo: 1h
+  - Notas: ESLint 8 + @typescript-eslint + prettier plugin. Husky v9 pre-commit hook ejecuta format:check + lint.
 
-- [ ] **F0-04** Crear estructura de carpetas (feature-based)
+- [x] **F0-04** Crear estructura de carpetas (feature-based)
   - Criterio: Estructura `app/`, `src/components/`, `src/hooks/`, `src/lib/`, etc.
   - Esfuerzo: 1h
+  - Notas: Estructura base creada. Carpetas se iran poblando en fases siguientes.
 
 - [ ] **F0-05** Configurar NativeWind v5 + Tailwind CSS v4
   - Criterio: Estilos Tailwind funcionando en componentes RN
@@ -45,21 +48,29 @@
 - [ ] **F0-06** Setup de navegacion (Expo Router v4)
   - Criterio: Tab navigation basica con 5 tabs (Home, Predecir, Ranking, Grupos, Perfil)
   - Esfuerzo: 3h
+  - Notas: Root layout creado (app/\_layout.tsx) con Stack + dark background. Tabs pendientes.
 
 - [ ] **F0-07** Crear esquema de BD (migrations SQL)
   - Criterio: Todas las tablas creadas con RLS policies activas
   - Tablas: profiles, tournaments, matches, groups, group_members, group_tournaments, predictions, leaderboard_cache, notifications
   - Esfuerzo: 4h
 
-- [ ] **F0-08** Configurar EAS Build + EAS Update
+- [x] **F0-08** Configurar EAS Build + EAS Update
   - Criterio: Build de desarrollo funcional
   - Esfuerzo: 2h
+  - Notas: eas.json con 3 perfiles (development, staging, production). CD workflows configurados para EAS Update por channel.
+
+- [x] **F0-11** Configurar CI/CD y repo GitHub
+  - Criterio: GitHub Actions CI/CD funcional, branch protection, environments
+  - Esfuerzo: 4h
+  - Notas: CI (4 jobs paralelos: lint, typecheck, test, expo doctor). CD (develop, staging, production). semantic-release en main. Dependabot configurado. Branch protection en main y develop. Environments: development, staging, production (prod con approval manual). commitlint + Conventional Commits.
 
 ### Setup de Testing (TDD)
 
-- [ ] **F0-09** Configurar framework de testing (Jest + React Native Testing Library)
+- [x] **F0-09** Configurar framework de testing (Jest + React Native Testing Library)
   - Criterio: Un test dummy pasa con `npm test`
   - Esfuerzo: 2h
+  - Notas: jest-expo preset. Usar jest.config.js (no .ts, evita dependencia de ts-node).
 
 - [ ] **F0-10** Configurar testing de funciones SQL/Supabase
   - Criterio: Tests pueden ejecutar queries contra Supabase (local o test project)
@@ -437,15 +448,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 10     | 0           | 0           | 10         |
+| Fase 0: Setup    | 11     | 5           | 0           | 6          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **65** | **0**       | **0**       | **65**     |
+| **Total MVP**    | **66** | **5**       | **0**       | **61**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 0%**
+**Progreso general MVP: 7.6%**
 
 ---
 
@@ -463,9 +474,9 @@
 
 ```
 Fase 0 (secuencial):
-F0-01 → F0-03 → F0-04 → F0-05 → F0-06 → F0-09 (setup testing)
+F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 → F0-06 → F0-09 ✅ (setup testing)
 F0-02 → F0-07 → F0-10 (setup Supabase + BD testing)
-F0-08 (independiente, puede ser al final)
+F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completados juntos)
 
 Fase 1 - Milestone 1 (secuencial con paralelo parcial):
 F1-05 → F1-02 + F1-03 (paralelo) → F1-04 → F1-06
