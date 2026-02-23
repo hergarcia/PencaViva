@@ -110,13 +110,28 @@ Scoring system (configurable per group via JSONB):
 
 ## Development Methodology
 
-- **Branching**: Git Flow — `main` (prod), `develop` (integration), `feature/*`, `release/*`, `hotfix/*`
+### Git Flow
+
+- **Branches**: `main` (prod), `develop` (integration), `feature/*`, `release/*`, `hotfix/*`
 - **Commits**: Conventional Commits enforced by commitlint + Husky pre-commit hooks
 - **Versioning**: semantic-release on `main` only (no pre-releases on develop)
-- **TDD mandatory**: Use `/tdd` skill — RED-GREEN-REFACTOR in vertical slices
-- **Task tracking**: Update `TAREAS.md` when starting (`[~]`), completing (`[x]`), or canceling (`[-]`) tasks
-- **Task dependencies**: Do not start a task if its dependencies (listed under each task) are not completed
-- **Task execution order**: Follow the recommended execution order in `TAREAS.md` (bottom of file)
+
+### Workflow por tarea
+
+1. Ejecutar `/planner` para la tarea (explorar, planificar, revisar antes de escribir codigo)
+2. Crear branch `feature/F0-XX-descripcion` desde `develop`
+3. Marcar tarea como `[~]` en `TAREAS.md`
+4. Desarrollar con TDD (`/tdd` skill — RED-GREEN-REFACTOR en vertical slices)
+5. Cada subtarea o unidad logica completada → commit con Conventional Commits
+6. Al terminar la tarea → marcar como `[x]` en `TAREAS.md`, commit final, push
+7. Crear PR hacia `develop` y esperar CI verde
+8. Merge (squash) del PR
+
+### Task tracking
+
+- Update `TAREAS.md` when starting (`[~]`), completing (`[x]`), or canceling (`[-]`) tasks
+- Do not start a task if its dependencies (listed under each task) are not completed
+- Follow the recommended execution order in `TAREAS.md` (bottom of file)
 
 ## Key Files
 
@@ -136,4 +151,4 @@ Scoring system (configurable per group via JSONB):
 - **Husky v9**: Requires `.git/` to exist before `npx husky` — run `git init` first
 - **Expo SDK**: PLAN_MAESTRO.md references SDK 55 but `package.json` uses ~53.0.0 (latest stable). Update when SDK 55 is released
 - **GitHub repo**: Public repo (branch protection requires Pro for private repos)
-- **CI job names**: Branch protection references exact names `"CI / Lint & Format"`, `"CI / Type Check"`, `"CI / Unit Tests"` — do not rename CI jobs without updating branch protection rules
+- **CI job names**: Branch protection references exact names `"Lint & Format"`, `"Type Check"`, `"Unit Tests"` — do not rename CI jobs without updating branch protection rules
