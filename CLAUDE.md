@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **PencaViva** is a social sports prediction app for friends in Uruguay (expandable to Latin America). Users create private groups, predict match scores, and compete on real-time leaderboards. This is NOT a gambling app — it's a social sports network centered on predictions.
 
-The project is currently in **pre-development planning phase** — no source code exists yet. All architecture, database schema, task breakdown, and technical decisions are documented in `PLAN_MAESTRO.md` and `TAREAS.md`.
+The project has an initialized Expo skeleton with CI/CD infrastructure. Architecture, database schema, task breakdown, and technical decisions are documented in `PLAN_MAESTRO.md` and `TAREAS.md`.
 
 ## Tech Stack
 
@@ -25,30 +25,33 @@ The project is currently in **pre-development planning phase** — no source cod
 | Language       | TypeScript                | 5.x (strict mode)                              |
 | Node.js        | >= 20.19.x                | Required by Expo SDK 55                        |
 
-## Commands (planned)
+## Commands
 
 ```bash
 # Dev
-npx expo start                     # Local dev server
-npx expo start --ios               # iOS simulator
-npx expo start --android           # Android emulator
+npm start                          # Expo dev server
+npm run android                    # Android emulator
+npm run ios                        # iOS simulator
 
-# Build
-eas build --platform ios           # App Store build
-eas build --platform android       # Play Store build
+# Quality
+npm run lint                       # ESLint
+npm run format:check               # Prettier check (used in pre-commit hook)
+npm run format                     # Prettier write
+npm run typecheck                  # tsc --noEmit
 
 # Test
-npm test                           # Jest + React Native Testing Library
+npm test                           # Jest
+npm run test:ci                    # Jest with coverage + CI flags
 
-# Lint
-npm run lint                       # ESLint
-npm run format                     # Prettier
-
-# OTA updates
-eas update --branch production     # Push OTA update
+# Build & Deploy
+eas build --profile development    # Dev client build
+eas build --profile staging        # Internal staging build
+eas build --profile production     # Store build
+eas update --channel development   # OTA to dev
+eas update --channel production    # OTA to prod
 ```
 
-## Project Structure (planned)
+## Project Structure
 
 ```
 app/                    # Expo Router file-based routing
@@ -107,6 +110,9 @@ Scoring system (configurable per group via JSONB):
 
 ## Development Methodology
 
+- **Branching**: Git Flow — `main` (prod), `develop` (integration), `feature/*`, `release/*`, `hotfix/*`
+- **Commits**: Conventional Commits enforced by commitlint + Husky pre-commit hooks
+- **Versioning**: semantic-release on `main` only (no pre-releases on develop)
 - **TDD mandatory**: Use `/tdd` skill — RED-GREEN-REFACTOR in vertical slices
 - **Task tracking**: Update `TAREAS.md` when starting (`[~]`), completing (`[x]`), or canceling (`[-]`) tasks
 - **Task dependencies**: Do not start a task if its dependencies (listed under each task) are not completed
@@ -123,3 +129,11 @@ Scoring system (configurable per group via JSONB):
 - Primary: `#00D4AA` (emerald green), Secondary: `#7C5CFC` (electric violet), Accent: `#FFB800` (gold)
 - Dark background: `#0D0D0D`, Surface: `#1A1A2E`
 - One-thumb navigation, haptic feedback on key actions, 60fps animations via Reanimated
+
+## Gotchas
+
+- **Jest config**: Use `jest.config.js` (not `.ts`) — `.ts` requires `ts-node` as extra dependency
+- **Husky v9**: Requires `.git/` to exist before `npx husky` — run `git init` first
+- **Expo SDK**: PLAN_MAESTRO.md references SDK 55 but `package.json` uses ~53.0.0 (latest stable). Update when SDK 55 is released
+- **GitHub repo**: Public repo (branch protection requires Pro for private repos)
+- **CI job names**: Branch protection references exact names `"CI / Lint & Format"`, `"CI / Type Check"`, `"CI / Unit Tests"` — do not rename CI jobs without updating branch protection rules
