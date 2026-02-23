@@ -24,9 +24,9 @@ gh api "repos/$OWNER/$REPO/branches/main/protection" \
   "required_status_checks": {
     "strict": true,
     "contexts": [
-      "CI / Lint & Format",
-      "CI / Type Check",
-      "CI / Unit Tests"
+      "Lint & Format",
+      "Type Check",
+      "Unit Tests"
     ]
   },
   "enforce_admins": false,
@@ -49,9 +49,9 @@ gh api "repos/$OWNER/$REPO/branches/develop/protection" \
   "required_status_checks": {
     "strict": true,
     "contexts": [
-      "CI / Lint & Format",
-      "CI / Type Check",
-      "CI / Unit Tests"
+      "Lint & Format",
+      "Type Check",
+      "Unit Tests"
     ]
   },
   "enforce_admins": false,

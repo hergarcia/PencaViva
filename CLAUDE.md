@@ -151,4 +151,4 @@ Scoring system (configurable per group via JSONB):
 - **Husky v9**: Requires `.git/` to exist before `npx husky` — run `git init` first
 - **Expo SDK**: PLAN_MAESTRO.md references SDK 55 but `package.json` uses ~53.0.0 (latest stable). Update when SDK 55 is released
 - **GitHub repo**: Public repo (branch protection requires Pro for private repos)
-- **CI job names**: Branch protection references exact names `"CI / Lint & Format"`, `"CI / Type Check"`, `"CI / Unit Tests"` — do not rename CI jobs without updating branch protection rules
+- **CI job names**: Branch protection references exact names `"Lint & Format"`, `"Type Check"`, `"Unit Tests"` — do not rename CI jobs without updating branch protection rules
