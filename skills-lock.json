@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "project-planner": {
+      "source": "shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "24c15eb0dd79411a7d78250dbf1dc96ecadbab7b2a23ee5e52bff65ed62b0487"
+    }
+  }
+}

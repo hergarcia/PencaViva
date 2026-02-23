@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_supabase_supabase__search_docs",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npm install 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npm run format:check 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npx prettier --write .eslintrc.js CLAUDE.md PLAN_MAESTRO.md TAREAS.md .agents/skills/project-planner/SKILL.md 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npm run lint 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npm run typecheck 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npm test 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && git init 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && npx husky 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && chmod +x .husky/commit-msg .husky/pre-commit 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && git branch -m master main 2>&1)",
+      "Bash(cd /c/Users/Hernan/Documents/GitHub/PencaViva && git add .gitignore .npmrc .prettierrc .prettierignore .eslintrc.js .releaserc.json commitlint.config.js package.json package-lock.json tsconfig.json app.config.ts babel.config.js metro.config.js jest.config.js eas.json app/_layout.tsx src/__tests__/placeholder.test.ts .husky/commit-msg .husky/pre-commit .github/workflows/ci.yml .github/workflows/cd-develop.yml .github/workflows/cd-staging.yml .github/workflows/cd-production.yml .github/workflows/label-sync.yml .github/labels.yml .github/PULL_REQUEST_TEMPLATE.md .github/ISSUE_TEMPLATE/bug_report.yml .github/ISSUE_TEMPLATE/feature_request.yml .github/dependabot.yml scripts/setup-repo.sh CLAUDE.md PLAN_MAESTRO.md TAREAS.md .agents/ .claude/ skills-lock.json 2>&1)"
+    ]
+  }
+}
