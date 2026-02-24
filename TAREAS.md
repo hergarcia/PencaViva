@@ -40,9 +40,9 @@
   - Esfuerzo: 1h
   - Notas: Estructura base creada. Carpetas se iran poblando en fases siguientes.
 
-- [ ] **F0-05** Configurar NativeWind v5 + Tailwind CSS v4
+- [x] **F0-05** Configurar NativeWind v5 + Tailwind CSS v4
   - Criterio: Estilos Tailwind funcionando en componentes RN
-  - Notas: metro.config.js con `withNativewind()` (sin segundo argumento en v5)
+  - Notas: metro.config.js con `withNativewind()` (sin segundo argumento en v5). NativeWind v5.0.0-preview.2 + Tailwind CSS v4.2.1. postcss.config.mjs requerido. nativewind-env.d.ts para tipos TypeScript. global.css importado en app/\_layout.tsx. --legacy-peer-deps necesario para instalar deps.
   - Esfuerzo: 2h
 
 - [ ] **F0-06** Setup de navegacion (Expo Router v4)
@@ -448,15 +448,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 11     | 5           | 0           | 6          |
+| Fase 0: Setup    | 11     | 6           | 0           | 5          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **66** | **5**       | **0**       | **61**     |
+| **Total MVP**    | **66** | **6**       | **0**       | **60**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 7.6%**
+**Progreso general MVP: 9.1%**
 
 ---
 
@@ -474,7 +474,7 @@
 
 ```
 Fase 0 (secuencial):
-F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 → F0-06 → F0-09 ✅ (setup testing)
+F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 ✅ → F0-06 → F0-09 ✅ (setup testing)
 F0-02 → F0-07 → F0-10 (setup Supabase + BD testing)
 F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completados juntos)
 
