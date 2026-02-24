@@ -35,6 +35,15 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1"
   },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-css"
+        ]
+      }
+    }
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
