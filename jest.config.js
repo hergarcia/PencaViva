@@ -12,5 +12,15 @@ module.exports = {
   ],
   moduleNameMapper: {
     "\\.css$": "<rootDir>/src/__mocks__/css.js",
+    "^@expo/vector-icons$": "<rootDir>/src/__mocks__/expo-vector-icons.tsx",
+    "^@expo/vector-icons/(.*)$":
+      "<rootDir>/src/__mocks__/expo-vector-icons.tsx",
+    "^expo-router$": "<rootDir>/src/__mocks__/expo-router.tsx",
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@components/(.*)$": "<rootDir>/src/components/$1",
+    "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
+    "^@lib/(.*)$": "<rootDir>/src/lib/$1",
+    "^@stores/(.*)$": "<rootDir>/src/stores/$1",
+    "^@utils/(.*)$": "<rootDir>/src/utils/$1",
   },
 };
