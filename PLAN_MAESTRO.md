@@ -118,7 +118,8 @@ Una app moderna, social-first, que haga de las pencas una experiencia divertida,
 | `@supabase/supabase-js`     | **^2.58.0**                 | Cliente Supabase (queries, auth, realtime)                 |
 | `@tanstack/react-query`     | **^5.84.1**                 | Cache de datos, invalidación, sync en background           |
 | `zustand`                   | **^5.0.8**                  | Estado global minimalista (requiere React 18+)             |
-| `react-native-reanimated`   | **^4.1.5**                  | Animaciones 60fps (requiere New Architecture)              |
+| `react-native-reanimated`   | **~4.2.1**                  | Animaciones 60fps (requiere New Architecture + worklets)   |
+| `react-native-worklets`     | **>=0.7.0**                 | Peer dependency requerido por Reanimated v4                |
 | `nativewind`                | **v5 (preview)**            | Tailwind CSS v4 para React Native                          |
 | `tailwindcss`               | **v4**                      | Motor de estilos utility-first (peer dep de NativeWind v5) |
 | `react-native-css`          | **(peer dep)**              | Requerido por NativeWind v5                                |
@@ -129,12 +130,12 @@ Una app moderna, social-first, que haga de las pencas una experiencia divertida,
 | `date-fns`                  | **^3.5.0**                  | Manejo de fechas                                           |
 | `@date-fns/tz`              | **latest**                  | Zonas horarias con TZDate (reemplaza date-fns-tz)          |
 | `react-native-web`          | **0.21.0**                  | Soporte web (incluido con Expo SDK 55)                     |
-| `typescript`                | **^5.x**                    | Tipado estático                                            |
+| `typescript`                | **~5.9.x**                  | Tipado estático                                            |
 | Node.js (dev)               | **>= 20.19.x**              | Requerido por Expo SDK 55                                  |
 
 **Notas de compatibilidad importantes:**
 
-- **Reanimated 4.x requiere New Architecture** (habilitada por defecto en Expo SDK 55). No es compatible con Old Architecture.
+- **Reanimated 4.x requiere New Architecture** (habilitada por defecto en Expo SDK 55) y `react-native-worklets` como peer dependency. No es compatible con Old Architecture.
 - **Zustand v5 requiere React 18+** y `use-sync-external-store` como peer dependency para custom equality functions.
 - **NativeWind v5 está en preview** pero es funcional. Usa Tailwind CSS v4 (no v3). La config de Metro cambió: ya no necesita segundo argumento en `withNativewind()`.
 - **@date-fns/tz reemplaza date-fns-tz** — usa `TZDate` class en lugar del viejo `utcToZonedTime`. Tamaño: 916B (TZDateMini) / 1.2KB (TZDate).
@@ -1104,7 +1105,7 @@ Tab Bar (Bottom Navigation)
 npx create-expo-app pencaviva --template bare-minimum
 
 # Instalar dependencias core
-npx expo install nativewind@preview react-native-css react-native-reanimated react-native-safe-area-context
+npx expo install nativewind@preview react-native-css react-native-reanimated react-native-worklets react-native-safe-area-context
 npx expo install --dev tailwindcss @tailwindcss/postcss postcss
 
 # Instalar dependencias de datos y estado
