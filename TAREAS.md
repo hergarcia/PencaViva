@@ -45,10 +45,10 @@
   - Notas: metro.config.js con `withNativewind()` (sin segundo argumento en v5). NativeWind v5.0.0-preview.2 + Tailwind CSS v4.2.1. postcss.config.mjs requerido. nativewind-env.d.ts para tipos TypeScript. global.css importado en app/\_layout.tsx. Requiere react-native-css@3.0.3 que necesita @expo/metro-config >= 54 (resuelto con SDK 55).
   - Esfuerzo: 2h
 
-- [ ] **F0-06** Setup de navegacion (Expo Router v4)
+- [x] **F0-06** Setup de navegacion (Expo Router v4)
   - Criterio: Tab navigation basica con 5 tabs (Home, Predecir, Ranking, Grupos, Perfil)
   - Esfuerzo: 3h
-  - Notas: Root layout creado (app/\_layout.tsx) con Stack + dark background. Tabs pendientes.
+  - Notas: Expo Router v5.1.11 (SDK 53). Ionicons para tab icons (outline/filled). (tabs) con 5 tabs + groups/ nested Stack. (auth) con Stack (welcome, login, complete-profile). match/[id] dynamic route. app/index.tsx con Redirect a /(tabs). SafeAreaView en todas las pantallas. Jest mocks para expo-router y @expo/vector-icons. Path aliases en jest.config.js. Type declaration para @expo/vector-icons.
 
 - [ ] **F0-07** Crear esquema de BD (migrations SQL)
   - Criterio: Todas las tablas creadas con RLS policies activas
@@ -448,15 +448,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 11     | 6           | 0           | 5          |
+| Fase 0: Setup    | 11     | 7           | 0           | 4          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **66** | **6**       | **0**       | **60**     |
+| **Total MVP**    | **66** | **7**       | **0**       | **59**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 9.1%**
+**Progreso general MVP: 10.6%**
 
 ---
 
