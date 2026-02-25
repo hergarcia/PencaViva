@@ -8,7 +8,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "pencaviva",
   orientation: "portrait",
   userInterfaceStyle: "dark",
-  newArchEnabled: true,
   plugins: ["expo-router"],
   ios: {
     supportsTablet: false,

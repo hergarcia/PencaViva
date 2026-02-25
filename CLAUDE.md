@@ -12,17 +12,17 @@ The project has an initialized Expo skeleton with CI/CD infrastructure. Architec
 
 | Layer          | Technology                | Version                                        |
 | -------------- | ------------------------- | ---------------------------------------------- |
-| Framework      | React Native + Expo       | SDK 55 (RN 0.83, React 19.2)                   |
-| Navigation     | Expo Router               | v4 (file-based + deep linking)                 |
-| Styling        | NativeWind + Tailwind CSS | v5 (preview) + v4                              |
+| Framework      | React Native + Expo       | SDK 55 (RN 0.83.2, React 19.2.0)               |
+| Navigation     | Expo Router               | v55 (file-based + deep linking)                |
+| Styling        | NativeWind + Tailwind CSS | v5 (preview) + v4.2.1                          |
 | State (client) | Zustand                   | v5                                             |
 | State (server) | TanStack React Query      | v5                                             |
-| Animations     | React Native Reanimated   | v4                                             |
+| Animations     | React Native Reanimated   | v4.2.x (+ react-native-worklets)               |
 | Backend        | Supabase                  | PostgreSQL 15+, Auth, Realtime, Edge Functions |
 | Sports Data    | API-Football (RapidAPI)   | Pro plan for production                        |
 | Push           | Expo Push Service         | Free, integrated                               |
 | Monitoring     | Sentry                    | Free tier                                      |
-| Language       | TypeScript                | 5.x (strict mode)                              |
+| Language       | TypeScript                | 5.9.x (strict mode)                            |
 | Node.js        | >= 20.19.x                | Required by Expo SDK 55                        |
 
 ## Commands
@@ -102,11 +102,12 @@ Scoring system (configurable per group via JSONB):
 
 ## Compatibility Notes
 
-- **Reanimated v4 requires New Architecture** (enabled by default in Expo SDK 55)
+- **Reanimated v4 requires New Architecture** (enabled by default in Expo SDK 55) and `react-native-worklets` as peer dependency
 - **Zustand v5 requires React 18+** and `use-sync-external-store` as peer dependency
 - **NativeWind v5 is preview** — functional but not stable
 - **`@date-fns/tz` replaces `date-fns-tz`** — uses `TZDate` class instead of old `utcToZonedTime`
 - All times stored as UTC in the database; converted to local on the client with `@date-fns/tz`
+- **New Architecture is default in SDK 55** — `newArchEnabled` config option removed from ExpoConfig
 
 ## Development Methodology
 
@@ -149,6 +150,6 @@ Scoring system (configurable per group via JSONB):
 
 - **Jest config**: Use `jest.config.js` (not `.ts`) — `.ts` requires `ts-node` as extra dependency
 - **Husky v9**: Requires `.git/` to exist before `npx husky` — run `git init` first
-- **Expo SDK**: PLAN_MAESTRO.md references SDK 55 but `package.json` uses ~53.0.0 (latest stable). Update when SDK 55 is released
+- **Expo SDK**: Project upgraded to SDK 55 (~55.0.0). PLAN_MAESTRO.md and package.json are now aligned
 - **GitHub repo**: Public repo (branch protection requires Pro for private repos)
 - **CI job names**: Branch protection references exact names `"Lint & Format"`, `"Type Check"`, `"Unit Tests"` — do not rename CI jobs without updating branch protection rules

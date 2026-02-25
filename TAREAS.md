@@ -21,10 +21,10 @@
 
 ### Infraestructura
 
-- [x] **F0-01** Inicializar proyecto Expo SDK 53 con TypeScript
+- [x] **F0-01** Inicializar proyecto Expo SDK 55 con TypeScript
   - Criterio: Proyecto corriendo en simulador
   - Esfuerzo: 2h
-  - Notas: Expo SDK 53 (ultimo estable). tsconfig strict mode + path aliases (@/\*, @components/\*, etc.)
+  - Notas: Upgraded from SDK 53 to SDK 55 (RN 0.83.2, React 19.2.0, Reanimated 4.2.x, TS 5.9.x). tsconfig strict mode + path aliases (@/\*, @components/\*, etc.). New Architecture es default en SDK 55 (newArchEnabled eliminado de ExpoConfig). react-native-worklets requerido como peer dep de Reanimated v4.
 
 - [ ] **F0-02** Configurar Supabase (proyecto + auth providers)
   - Criterio: Proyecto Supabase creado, Google y Apple auth configurados
@@ -42,7 +42,7 @@
 
 - [x] **F0-05** Configurar NativeWind v5 + Tailwind CSS v4
   - Criterio: Estilos Tailwind funcionando en componentes RN
-  - Notas: metro.config.js con `withNativewind()` (sin segundo argumento en v5). NativeWind v5.0.0-preview.2 + Tailwind CSS v4.2.1. postcss.config.mjs requerido. nativewind-env.d.ts para tipos TypeScript. global.css importado en app/\_layout.tsx. --legacy-peer-deps necesario para instalar deps.
+  - Notas: metro.config.js con `withNativewind()` (sin segundo argumento en v5). NativeWind v5.0.0-preview.2 + Tailwind CSS v4.2.1. postcss.config.mjs requerido. nativewind-env.d.ts para tipos TypeScript. global.css importado en app/\_layout.tsx. Requiere react-native-css@3.0.3 que necesita @expo/metro-config >= 54 (resuelto con SDK 55).
   - Esfuerzo: 2h
 
 - [ ] **F0-06** Setup de navegacion (Expo Router v4)
