@@ -1,7 +1,18 @@
+import { ComponentProps } from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@/lib/constants";
 
-const TAB_CONFIG = [
+type IoniconsName = ComponentProps<typeof Ionicons>["name"];
+
+interface TabConfig {
+  name: string;
+  title: string;
+  iconDefault: IoniconsName;
+  iconFocused: IoniconsName;
+}
+
+const TAB_CONFIG: TabConfig[] = [
   {
     name: "index",
     title: "Inicio",
@@ -34,21 +45,25 @@ const TAB_CONFIG = [
   },
 ];
 
+const tabBarStyle = {
+  backgroundColor: colors.surface,
+  borderTopColor: colors.surfaceBorder,
+};
+
+const tabBarLabelStyle = {
+  fontSize: 11,
+  fontWeight: "600" as const,
+};
+
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#00D4AA",
-        tabBarInactiveTintColor: "#A0A0B8",
-        tabBarStyle: {
-          backgroundColor: "#1A1A2E",
-          borderTopColor: "#2A2A3E",
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "600",
-        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle,
+        tabBarLabelStyle,
       }}
     >
       {TAB_CONFIG.map((tab) => (
