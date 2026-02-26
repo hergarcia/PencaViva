@@ -57,6 +57,14 @@ describe("secureStoreAdapter", () => {
       secureStoreAdapter.setItem("session", largeValue);
       expect(secureStoreAdapter.getItem("session")).toBe(largeValue);
     });
+
+    it("cleans up orphaned base key when transitioning to chunked", () => {
+      secureStoreAdapter.setItem("session", "small");
+      expect(SecureStoreMock.getItem("session")).toBe("small");
+      secureStoreAdapter.setItem("session", largeValue);
+      // The old non-chunked base key should be removed
+      expect(SecureStoreMock.getItem("session")).toBeNull();
+    });
   });
 
   describe("edge cases", () => {

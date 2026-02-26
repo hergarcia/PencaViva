@@ -70,6 +70,9 @@ export const secureStoreAdapter = {
       chunks.push(value.slice(i, i + CHUNK_SIZE));
     }
 
+    // Remove any old non-chunked value at the base key
+    SecureStore.deleteItemAsync(key);
+
     SecureStore.setItem(getCountKey(key), String(chunks.length));
     for (let i = 0; i < chunks.length; i++) {
       SecureStore.setItem(getChunkKey(key, i), chunks[i]);
