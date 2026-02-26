@@ -8,7 +8,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "pencaviva",
   orientation: "portrait",
   userInterfaceStyle: "dark",
-  plugins: ["expo-router"],
+  plugins: ["expo-router", "expo-secure-store"],
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.pencaviva.app",

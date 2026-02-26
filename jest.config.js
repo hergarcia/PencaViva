@@ -16,11 +16,13 @@ module.exports = {
     "^@expo/vector-icons/(.*)$":
       "<rootDir>/src/__mocks__/expo-vector-icons.tsx",
     "^expo-router$": "<rootDir>/src/__mocks__/expo-router.tsx",
+    "^expo-secure-store$": "<rootDir>/src/__mocks__/expo-secure-store.ts",
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@components/(.*)$": "<rootDir>/src/components/$1",
     "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
     "^@lib/(.*)$": "<rootDir>/src/lib/$1",
     "^@stores/(.*)$": "<rootDir>/src/stores/$1",
+    "^@types/(.*)$": "<rootDir>/src/types/$1",
     "^@utils/(.*)$": "<rootDir>/src/utils/$1",
   },
 };

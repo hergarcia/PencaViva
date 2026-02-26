@@ -22,10 +22,12 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.97.0",
     "expo": "55.0.2",
     "expo-constants": "~55.0.7",
     "expo-linking": "~55.0.7",
     "expo-router": "55.0.2",
+    "expo-secure-store": "~55.0.8",
     "expo-splash-screen": "55.0.9",
     "expo-status-bar": "~55.0.4",
     "nativewind": "5.0.0-preview.2",
