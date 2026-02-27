@@ -29,4 +29,4 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Deploy OTA update
-        run: eas update --channel development --message "develop@${{ github.sha }}" --non-interactive
+        run: eas update --environment development --message "develop@${{ github.sha }}" --non-interactive

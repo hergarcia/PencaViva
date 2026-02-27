@@ -29,7 +29,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Deploy OTA update
-        run: eas update --channel staging --message "staging@${{ github.ref_name }}" --non-interactive
+        run: eas update --environment staging --message "staging@${{ github.ref_name }}" --non-interactive
 
       - name: Trigger staging build
         run: eas build --profile staging --platform all --non-interactive --no-wait
