@@ -30,6 +30,7 @@
     "expo-secure-store": "~55.0.8",
     "expo-splash-screen": "55.0.9",
     "expo-status-bar": "~55.0.4",
+    "expo-updates": "~55.0.12",
     "nativewind": "5.0.0-preview.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
@@ -73,5 +74,8 @@
     "semantic-release": "^24.0.0",
     "tailwindcss": "4.2.1",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "lightningcss": "1.30.1"
   }
 }
