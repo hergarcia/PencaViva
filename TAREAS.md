@@ -74,9 +74,10 @@
   - Esfuerzo: 2h
   - Notas: jest-expo preset. Usar jest.config.js (no .ts, evita dependencia de ts-node).
 
-- [ ] **F0-10** Configurar testing de funciones SQL/Supabase
+- [x] **F0-10** Configurar testing de funciones SQL/Supabase
   - Criterio: Tests pueden ejecutar queries contra Supabase (local o test project)
   - Esfuerzo: 2h
+  - Notas: Jest multi-project config (unit + supabase). `pg` for direct Postgres connections. `ts-jest` for Node test env. Transaction rollback pattern (BEGIN/ROLLBACK) for test isolation. Auth context simulation via SET LOCAL role + request.jwt.claims for RLS testing. Graceful skip (describe.skip) when SUPABASE_DB_URL not set. Test files in supabase/**tests**/ (db-functions/, rls/, triggers/). 17 integration tests: calculate_prediction_points (9 cases), predictions RLS (7 cases), updated_at trigger (1 case). Scripts: test:unit, test:supabase. CI runs unit only (test:ci).
 
 ---
 
@@ -450,15 +451,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 11     | 9           | 0           | 2          |
+| Fase 0: Setup    | 11     | 10          | 0           | 1          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **66** | **9**       | **0**       | **57**     |
+| **Total MVP**    | **66** | **10**      | **0**       | **56**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 13.6%**
+**Progreso general MVP: 15.2%**
 
 ---
 
