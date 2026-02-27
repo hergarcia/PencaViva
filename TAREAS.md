@@ -26,9 +26,10 @@
   - Esfuerzo: 2h
   - Notas: Upgraded from SDK 53 to SDK 55 (RN 0.83.2, React 19.2.0, Reanimated 4.2.x, TS 5.9.x). tsconfig strict mode + path aliases (@/\*, @components/\*, etc.). New Architecture es default en SDK 55 (newArchEnabled eliminado de ExpoConfig). react-native-worklets requerido como peer dep de Reanimated v4.
 
-- [ ] **F0-02** Configurar Supabase (proyecto + auth providers)
+- [x] **F0-02** Configurar Supabase (proyecto + auth providers)
   - Criterio: Proyecto Supabase creado, Google y Apple auth configurados
   - Esfuerzo: 2h
+  - Notas: Supabase project created (sa-east-1, project ID jkxxiwhjitilgysjkkul). Using new publishable key (sb*publishable*) instead of legacy anon JWT. @supabase/supabase-js v2.97.0 + expo-secure-store v55.0.8. Client singleton with secure token storage (chunked for iOS 2048-byte Keychain limit). AppState auto-refresh. 15 tests. Google/Apple auth provider config deferred to F1-02/F1-03 (requires external credentials).
 
 - [x] **F0-03** Configurar ESLint + Prettier
   - Criterio: Linting automatico funcionando
@@ -448,15 +449,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 11     | 7           | 0           | 4          |
+| Fase 0: Setup    | 11     | 8           | 0           | 3          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **66** | **7**       | **0**       | **59**     |
+| **Total MVP**    | **66** | **8**       | **0**       | **58**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 10.6%**
+**Progreso general MVP: 12.1%**
 
 ---
 
@@ -475,7 +476,7 @@
 ```
 Fase 0 (secuencial):
 F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 ✅ → F0-06 → F0-09 ✅ (setup testing)
-F0-02 → F0-07 → F0-10 (setup Supabase + BD testing)
+F0-02 ✅ → F0-07 → F0-10 (setup Supabase + BD testing)
 F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completados juntos)
 
 Fase 1 - Milestone 1 (secuencial con paralelo parcial):
