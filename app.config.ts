@@ -20,14 +20,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   updates: {
-    url: `https://u.expo.dev/${process.env.EAS_PROJECT_ID ?? ""}`,
+    url: "https://u.expo.dev/c9ea82df-8528-4bca-a44b-0e220c4a0434",
   },
   runtimeVersion: {
     policy: "appVersion",
   },
   extra: {
     eas: {
-      projectId: process.env.EAS_PROJECT_ID ?? "",
+      projectId: "c9ea82df-8528-4bca-a44b-0e220c4a0434",
     },
   },
 });
