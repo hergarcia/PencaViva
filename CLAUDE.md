@@ -74,6 +74,21 @@ supabase/
 └── functions/          # Edge Functions (match-sync, calculate-scores, send-notification)
 ```
 
+## Supabase Project
+
+| Property   | Value                                               |
+| ---------- | --------------------------------------------------- |
+| Project ID | `jkxxiwhjitilgysjkkul`                              |
+| Region     | sa-east-1 (São Paulo)                               |
+| URL        | `https://jkxxiwhjitilgysjkkul.supabase.co`          |
+| API Key    | Publishable key (`sb_publishable_...`)              |
+| Dashboard  | supabase.com/dashboard/project/jkxxiwhjitilgysjkkul |
+
+- **Uses new publishable key** (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of legacy anon JWT — better security, independent rotation
+- Client configured in `src/lib/supabase.ts` with `expo-secure-store` (chunked storage for iOS 2048-byte Keychain limit)
+- Auth providers (Google, Apple) not yet configured — deferred to F1-02/F1-03
+- Env vars in `.env` (gitignored); template in `.env.example`
+
 ## Architecture Decisions
 
 - **Expo (not bare RN)**: EAS Update enables OTA fixes during live tournaments — critical for scoring bug corrections
@@ -150,6 +165,6 @@ Scoring system (configurable per group via JSONB):
 
 - **Jest config**: Use `jest.config.js` (not `.ts`) — `.ts` requires `ts-node` as extra dependency
 - **Husky v9**: Requires `.git/` to exist before `npx husky` — run `git init` first
-- **Expo SDK**: Project upgraded to SDK 55 (~55.0.0). PLAN_MAESTRO.md and package.json are now aligned
+- **Expo SDK**: Project on SDK 55 (expo@55.0.3). PLAN_MAESTRO.md and package.json are aligned
 - **GitHub repo**: Public repo (branch protection requires Pro for private repos)
 - **CI job names**: Branch protection references exact names `"Lint & Format"`, `"Type Check"`, `"Unit Tests"` — do not rename CI jobs without updating branch protection rules
