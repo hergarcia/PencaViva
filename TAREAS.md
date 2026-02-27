@@ -51,10 +51,11 @@
   - Esfuerzo: 3h
   - Notas: Expo Router v5.1.11 (SDK 53). Ionicons para tab icons (outline/filled). (tabs) con 5 tabs + groups/ nested Stack. (auth) con Stack (welcome, login, complete-profile). match/[id] dynamic route. app/index.tsx con Redirect a /(tabs). SafeAreaView en todas las pantallas. Jest mocks para expo-router y @expo/vector-icons. Path aliases en jest.config.js. Type declaration para @expo/vector-icons.
 
-- [ ] **F0-07** Crear esquema de BD (migrations SQL)
+- [x] **F0-07** Crear esquema de BD (migrations SQL)
   - Criterio: Todas las tablas creadas con RLS policies activas
   - Tablas: profiles, tournaments, matches, groups, group_members, group_tournaments, predictions, leaderboard_cache, notifications
   - Esfuerzo: 4h
+  - Notas: 4 migrations applied via Supabase MCP: (1) 9 tables + 8 indexes (including partial unique for NULL tournament_id, idx_group_members_user for RLS performance), (2) 4 functions (calculate_prediction_points IMMUTABLE, refresh_leaderboard_cache SECURITY DEFINER, process_match_result SECURITY DEFINER, update_updated_at_column) + 6 triggers, (3) 19 RLS policies across all 9 tables, (4) fix migration for search_path hardening + (select auth.uid()) initplan optimization. Added INSERT policies for profiles and groups (not in PLAN_MAESTRO.md but necessary). Added group membership check on predictions INSERT. All functions use SET search_path = public. Zero security advisor warnings.
 
 - [x] **F0-08** Configurar EAS Build + EAS Update
   - Criterio: Build de desarrollo funcional
@@ -449,15 +450,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 11     | 8           | 0           | 3          |
+| Fase 0: Setup    | 11     | 9           | 0           | 2          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **66** | **8**       | **0**       | **58**     |
+| **Total MVP**    | **66** | **9**       | **0**       | **57**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 12.1%**
+**Progreso general MVP: 13.6%**
 
 ---
 
@@ -476,7 +477,7 @@
 ```
 Fase 0 (secuencial):
 F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 ✅ → F0-06 → F0-09 ✅ (setup testing)
-F0-02 ✅ → F0-07 → F0-10 (setup Supabase + BD testing)
+F0-02 ✅ → F0-07 ✅ → F0-10 (setup Supabase + BD testing)
 F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completados juntos)
 
 Fase 1 - Milestone 1 (secuencial con paralelo parcial):
