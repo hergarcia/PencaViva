@@ -14,7 +14,7 @@ describe("supabase client", () => {
     process.env = {
       ...ORIGINAL_ENV,
       EXPO_PUBLIC_SUPABASE_URL: "https://test.supabase.co",
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: "test-anon-key",
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "test-publishable-key",
     };
 
     appStateCallback = undefined;
@@ -60,7 +60,7 @@ describe("supabase client", () => {
 
     expect(createClient).toHaveBeenCalledWith(
       "https://test.supabase.co",
-      "test-anon-key",
+      "test-publishable-key",
       expect.objectContaining({
         auth: expect.objectContaining({
           autoRefreshToken: true,
@@ -95,7 +95,7 @@ describe("supabase client", () => {
 
   it("throws when env vars are missing", () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = "";
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = "";
+    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "";
     expect(() => require("@lib/supabase")).toThrow(
       "Missing Supabase environment variables",
     );
