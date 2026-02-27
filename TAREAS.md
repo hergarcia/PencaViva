@@ -29,7 +29,7 @@
 - [x] **F0-02** Configurar Supabase (proyecto + auth providers)
   - Criterio: Proyecto Supabase creado, Google y Apple auth configurados
   - Esfuerzo: 2h
-  - Notas: @supabase/supabase-js v2.97.0 + expo-secure-store v55.0.8 installed. Supabase client singleton with secure token storage (chunked for iOS 2048-byte Keychain limit). AppState listener for auto-refresh. .env.example with required vars. Jest mocks for expo-secure-store and supabase client. 14 new tests (adapter + client). Actual Supabase project creation and auth provider config (Google/Apple) deferred to when credentials are available.
+  - Notas: Supabase project created (sa-east-1, project ID jkxxiwhjitilgysjkkul). Using new publishable key (sb*publishable*) instead of legacy anon JWT. @supabase/supabase-js v2.97.0 + expo-secure-store v55.0.8. Client singleton with secure token storage (chunked for iOS 2048-byte Keychain limit). AppState auto-refresh. 15 tests. Google/Apple auth provider config deferred to F1-02/F1-03 (requires external credentials).
 
 - [x] **F0-03** Configurar ESLint + Prettier
   - Criterio: Linting automatico funcionando
