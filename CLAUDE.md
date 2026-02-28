@@ -152,8 +152,7 @@ Scoring system (configurable per group via JSONB):
 4. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
 5. Each completed subtask or logical unit → commit with Conventional Commits
 6. **Pre-PR document updates** (BEFORE push + PR creation):
-   - `TAREAS.md`: Mark task `[x]`, add notes, update progress table and percentage
-   - `CLAUDE.md`: Update if the task changed the tech stack, DB schema, project structure, commands, gotchas, or Supabase config
+   - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
    - Commit doc updates as part of the final commit or as a separate `docs:` commit
 7. Push and create PR to `develop`, wait for green CI
 8. Merge (squash) the PR
