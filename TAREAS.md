@@ -74,9 +74,16 @@
   - Esfuerzo: 2h
   - Notas: jest-expo preset. Usar jest.config.js (no .ts, evita dependencia de ts-node).
 
-- [ ] **F0-10** Configurar testing de funciones SQL/Supabase
+- [x] **F0-10** Configurar testing de funciones SQL/Supabase
   - Criterio: Tests pueden ejecutar queries contra Supabase (local o test project)
   - Esfuerzo: 2h
+  - Notas: Jest multi-project config (unit + supabase). `pg` for direct Postgres connections. `ts-jest` for Node test env. Transaction rollback pattern (BEGIN/ROLLBACK) for test isolation. Auth context simulation via SET LOCAL role + request.jwt.claims for RLS testing. Graceful skip (describe.skip) when SUPABASE_DB_URL not set. Test files in supabase/**tests**/ (db-functions/, rls/, triggers/). 18 integration tests: calculate_prediction_points (9 cases), predictions RLS (7 cases), updated_at trigger (2 cases). Scripts: test:unit, test:supabase. CI runs unit only (test:ci). Bug fix: migration 005 added SECURITY DEFINER functions (get_user_group_ids, get_user_admin_group_ids) to resolve infinite recursion in group_members RLS policies.
+
+- [ ] **F0-12** Migrar tests de Supabase a entorno local (supabase start)
+  - Criterio: `supabase start` levanta BD local con Docker, tests corren contra localhost en vez de DB remota
+  - Depends: F0-10 (testing SQL)
+  - Esfuerzo: 3h
+  - Nota: Actualmente los tests corren contra la BD remota de Supabase (con rollback por transaccion). Funciona pero no es best practice — riesgo de leak si un test crashea antes del ROLLBACK. Migrar a `supabase start` (Docker local) elimina el riesgo, permite correr offline, y habilita tests en CI.
 
 ---
 
@@ -450,15 +457,15 @@
 
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
-| Fase 0: Setup    | 11     | 9           | 0           | 2          |
+| Fase 0: Setup    | 12     | 11          | 0           | 1          |
 | Fase 1: MVP Core | 28     | 0           | 0           | 28         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **66** | **9**       | **0**       | **57**     |
+| **Total MVP**    | **67** | **11**      | **0**       | **56**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 13.6%**
+**Progreso general MVP: 16.4%**
 
 ---
 
@@ -477,7 +484,7 @@
 ```
 Fase 0 (secuencial):
 F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 ✅ → F0-06 → F0-09 ✅ (setup testing)
-F0-02 ✅ → F0-07 ✅ → F0-10 (setup Supabase + BD testing)
+F0-02 ✅ → F0-07 ✅ → F0-10 ✅ → F0-12 (migrar a supabase local)
 F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completados juntos)
 
 Fase 1 - Milestone 1 (secuencial con paralelo parcial):
