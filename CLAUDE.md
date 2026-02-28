@@ -62,7 +62,7 @@ eas update --channel production    # OTA to prod
 
 ```
 app/                    # Expo Router file-based routing
-├── index.tsx           # Root redirect
+├── index.tsx           # Root redirect (gates on onboarding completion)
 ├── (auth)/             # Auth group (welcome, login, complete-profile)
 ├── (tabs)/             # 5-tab main app
 │   ├── index.tsx       # Home tab
@@ -74,12 +74,13 @@ app/                    # Expo Router file-based routing
 └── _layout.tsx         # Root layout
 
 src/
-├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, css, etc.)
-├── __tests__/          # Unit tests (lib/, navigation/)
-├── lib/                # Supabase client, secure-store adapter, constants
+├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, reanimated, css, etc.)
+├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
+├── components/         # Feature-organized components
+│   └── onboarding/     # OnboardingPageView, PageIndicator
+├── lib/                # Supabase client, secure-store adapter, constants, onboarding data
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):
-# ├── components/       # Feature-organized (ui/, match/, ranking/, group/)
 # ├── hooks/            # Custom hooks (useAuth, usePredictions, useLeaderboard, etc.)
 # ├── stores/           # Zustand stores (authStore, appStore)
 # └── utils/            # Scoring, dates, validation helpers
@@ -157,18 +158,32 @@ Scoring system (configurable per group via JSONB):
 - **Commits**: Conventional Commits enforced by commitlint + Husky pre-commit hooks
 - **Versioning**: semantic-release on `main` only (no pre-releases on develop)
 
+### Pre-commit CI Checks
+
+Before every commit, run the same checks as the GitHub Actions CI pipeline locally. If any check fails, fix the issue before committing. All commits must pass:
+
+```bash
+npm run format:check    # Prettier formatting
+npm run lint            # ESLint
+npm run typecheck       # TypeScript compiler (tsc --noEmit)
+npm run test:ci         # Unit tests with coverage
+```
+
+If a check fails, fix the issue (or run `npm run format` / `npm run lint:fix` for auto-fixable problems) and re-run before committing.
+
 ### Task Workflow
 
 1. Run `/planner` for the task (explore, plan, review before writing code)
 2. Create branch `feature/F0-XX-description` from `develop`
 3. Mark task as `[~]` in `TAREAS.md`
-4. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
-5. Each completed subtask or logical unit → commit with Conventional Commits
-6. **Pre-PR document updates** (BEFORE push + PR creation):
+4. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text.
+5. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
+6. Each completed subtask or logical unit → commit with Conventional Commits
+7. **Pre-PR document updates** (BEFORE push + PR creation):
    - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
    - Commit doc updates as part of the final commit or as a separate `docs:` commit
-7. Push and create PR to `develop`, wait for green CI
-8. Merge (squash) the PR
+8. Push and create PR to `develop`, wait for green CI
+9. Merge (squash) the PR
 
 ### Task tracking
 

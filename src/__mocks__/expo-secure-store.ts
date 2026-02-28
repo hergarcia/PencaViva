@@ -4,7 +4,15 @@ export function getItem(key: string): string | null {
   return store[key] ?? null;
 }
 
+export async function getItemAsync(key: string): Promise<string | null> {
+  return store[key] ?? null;
+}
+
 export function setItem(key: string, value: string): void {
+  store[key] = value;
+}
+
+export async function setItemAsync(key: string, value: string): Promise<void> {
   store[key] = value;
 }
 

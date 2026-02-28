@@ -94,10 +94,11 @@
 
 ### Milestone 1: Auth + Profile (Week 2)
 
-- [ ] **F1-01** Welcome/Onboarding screen
+- [x] **F1-01** Welcome/Onboarding screen
   - 3 screens with introductory animations
   - Depends: F0-06 (navigation)
   - Effort: 4h
+  - Notes: 3-page horizontal ScrollView with pagingEnabled. OnboardingPageView with Reanimated v4 entrance animations (icon scale/opacity, text translateY/opacity). PageIndicator dots (no animation, YAGNI). Onboarding data in src/lib/onboarding.ts (typed OnboardingPage array). Root index.tsx gates on SecureStore.getItem (synchronous) — redirects to welcome if not completed. "Skip" and "Get Started" persist completion via SecureStore.setItem and router.replace to login. Ionicons for page icons (100px, colored by design tokens). expo-router mock updated to return stable singleton from useRouter(). Reanimated v4 Jest mock created. 50 unit tests passing.
 
 - [ ] **F1-02** Implement Google Sign-In
   - Login with Google via Supabase Auth
@@ -459,14 +460,14 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 12     | 11        | 0           | 1       |
-| Phase 1: MVP     | 28     | 1         | 0           | 27      |
+| Phase 1: MVP     | 28     | 2         | 0           | 26      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **67** | **12**    | **0**       | **55**  |
+| **Total MVP**    | **67** | **13**    | **0**       | **54**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 17.9%**
+**Overall MVP progress: 19.4%**
 
 ---
 
@@ -489,7 +490,7 @@ F0-02 ✅ → F0-07 ✅ → F0-10 ✅ → F0-12 (migrate to local supabase)
 F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completed together)
 
 Phase 1 - Milestone 1 (sequential with partial parallel):
-F1-05 ✅ → F1-02 + F1-03 (parallel) → F1-04 → F1-06
+F1-01 ✅ → F1-05 ✅ → F1-02 + F1-03 (parallel) → F1-04 → F1-06
 F1-07 → F1-08
 
 Phase 1 - Milestone 2:
