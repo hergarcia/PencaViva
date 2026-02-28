@@ -163,13 +163,14 @@ Scoring system (configurable per group via JSONB):
 1. Run `/planner` for the task (explore, plan, review before writing code)
 2. Create branch `feature/F0-XX-description` from `develop`
 3. Mark task as `[~]` in `TAREAS.md`
-4. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
-5. Each completed subtask or logical unit → commit with Conventional Commits
-6. **Pre-PR document updates** (BEFORE push + PR creation):
+4. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text.
+5. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
+6. Each completed subtask or logical unit → commit with Conventional Commits
+7. **Pre-PR document updates** (BEFORE push + PR creation):
    - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
    - Commit doc updates as part of the final commit or as a separate `docs:` commit
-7. Push and create PR to `develop`, wait for green CI
-8. Merge (squash) the PR
+8. Push and create PR to `develop`, wait for green CI
+9. Merge (squash) the PR
 
 ### Task tracking
 
