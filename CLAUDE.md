@@ -158,6 +158,19 @@ Scoring system (configurable per group via JSONB):
 - **Commits**: Conventional Commits enforced by commitlint + Husky pre-commit hooks
 - **Versioning**: semantic-release on `main` only (no pre-releases on develop)
 
+### Pre-commit CI Checks
+
+Before every commit, run the same checks as the GitHub Actions CI pipeline locally. If any check fails, fix the issue before committing. All commits must pass:
+
+```bash
+npm run format:check    # Prettier formatting
+npm run lint            # ESLint
+npm run typecheck       # TypeScript compiler (tsc --noEmit)
+npm run test:ci         # Unit tests with coverage
+```
+
+If a check fails, fix the issue (or run `npm run format` / `npm run lint:fix` for auto-fixable problems) and re-run before committing.
+
 ### Task Workflow
 
 1. Run `/planner` for the task (explore, plan, review before writing code)
