@@ -147,8 +147,11 @@ Scoring system (configurable per group via JSONB):
 3. Marcar tarea como `[~]` en `TAREAS.md`
 4. Desarrollar con TDD (`/tdd` skill — RED-GREEN-REFACTOR en vertical slices)
 5. Cada subtarea o unidad logica completada → commit con Conventional Commits
-6. Al terminar la tarea → marcar como `[x]` en `TAREAS.md`, commit final, push
-7. Crear PR hacia `develop` y esperar CI verde
+6. **Pre-PR document updates** (BEFORE push + PR creation):
+   - `TAREAS.md`: Mark task `[x]`, add notes, update progress table and percentage
+   - `CLAUDE.md`: Update if the task changed the tech stack, DB schema, project structure, commands, gotchas, or Supabase config
+   - Commit doc updates as part of the final commit or as a separate `docs:` commit
+7. Push y crear PR hacia `develop`, esperar CI verde
 8. Merge (squash) del PR
 
 ### Task tracking
