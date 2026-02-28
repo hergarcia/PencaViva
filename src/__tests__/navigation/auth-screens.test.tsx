@@ -6,9 +6,9 @@ import LoginScreen from "../../../app/(auth)/login";
 import CompleteProfileScreen from "../../../app/(auth)/complete-profile";
 
 describe("Auth placeholder screens", () => {
-  it("renders Welcome screen", () => {
+  it("renders Welcome screen with onboarding content", () => {
     render(<WelcomeScreen />);
-    expect(screen.getByText("Bienvenido")).toBeTruthy();
+    expect(screen.getByText("Predict Match Scores")).toBeTruthy();
   });
 
   it("renders Login screen", () => {

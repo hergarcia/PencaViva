@@ -37,13 +37,15 @@ function Slot() {
   return <View testID="mock-slot" />;
 }
 
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  canGoBack: jest.fn(() => false),
+};
+
 function useRouter() {
-  return {
-    push: jest.fn(),
-    replace: jest.fn(),
-    back: jest.fn(),
-    canGoBack: jest.fn(() => false),
-  };
+  return mockRouter;
 }
 
 function useLocalSearchParams() {

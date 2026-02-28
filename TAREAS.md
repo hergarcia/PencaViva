@@ -94,7 +94,7 @@
 
 ### Milestone 1: Auth + Profile (Week 2)
 
-- [ ] **F1-01** Welcome/Onboarding screen
+- [~] **F1-01** Welcome/Onboarding screen
   - 3 screens with introductory animations
   - Depends: F0-06 (navigation)
   - Effort: 4h

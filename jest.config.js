@@ -24,6 +24,8 @@ module.exports = {
           "<rootDir>/src/__mocks__/expo-vector-icons.tsx",
         "^expo-router$": "<rootDir>/src/__mocks__/expo-router.tsx",
         "^expo-secure-store$": "<rootDir>/src/__mocks__/expo-secure-store.ts",
+        "^react-native-reanimated$":
+          "<rootDir>/src/__mocks__/react-native-reanimated.ts",
         "^@/(.*)$": "<rootDir>/src/$1",
         "^@components/(.*)$": "<rootDir>/src/components/$1",
         "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
