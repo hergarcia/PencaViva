@@ -39,6 +39,7 @@ npm run ios                        # iOS simulator
 
 # Quality
 npm run lint                       # ESLint
+npm run lint:fix                   # ESLint with auto-fix
 npm run format:check               # Prettier check (used in pre-commit hook)
 npm run format                     # Prettier write
 npm run typecheck                  # tsc --noEmit
@@ -61,25 +62,37 @@ eas update --channel production    # OTA to prod
 
 ```
 app/                    # Expo Router file-based routing
+├── index.tsx           # Root redirect
 ├── (auth)/             # Auth group (welcome, login, complete-profile)
-├── (tabs)/             # 5-tab main app (Home, Predict, Ranking, Groups, Profile)
-│   └── groups/         # Nested group routes ([id], create, join)
+├── (tabs)/             # 5-tab main app
+│   ├── index.tsx       # Home tab
+│   ├── predict.tsx     # Predict tab
+│   ├── ranking.tsx     # Ranking tab
+│   ├── groups/         # Groups tab + nested routes ([id], create, join)
+│   └── profile.tsx     # Profile tab
 ├── match/[id].tsx      # Dynamic match detail
 └── _layout.tsx         # Root layout
 
 src/
-├── components/         # Feature-organized (ui/, match/, ranking/, group/)
-├── hooks/              # Custom hooks (useAuth, usePredictions, useLeaderboard, etc.)
-├── lib/                # Supabase client, query client, constants
-├── stores/             # Zustand stores (authStore, appStore)
-├── types/              # Generated DB types + app types
-└── utils/              # Scoring, dates, validation helpers
+├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, css, etc.)
+├── __tests__/          # Unit tests (lib/, navigation/)
+├── lib/                # Supabase client, secure-store adapter, constants
+└── types/              # Type declarations (expo-vector-icons.d.ts)
+# Planned (not yet created):
+# ├── components/       # Feature-organized (ui/, match/, ranking/, group/)
+# ├── hooks/            # Custom hooks (useAuth, usePredictions, useLeaderboard, etc.)
+# ├── stores/           # Zustand stores (authStore, appStore)
+# └── utils/            # Scoring, dates, validation helpers
 
 supabase/
 ├── migrations/         # SQL migrations (00001-00006: schema, RLS, functions/triggers)
-├── __tests__/          # SQL integration tests (db-functions/, rls/, triggers/)
-└── functions/          # Edge Functions (match-sync, calculate-scores, send-notification)
+└── __tests__/          # SQL integration tests (db-functions/, rls/, triggers/)
+# Planned: functions/   # Edge Functions (match-sync, calculate-scores, send-notification)
 ```
+
+**Path aliases** (configured in `tsconfig.json`, mirrored in Jest `moduleNameMapper`):
+
+- `@/*` → `src/*`, `@components/*`, `@hooks/*`, `@lib/*`, `@stores/*`, `@types/*`, `@utils/*`
 
 ## Supabase Project
 
@@ -93,7 +106,7 @@ supabase/
 
 - **Uses new publishable key** (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of legacy anon JWT — better security, independent rotation
 - Client configured in `src/lib/supabase.ts` with `expo-secure-store` (chunked storage for iOS 2048-byte Keychain limit)
-- **Profile auto-creation**: `handle_new_user()` trigger on `auth.users` inserts into `profiles` on signup (SECURITY DEFINER). Display name from `raw_user_meta_data.full_name` → `.name` → email prefix. Username: `user_<12hex from UUID>`
+- **Profile auto-creation**: See Database Schema section for `handle_new_user()` trigger details
 - Auth providers (Google, Apple) not yet configured — deferred to F1-02/F1-03
 - Env vars in `.env` (gitignored); template in `.env.example`
 - SQL integration tests use `pg` direct connection with transaction rollback isolation. Test helper `createTestUser()` relies on the profile trigger (passes displayName via `raw_user_meta_data`)
@@ -114,7 +127,7 @@ Key constraints:
 
 - `predictions` has `UNIQUE(user_id, match_id, group_id)` — one prediction per match per group
 - RLS blocks predictions after kickoff (server-side enforcement)
-- `handle_new_user()` trigger on `auth.users` auto-creates a `profiles` row on signup (display_name from OAuth metadata, deterministic username from UUID)
+- `handle_new_user()` trigger on `auth.users` auto-creates a `profiles` row on signup (SECURITY DEFINER). Display name from `raw_user_meta_data.full_name` → `.name` → email prefix. Username: `user_<12hex from UUID>`
 - `process_match_result()` trigger auto-calculates points when match status changes to `finished`
 - `leaderboard_cache` is a materialized ranking refreshed by triggers
 
