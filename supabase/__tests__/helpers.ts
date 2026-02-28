@@ -20,11 +20,16 @@ export async function withTransaction(
 }
 
 /**
- * Creates a user in auth.users and the corresponding profile in public.profiles.
+ * Creates a user in auth.users. The on_auth_user_created trigger
+ * automatically creates the corresponding profile in public.profiles.
  * Must be called within a transaction (which will be rolled back).
  *
  * Supabase's auth.users has many required columns. This provides the minimum
  * set needed for RLS policies that depend on auth.uid().
+ *
+ * The trigger sets display_name from raw_user_meta_data.full_name and
+ * generates a deterministic username from the user UUID. If custom
+ * username is needed, the helper updates the trigger-created profile.
  */
 export async function createTestUser(
   client: PoolClient,
@@ -40,7 +45,11 @@ export async function createTestUser(
   const username = options.username ?? `user_${id.slice(0, 8)}`;
   const displayName = options.displayName ?? `Test User ${id.slice(0, 8)}`;
 
-  // Insert into auth.users with all required columns
+  // Pass displayName through raw_user_meta_data so the trigger uses it
+  const rawUserMetaData = JSON.stringify({ full_name: displayName });
+
+  // Insert into auth.users — the on_auth_user_created trigger
+  // automatically creates the profiles row within the same transaction
   await client.query(
     `INSERT INTO auth.users (
       id, instance_id, aud, role, email, encrypted_password,
@@ -55,19 +64,19 @@ export async function createTestUser(
       crypt('password', gen_salt('bf')),
       now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
-      '{}'::jsonb,
+      $3::jsonb,
       now(),
       now()
     )`,
-    [id, email],
+    [id, email, rawUserMetaData],
   );
 
-  // Insert corresponding profile
-  await client.query(
-    `INSERT INTO public.profiles (id, username, display_name)
-     VALUES ($1, $2, $3)`,
-    [id, username, displayName],
-  );
+  // Override username — the trigger generates user_<uuid-hex> but tests
+  // expect a specific format
+  await client.query(`UPDATE public.profiles SET username = $1 WHERE id = $2`, [
+    username,
+    id,
+  ]);
 
   return { id, email, username };
 }

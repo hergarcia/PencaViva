@@ -116,10 +116,11 @@
   - Depends: F1-02 o F1-03 (auth funcional)
   - Esfuerzo: 6h
 
-- [ ] **F1-05** Trigger de creacion de perfil automatico
+- [x] **F1-05** Trigger de creacion de perfil automatico
   - Database trigger: al crear usuario en auth.users -> insertar en profiles
   - Depends: F0-07 (esquema BD)
   - Esfuerzo: 2h
+  - Notas: Migration 00006 crea `handle_new_user()` (SECURITY DEFINER, SET search*path = public) + trigger `on_auth_user_created` (AFTER INSERT ON auth.users). display_name extraido de raw_user_meta_data (full_name -> name -> email prefix -> 'User'). Username deterministico: `user*<12 hex chars del UUID>` (collision-free). 8 integration tests. Helper createTestUser() actualizado para pasar displayName via raw_user_meta_data y dejar que el trigger cree el perfil automaticamente.
 
 - [ ] **F1-06** Pantalla de perfil (ver/editar)
   - Ver stats, editar display_name, avatar, bio, equipo favorito
@@ -458,14 +459,14 @@
 | Fase             | Tareas | Completadas | En Progreso | Pendientes |
 | ---------------- | ------ | ----------- | ----------- | ---------- |
 | Fase 0: Setup    | 12     | 11          | 0           | 1          |
-| Fase 1: MVP Core | 28     | 0           | 0           | 28         |
+| Fase 1: MVP Core | 28     | 1           | 0           | 27         |
 | Fase 2: Polish   | 12     | 0           | 0           | 12         |
 | Fase 3: Testing  | 8      | 0           | 0           | 8          |
 | Fase 4: Launch   | 7      | 0           | 0           | 7          |
-| **Total MVP**    | **67** | **11**      | **0**       | **56**     |
+| **Total MVP**    | **67** | **12**      | **0**       | **55**     |
 | Fase 5-7: Futuro | 16     | 0           | 0           | 16         |
 
-**Progreso general MVP: 16.4%**
+**Progreso general MVP: 17.9%**
 
 ---
 
