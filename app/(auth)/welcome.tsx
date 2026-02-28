@@ -10,9 +10,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
-
 import { ONBOARDING_PAGES, ONBOARDING_STORAGE_KEY } from "@lib/onboarding";
+import { setStorageItem } from "@lib/storage";
 import OnboardingPageView from "@components/onboarding/OnboardingPageView";
 import PageIndicator from "@components/onboarding/PageIndicator";
 
@@ -32,8 +31,8 @@ function WelcomeScreen() {
     [width],
   );
 
-  const completeOnboarding = useCallback(() => {
-    SecureStore.setItem(ONBOARDING_STORAGE_KEY, "true");
+  const completeOnboarding = useCallback(async () => {
+    await setStorageItem(ONBOARDING_STORAGE_KEY, "true");
     router.replace("/(auth)/login");
   }, [router]);
 

@@ -1,5 +1,10 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react-native";
 import * as SecureStore from "expo-secure-store";
 
 import WelcomeScreen from "../../../app/(auth)/welcome";
@@ -50,15 +55,20 @@ describe("WelcomeScreen", () => {
     expect(screen.getByTestId("dot-2")).toBeTruthy();
   });
 
-  it("stores completion and navigates to login on Skip press", () => {
-    const setItemSpy = jest.spyOn(SecureStore, "setItem");
+  it("stores completion and navigates to login on Skip press", async () => {
+    const setItemAsyncSpy = jest.spyOn(SecureStore, "setItemAsync");
 
     render(<WelcomeScreen />);
     fireEvent.press(screen.getByTestId("skip-button"));
 
-    expect(setItemSpy).toHaveBeenCalledWith(ONBOARDING_STORAGE_KEY, "true");
-    expect(mockRouter.replace).toHaveBeenCalledWith("/(auth)/login");
+    await waitFor(() => {
+      expect(setItemAsyncSpy).toHaveBeenCalledWith(
+        ONBOARDING_STORAGE_KEY,
+        "true",
+      );
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(auth)/login");
+    });
 
-    setItemSpy.mockRestore();
+    setItemAsyncSpy.mockRestore();
   });
 });
