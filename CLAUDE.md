@@ -6,13 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **PencaViva** is a social sports prediction app for friends in Uruguay (expandable to Latin America). Users create private groups, predict match scores, and compete on real-time leaderboards. This is NOT a gambling app — it's a social sports network centered on predictions.
 
-The project has an initialized Expo skeleton with CI/CD infrastructure. Architecture, database schema, task breakdown, and technical decisions are documented in `PLAN_MAESTRO.md` and `TAREAS.md`.
+The project has an initialized Expo skeleton with CI/CD infrastructure, a complete database schema (9 tables + RLS + triggers), and an automatic profile creation trigger on signup. Architecture, database schema, task breakdown, and technical decisions are documented in `PLAN_MAESTRO.md` and `TAREAS.md`.
 
 ## Tech Stack
 
 | Layer          | Technology                | Version                                        |
 | -------------- | ------------------------- | ---------------------------------------------- |
-| Framework      | React Native + Expo       | SDK 55 (RN 0.83.2, React 19.2.0)               |
+| Framework      | React Native + Expo       | SDK 55 (expo@55.0.4, RN 0.83.2, React 19.2.0)  |
 | Navigation     | Expo Router               | v55 (file-based + deep linking)                |
 | Styling        | NativeWind + Tailwind CSS | v5 (preview) + v4.2.1                          |
 | State (client) | Zustand                   | v5                                             |
@@ -40,8 +40,10 @@ npm run format                     # Prettier write
 npm run typecheck                  # tsc --noEmit
 
 # Test
-npm test                           # Jest
-npm run test:ci                    # Jest with coverage + CI flags
+npm test                           # Jest (unit + supabase)
+npm run test:ci                    # Jest with coverage + CI flags (unit only)
+npm run test:unit                  # Unit tests only
+npm run test:supabase              # Supabase SQL integration tests (requires SUPABASE_DB_URL)
 
 # Build & Deploy
 eas build --profile development    # Dev client build
@@ -70,7 +72,8 @@ src/
 └── utils/              # Scoring, dates, validation helpers
 
 supabase/
-├── migrations/         # SQL migrations (schema, RLS, functions/triggers)
+├── migrations/         # SQL migrations (00001-00006: schema, RLS, functions/triggers)
+├── __tests__/          # SQL integration tests (db-functions/, rls/, triggers/)
 └── functions/          # Edge Functions (match-sync, calculate-scores, send-notification)
 ```
 
@@ -86,8 +89,10 @@ supabase/
 
 - **Uses new publishable key** (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of legacy anon JWT — better security, independent rotation
 - Client configured in `src/lib/supabase.ts` with `expo-secure-store` (chunked storage for iOS 2048-byte Keychain limit)
+- **Profile auto-creation**: `handle_new_user()` trigger on `auth.users` inserts into `profiles` on signup (SECURITY DEFINER). Display name from `raw_user_meta_data.full_name` → `.name` → email prefix. Username: `user_<12hex from UUID>`
 - Auth providers (Google, Apple) not yet configured — deferred to F1-02/F1-03
 - Env vars in `.env` (gitignored); template in `.env.example`
+- SQL integration tests use `pg` direct connection with transaction rollback isolation. Test helper `createTestUser()` relies on the profile trigger (passes displayName via `raw_user_meta_data`)
 
 ## Architecture Decisions
 
@@ -105,8 +110,11 @@ Key constraints:
 
 - `predictions` has `UNIQUE(user_id, match_id, group_id)` — one prediction per match per group
 - RLS blocks predictions after kickoff (server-side enforcement)
+- `handle_new_user()` trigger on `auth.users` auto-creates a `profiles` row on signup (display_name from OAuth metadata, deterministic username from UUID)
 - `process_match_result()` trigger auto-calculates points when match status changes to `finished`
 - `leaderboard_cache` is a materialized ranking refreshed by triggers
+
+6 migrations applied (00001–00006): tables/indexes, functions/triggers, RLS policies, search_path hardening, RLS recursion fix, profile auto-creation trigger.
 
 Scoring system (configurable per group via JSONB):
 
@@ -165,6 +173,6 @@ Scoring system (configurable per group via JSONB):
 
 - **Jest config**: Use `jest.config.js` (not `.ts`) — `.ts` requires `ts-node` as extra dependency
 - **Husky v9**: Requires `.git/` to exist before `npx husky` — run `git init` first
-- **Expo SDK**: Project on SDK 55 (expo@55.0.3). PLAN_MAESTRO.md and package.json are aligned
+- **Expo SDK**: Project on SDK 55 (expo@55.0.4). PLAN_MAESTRO.md and package.json are aligned
 - **GitHub repo**: Public repo (branch protection requires Pro for private repos)
 - **CI job names**: Branch protection references exact names `"Lint & Format"`, `"Type Check"`, `"Unit Tests"` — do not rename CI jobs without updating branch protection rules
