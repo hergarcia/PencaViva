@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Language
+
+**All project content must be in English.** This includes: code, comments, commit messages, PR descriptions, documentation files (CLAUDE.md, TAREAS.md, PLAN_MAESTRO.md), variable/function names, SQL migrations, test descriptions, and any new files. No Spanish or other languages.
+
 ## Project Overview
 
 **PencaViva** is a social sports prediction app for friends in Uruguay (expandable to Latin America). Users create private groups, predict match scores, and compete on real-time leaderboards. This is NOT a gambling app — it's a social sports network centered on predictions.
@@ -140,19 +144,19 @@ Scoring system (configurable per group via JSONB):
 - **Commits**: Conventional Commits enforced by commitlint + Husky pre-commit hooks
 - **Versioning**: semantic-release on `main` only (no pre-releases on develop)
 
-### Workflow por tarea
+### Task Workflow
 
-1. Ejecutar `/planner` para la tarea (explorar, planificar, revisar antes de escribir codigo)
-2. Crear branch `feature/F0-XX-descripcion` desde `develop`
-3. Marcar tarea como `[~]` en `TAREAS.md`
-4. Desarrollar con TDD (`/tdd` skill — RED-GREEN-REFACTOR en vertical slices)
-5. Cada subtarea o unidad logica completada → commit con Conventional Commits
+1. Run `/planner` for the task (explore, plan, review before writing code)
+2. Create branch `feature/F0-XX-description` from `develop`
+3. Mark task as `[~]` in `TAREAS.md`
+4. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
+5. Each completed subtask or logical unit → commit with Conventional Commits
 6. **Pre-PR document updates** (BEFORE push + PR creation):
    - `TAREAS.md`: Mark task `[x]`, add notes, update progress table and percentage
    - `CLAUDE.md`: Update if the task changed the tech stack, DB schema, project structure, commands, gotchas, or Supabase config
    - Commit doc updates as part of the final commit or as a separate `docs:` commit
-7. Push y crear PR hacia `develop`, esperar CI verde
-8. Merge (squash) del PR
+7. Push and create PR to `develop`, wait for green CI
+8. Merge (squash) the PR
 
 ### Task tracking
 
