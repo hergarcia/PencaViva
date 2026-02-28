@@ -62,7 +62,7 @@ eas update --channel production    # OTA to prod
 
 ```
 app/                    # Expo Router file-based routing
-├── index.tsx           # Root redirect
+├── index.tsx           # Root redirect (gates on onboarding completion)
 ├── (auth)/             # Auth group (welcome, login, complete-profile)
 ├── (tabs)/             # 5-tab main app
 │   ├── index.tsx       # Home tab
@@ -74,12 +74,13 @@ app/                    # Expo Router file-based routing
 └── _layout.tsx         # Root layout
 
 src/
-├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, css, etc.)
-├── __tests__/          # Unit tests (lib/, navigation/)
-├── lib/                # Supabase client, secure-store adapter, constants
+├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, reanimated, css, etc.)
+├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
+├── components/         # Feature-organized components
+│   └── onboarding/     # OnboardingPageView, PageIndicator
+├── lib/                # Supabase client, secure-store adapter, constants, onboarding data
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):
-# ├── components/       # Feature-organized (ui/, match/, ranking/, group/)
 # ├── hooks/            # Custom hooks (useAuth, usePredictions, useLeaderboard, etc.)
 # ├── stores/           # Zustand stores (authStore, appStore)
 # └── utils/            # Scoring, dates, validation helpers
