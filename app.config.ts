@@ -1,5 +1,17 @@
 import { ExpoConfig, ConfigContext } from "expo/config";
 
+const googleSignInPlugin: string | [string, Record<string, string>] = process
+  .env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
+  ? [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID.split(".")
+          .reverse()
+          .join("."),
+      },
+    ]
+  : "@react-native-google-signin/google-signin";
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "PencaViva",
@@ -8,20 +20,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "pencaviva",
   orientation: "portrait",
   userInterfaceStyle: "dark",
-  plugins: [
-    "expo-router",
-    "expo-secure-store",
-    [
-      "@react-native-google-signin/google-signin",
-      {
-        iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
-          ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID.split(".")
-              .reverse()
-              .join(".")
-          : "",
-      },
-    ],
-  ],
+  plugins: ["expo-router", "expo-secure-store", googleSignInPlugin],
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.pencaviva.app",
