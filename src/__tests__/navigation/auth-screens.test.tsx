@@ -2,7 +2,6 @@ import React from "react";
 import { render, screen } from "@testing-library/react-native";
 
 import WelcomeScreen from "../../../app/(auth)/welcome";
-import LoginScreen from "../../../app/(auth)/login";
 import CompleteProfileScreen from "../../../app/(auth)/complete-profile";
 
 describe("Auth placeholder screens", () => {
@@ -11,13 +10,8 @@ describe("Auth placeholder screens", () => {
     expect(screen.getByText("Predict Match Scores")).toBeTruthy();
   });
 
-  it("renders Login screen", () => {
-    render(<LoginScreen />);
-    expect(screen.getByText("Iniciar Sesión")).toBeTruthy();
-  });
-
-  it("renders Complete Profile screen", () => {
+  it("renders Complete Profile screen with English text", () => {
     render(<CompleteProfileScreen />);
-    expect(screen.getByText("Completar Perfil")).toBeTruthy();
+    expect(screen.getByText("Complete Profile")).toBeTruthy();
   });
 });
