@@ -8,7 +8,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "pencaviva",
   orientation: "portrait",
   userInterfaceStyle: "dark",
-  plugins: ["expo-router", "expo-secure-store"],
+  plugins: [
+    "expo-router",
+    "expo-secure-store",
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
+          ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID.split(".")
+              .reverse()
+              .join(".")
+          : "",
+      },
+    ],
+  ],
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.pencaviva.app",
