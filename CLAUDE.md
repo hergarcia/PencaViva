@@ -50,6 +50,11 @@ npm test                           # Jest (unit + supabase)
 npm run test:ci                    # Jest with coverage + CI flags (unit only)
 npm run test:unit                  # Unit tests only
 npm run test:supabase              # Supabase SQL integration tests (requires SUPABASE_DB_URL)
+npm run test:supabase:local        # Same, but auto-sets local DB URL (127.0.0.1:54322)
+
+# Supabase local dev (requires Docker)
+npm run supabase:start             # Start local Supabase (Postgres + Auth only)
+npm run supabase:stop              # Stop local Supabase
 
 # Build & Deploy
 eas build --profile development    # Dev client build
@@ -87,6 +92,7 @@ src/
 # └── utils/            # Scoring, dates, validation helpers
 
 supabase/
+├── config.toml         # Supabase CLI config (local dev, PG 15)
 ├── migrations/         # SQL migrations (00001-00006: schema, RLS, functions/triggers)
 └── __tests__/          # SQL integration tests (db-functions/, rls/, triggers/)
 # Planned: functions/   # Edge Functions (match-sync, calculate-scores, send-notification)
@@ -112,6 +118,8 @@ supabase/
 - **Google Sign-In** configured (F1-02): native `@react-native-google-signin/google-signin` → `supabase.auth.signInWithIdToken()`. Apple Sign-In deferred to F1-03
 - Env vars in `.env` (gitignored); template in `.env.example`
 - SQL integration tests use `pg` direct connection with transaction rollback isolation. Test helper `createTestUser()` relies on the profile trigger (passes displayName via `raw_user_meta_data`)
+- **Local dev**: `supabase start` (requires Docker) spins up local Postgres + Auth on port 54322. Migrations auto-applied. CI uses local DB via `supabase/setup-cli@v1` GitHub Action
+- **Supabase CLI**: `supabase@2.76.15` pinned as devDependency. Config in `supabase/config.toml`
 
 ## Authentication
 
