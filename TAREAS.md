@@ -100,10 +100,11 @@
   - Effort: 4h
   - Notes: 3-page horizontal ScrollView with pagingEnabled. OnboardingPageView with Reanimated v4 entrance animations (icon scale/opacity, text translateY/opacity). PageIndicator dots (no animation, YAGNI). Onboarding data in src/lib/onboarding.ts (typed OnboardingPage array). Root index.tsx gates on SecureStore.getItem (synchronous) — redirects to welcome if not completed. "Skip" and "Get Started" persist completion via SecureStore.setItem and router.replace to login. Ionicons for page icons (100px, colored by design tokens). expo-router mock updated to return stable singleton from useRouter(). Reanimated v4 Jest mock created. 50 unit tests passing.
 
-- [ ] **F1-02** Implement Google Sign-In
+- [x] **F1-02** Implement Google Sign-In
   - Login with Google via Supabase Auth
   - Depends: F0-02 (Supabase)
   - Effort: 4h
+  - Notes: Native Google Sign-In via `@react-native-google-signin/google-signin` v16.1.2 + `supabase.auth.signInWithIdToken()`. No browser redirect — native UI on both platforms. Zustand v5 auth store (`src/stores/auth-store.ts`) with `onAuthStateChange` listener as single source of truth. `useAuthInit()` hook in root layout, `useAuth()` hook for components. Root `app/index.tsx` now gates on both onboarding completion AND auth state (three-way redirect: welcome → login → tabs). Login screen with Google button, loading state, error display with dismiss. Expo config plugin with dynamic `iosUrlScheme` computed from env var. Jest mock for scoped package + 14 new tests (81 total). Fixed Spanish placeholder text in login.tsx and complete-profile.tsx to English.
 
 - [ ] **F1-03** Implement Apple Sign-In
   - Login with Apple via Supabase Auth (required by App Store)
@@ -460,14 +461,14 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 12     | 11        | 0           | 1       |
-| Phase 1: MVP     | 28     | 2         | 0           | 26      |
+| Phase 1: MVP     | 28     | 3         | 0           | 25      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **67** | **13**    | **0**       | **54**  |
+| **Total MVP**    | **67** | **14**    | **0**       | **53**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 19.4%**
+**Overall MVP progress: 20.9%**
 
 ---
 

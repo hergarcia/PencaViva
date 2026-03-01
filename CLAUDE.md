@@ -14,20 +14,21 @@ The project has an initialized Expo skeleton with CI/CD infrastructure, a comple
 
 ## Tech Stack
 
-| Layer          | Technology                | Version                                        |
-| -------------- | ------------------------- | ---------------------------------------------- |
-| Framework      | React Native + Expo       | SDK 55 (expo@55.0.4, RN 0.83.2, React 19.2.0)  |
-| Navigation     | Expo Router               | v55 (file-based + deep linking)                |
-| Styling        | NativeWind + Tailwind CSS | v5 (preview) + v4.2.1                          |
-| State (client) | Zustand                   | v5                                             |
-| State (server) | TanStack React Query      | v5                                             |
-| Animations     | React Native Reanimated   | v4.2.x (+ react-native-worklets)               |
-| Backend        | Supabase                  | PostgreSQL 15+, Auth, Realtime, Edge Functions |
-| Sports Data    | API-Football (RapidAPI)   | Pro plan for production                        |
-| Push           | Expo Push Service         | Free, integrated                               |
-| Monitoring     | Sentry                    | Free tier                                      |
-| Language       | TypeScript                | 5.9.x (strict mode)                            |
-| Node.js        | >= 20.19.x                | Required by Expo SDK 55                        |
+| Layer          | Technology                  | Version                                        |
+| -------------- | --------------------------- | ---------------------------------------------- |
+| Framework      | React Native + Expo         | SDK 55 (expo@55.0.4, RN 0.83.2, React 19.2.0)  |
+| Navigation     | Expo Router                 | v55 (file-based + deep linking)                |
+| Styling        | NativeWind + Tailwind CSS   | v5 (preview) + v4.2.1                          |
+| Auth (Google)  | @react-native-google-signin | v16.1.2 (native sign-in, Expo config plugin)   |
+| State (client) | Zustand                     | v5 (+ use-sync-external-store peer dep)        |
+| State (server) | TanStack React Query        | v5                                             |
+| Animations     | React Native Reanimated     | v4.2.x (+ react-native-worklets)               |
+| Backend        | Supabase                    | PostgreSQL 15+, Auth, Realtime, Edge Functions |
+| Sports Data    | API-Football (RapidAPI)     | Pro plan for production                        |
+| Push           | Expo Push Service           | Free, integrated                               |
+| Monitoring     | Sentry                      | Free tier                                      |
+| Language       | TypeScript                  | 5.9.x (strict mode)                            |
+| Node.js        | >= 20.19.x                  | Required by Expo SDK 55                        |
 
 ## Commands
 
@@ -78,11 +79,11 @@ src/
 ├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
 ├── components/         # Feature-organized components
 │   └── onboarding/     # OnboardingPageView, PageIndicator
-├── lib/                # Supabase client, secure-store adapter, constants, onboarding data
+├── hooks/              # Custom hooks (useAuthInit, useAuth)
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants, onboarding data
+├── stores/             # Zustand stores (auth-store)
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):
-# ├── hooks/            # Custom hooks (useAuth, usePredictions, useLeaderboard, etc.)
-# ├── stores/           # Zustand stores (authStore, appStore)
 # └── utils/            # Scoring, dates, validation helpers
 
 supabase/
@@ -108,9 +109,18 @@ supabase/
 - **Uses new publishable key** (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of legacy anon JWT — better security, independent rotation
 - Client configured in `src/lib/supabase.ts` with `expo-secure-store` (chunked storage for iOS 2048-byte Keychain limit)
 - **Profile auto-creation**: See Database Schema section for `handle_new_user()` trigger details
-- Auth providers (Google, Apple) not yet configured — deferred to F1-02/F1-03
+- **Google Sign-In** configured (F1-02): native `@react-native-google-signin/google-signin` → `supabase.auth.signInWithIdToken()`. Apple Sign-In deferred to F1-03
 - Env vars in `.env` (gitignored); template in `.env.example`
 - SQL integration tests use `pg` direct connection with transaction rollback isolation. Test helper `createTestUser()` relies on the profile trigger (passes displayName via `raw_user_meta_data`)
+
+## Authentication
+
+- **Google Sign-In flow**: Native Google dialog → ID token → `supabase.auth.signInWithIdToken({ provider: "google", token })` → session created → `handle_new_user()` trigger auto-creates profile
+- **Auth state**: Zustand store (`src/stores/auth-store.ts`) with `onAuthStateChange` listener. Single source of truth for session, user, loading, error
+- **Hooks**: `useAuthInit()` in root layout (initializes listener once), `useAuth()` anywhere (returns reactive auth state + actions)
+- **Navigation gating**: `app/index.tsx` three-way redirect: not onboarded → welcome, not authenticated → login, authenticated → tabs. Returns null until both onboarding check and auth init complete (prevents flash)
+- **Config**: `configureGoogleSignIn()` called at module level in `app/_layout.tsx`. Requires `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` env vars
+- **Expo plugin**: `@react-native-google-signin/google-signin` in `app.config.ts` with dynamic `iosUrlScheme` (reversed iOS client ID)
 
 ## Architecture Decisions
 
