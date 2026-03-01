@@ -5,9 +5,9 @@ export default function CompleteProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-[#0D0D0D]">
       <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-3xl font-bold text-white">Completar Perfil</Text>
+        <Text className="text-3xl font-bold text-white">Complete Profile</Text>
         <Text className="mt-2 text-base text-[#A0A0B8]">
-          Configurá tu perfil de jugador
+          Set up your player profile
         </Text>
       </View>
     </SafeAreaView>
