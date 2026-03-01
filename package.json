@@ -17,7 +17,10 @@
     "test": "jest",
     "test:unit": "jest --selectProjects unit",
     "test:supabase": "jest --selectProjects supabase",
+    "test:supabase:local": "SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres jest --selectProjects supabase",
     "test:ci": "jest --selectProjects unit --ci --coverage --forceExit",
+    "supabase:start": "npx supabase start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor",
+    "supabase:stop": "npx supabase stop",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
     "expo:doctor": "npx expo-doctor",
@@ -80,6 +83,7 @@
     "postcss": "8.5.6",
     "prettier": "^3.0.0",
     "semantic-release": "^24.0.0",
+    "supabase": "2.76.15",
     "tailwindcss": "4.2.1",
     "ts-jest": "29.4.6",
     "typescript": "~5.9.2"

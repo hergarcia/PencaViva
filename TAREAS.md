@@ -79,7 +79,7 @@
   - Effort: 2h
   - Notes: Jest multi-project config (unit + supabase). `pg` for direct Postgres connections. `ts-jest` for Node test env. Transaction rollback pattern (BEGIN/ROLLBACK) for test isolation. Auth context simulation via SET LOCAL role + request.jwt.claims for RLS testing. Graceful skip (describe.skip) when SUPABASE_DB_URL not set. Test files in supabase/**tests**/ (db-functions/, rls/, triggers/). 18 integration tests: calculate_prediction_points (9 cases), predictions RLS (7 cases), updated_at trigger (2 cases). Scripts: test:unit, test:supabase. CI runs unit only (test:ci). Bug fix: migration 005 added SECURITY DEFINER functions (get_user_group_ids, get_user_admin_group_ids) to resolve infinite recursion in group_members RLS policies.
 
-- [ ] **F0-12** Migrate Supabase tests to local environment (supabase start)
+- [~] **F0-12** Migrate Supabase tests to local environment (supabase start)
   - Criteria: `supabase start` spins up local DB with Docker, tests run against localhost instead of remote DB
   - Depends: F0-10 (SQL testing)
   - Effort: 3h
@@ -111,7 +111,7 @@
   - Depends: F0-02 (Supabase)
   - Effort: 4h
 
-- [ ] **F1-04** Complete profile screen (username, avatar)
+- [~] **F1-04** Complete profile screen (username, avatar)
   - Real-time username uniqueness validation
   - Avatar upload (or use generated default)
   - Favorite team selection (optional)
