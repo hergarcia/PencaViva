@@ -17,6 +17,15 @@ updates:
           - "typescript"
           - "@typescript-eslint/*"
           - "@types/*"
+    ignore:
+      # Expo packages must be upgraded with 'npx expo install --fix', not Dependabot
+      - dependency-name: "expo*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "react-native*"
+      - dependency-name: "@react-native*"
+      # ESLint major versions require flat config migration — upgrade manually
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 10
 
   - package-ecosystem: github-actions
