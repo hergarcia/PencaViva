@@ -16,7 +16,7 @@
 
 ## Phase 0: Project Setup (Week 1)
 
-> **Status**: IN PROGRESS
+> **Status**: COMPLETED
 > **Estimate**: ~17h
 
 ### Infrastructure
@@ -79,11 +79,11 @@
   - Effort: 2h
   - Notes: Jest multi-project config (unit + supabase). `pg` for direct Postgres connections. `ts-jest` for Node test env. Transaction rollback pattern (BEGIN/ROLLBACK) for test isolation. Auth context simulation via SET LOCAL role + request.jwt.claims for RLS testing. Graceful skip (describe.skip) when SUPABASE_DB_URL not set. Test files in supabase/**tests**/ (db-functions/, rls/, triggers/). 18 integration tests: calculate_prediction_points (9 cases), predictions RLS (7 cases), updated_at trigger (2 cases). Scripts: test:unit, test:supabase. CI runs unit only (test:ci). Bug fix: migration 005 added SECURITY DEFINER functions (get_user_group_ids, get_user_admin_group_ids) to resolve infinite recursion in group_members RLS policies.
 
-- [ ] **F0-12** Migrate Supabase tests to local environment (supabase start)
+- [x] **F0-12** Migrate Supabase tests to local environment (supabase start)
   - Criteria: `supabase start` spins up local DB with Docker, tests run against localhost instead of remote DB
   - Depends: F0-10 (SQL testing)
   - Effort: 3h
-  - Note: Currently tests run against the remote Supabase DB (with transaction rollback). Works but not best practice — risk of data leak if a test crashes before ROLLBACK. Migrating to `supabase start` (local Docker) eliminates the risk, enables offline testing, and enables tests in CI.
+  - Notes: Supabase CLI initialized (`supabase/config.toml`, PG 15). `supabase@2.76.15` as devDependency. CI job "Supabase Tests" uses `supabase/setup-cli@v1` + `supabase start` to run all 18 integration tests against local Docker DB. Convenience scripts: `supabase:start` (excludes unnecessary services), `supabase:stop`, `test:supabase:local`. No test code changes needed — existing `SUPABASE_DB_URL` env var works for both remote and local. `.supabase/` added to `.gitignore`. Backward compatible: remote DB still works, graceful skip when DB unavailable.
 
 ---
 
@@ -461,7 +461,7 @@
 
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
-| Phase 0: Setup   | 12     | 11        | 0           | 1       |
+| Phase 0: Setup   | 12     | 12        | 0           | 0       |
 | Phase 1: MVP     | 28     | 4         | 0           | 24      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
@@ -488,7 +488,7 @@
 ```
 Phase 0 (sequential):
 F0-01 ✅ → F0-03 ✅ → F0-04 ✅ → F0-05 ✅ → F0-06 ✅ → F0-09 ✅ (testing setup)
-F0-02 ✅ → F0-07 ✅ → F0-10 ✅ → F0-12 (migrate to local supabase)
+F0-02 ✅ → F0-07 ✅ → F0-10 ✅ → F0-12 ✅ (migrate to local supabase)
 F0-08 ✅ + F0-11 ✅ (EAS + CI/CD, completed together)
 
 Phase 1 - Milestone 1 (sequential with partial parallel):

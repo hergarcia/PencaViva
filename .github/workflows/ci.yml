@@ -65,6 +65,29 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  supabase-tests:
+    name: Supabase Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: supabase start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor
+
+      - run: npm ci
+
+      - run: npm run test:supabase
+        env:
+          SUPABASE_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
   expo-doctor:
     name: Expo Doctor
     runs-on: ubuntu-latest

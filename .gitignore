@@ -47,3 +47,6 @@ yarn-error.log*
 
 # Testing
 __snapshots__/
+
+# Supabase local development
+.supabase/
