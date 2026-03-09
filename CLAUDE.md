@@ -84,7 +84,7 @@ src/
 ├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
 ├── components/         # Feature-organized components
 │   └── onboarding/     # OnboardingPageView, PageIndicator
-├── hooks/              # Custom hooks (useAuthInit, useAuth)
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce)
 ├── lib/                # Supabase client, secure-store adapter, google-auth, constants, onboarding data
 ├── stores/             # Zustand stores (auth-store)
 └── types/              # Type declarations (expo-vector-icons.d.ts)
@@ -126,7 +126,8 @@ supabase/
 - **Google Sign-In flow**: Native Google dialog → ID token → `supabase.auth.signInWithIdToken({ provider: "google", token })` → session created → `handle_new_user()` trigger auto-creates profile
 - **Auth state**: Zustand store (`src/stores/auth-store.ts`) with `onAuthStateChange` listener. Single source of truth for session, user, loading, error
 - **Hooks**: `useAuthInit()` in root layout (initializes listener once), `useAuth()` anywhere (returns reactive auth state + actions)
-- **Navigation gating**: `app/index.tsx` three-way redirect: not onboarded → welcome, not authenticated → login, authenticated → tabs. Returns null until both onboarding check and auth init complete (prevents flash)
+- **Navigation gating**: `app/index.tsx` four-way redirect: not onboarded → welcome, not authenticated → login, profile incomplete → complete-profile, ready → tabs. Returns null until onboarding check, auth init, and profile check complete (prevents flash). Profile check is fail-open (network errors allow through to avoid blocking users)
+- **Profile completion**: `app/(auth)/complete-profile.tsx` — username form with debounced uniqueness validation, Google avatar display (letter fallback), optional favorite team. Uses `useDebounce` hook (500ms) and `profile-service.ts` for validation/queries. Race condition guard via `isDebounceSettled`. Navigates to tabs on save via `router.replace()`
 - **Config**: `configureGoogleSignIn()` called at module level in `app/_layout.tsx`. Requires `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` env vars
 - **Expo plugin**: `@react-native-google-signin/google-signin` in `app.config.ts` with dynamic `iosUrlScheme` (reversed iOS client ID)
 

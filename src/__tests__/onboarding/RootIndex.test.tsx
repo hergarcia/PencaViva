@@ -10,15 +10,23 @@ jest.mock("@lib/supabase");
 jest.mock("@lib/google-auth");
 jest.mock("@stores/auth-store");
 
+const mockCheckProfileComplete = jest.fn();
+jest.mock("@lib/profile-service", () => ({
+  checkProfileComplete: (...args: unknown[]) =>
+    mockCheckProfileComplete(...args),
+}));
+
 function setupAuthStore(
   overrides: Partial<{
     isInitialized: boolean;
     session: unknown;
+    user: unknown;
   }> = {},
 ) {
   const state = {
     isInitialized: true,
     session: null,
+    user: null,
     ...overrides,
   };
 
@@ -31,6 +39,7 @@ beforeEach(() => {
   (SecureStore as unknown as { __resetStore: () => void }).__resetStore();
   jest.clearAllMocks();
   setupAuthStore();
+  mockCheckProfileComplete.mockResolvedValue(true);
 });
 
 describe("Root index redirect", () => {
@@ -57,7 +66,9 @@ describe("Root index redirect", () => {
     setupAuthStore({
       isInitialized: true,
       session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
     });
+    mockCheckProfileComplete.mockResolvedValue(true);
 
     render(<Index />);
 

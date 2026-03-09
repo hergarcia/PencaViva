@@ -111,12 +111,13 @@
   - Depends: F0-02 (Supabase)
   - Effort: 4h
 
-- [~] **F1-04** Complete profile screen (username, avatar)
+- [x] **F1-04** Complete profile screen (username, avatar)
   - Real-time username uniqueness validation
   - Avatar upload (or use generated default)
   - Favorite team selection (optional)
   - Depends: F1-02 or F1-03 (working auth)
   - Effort: 6h
+  - Notes: Full profile form at app/(auth)/complete-profile.tsx. Username validation: local format check (3-20 chars, alphanumeric + underscores) on every keystroke + debounced (500ms) availability check via Supabase. Google avatar display with letter-initial fallback (upload deferred to F1-06). Display name pre-filled from Google metadata (full_name → name → email prefix). Optional favorite team as free-text input. Race condition guard: canSave requires isDebounceSettled + isAvailable + !isCheckingAvailability. Unique constraint error detection in save handler. Navigation gating: app/index.tsx upgraded from 3-way to 4-way redirect (onboarding → login → complete-profile → tabs) with fail-open on profile check errors. useDebounce hook in src/hooks/use-debounce.ts. 26 new tests (4 hook, 15 screen, 7 navigation).
 
 - [x] **F1-05** Automatic profile creation trigger
   - Database trigger: on user creation in auth.users -> insert into profiles
@@ -461,7 +462,7 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 12     | 12        | 0           | 0       |
-| Phase 1: MVP     | 28     | 3         | 0           | 25      |
+| Phase 1: MVP     | 28     | 4         | 0           | 24      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
