@@ -125,10 +125,11 @@
   - Effort: 2h
   - Notes: Migration 00006 creates `handle_new_user()` (SECURITY DEFINER, SET search*path = public) + trigger `on_auth_user_created` (AFTER INSERT ON auth.users). display_name extracted from raw_user_meta_data (full_name -> name -> email prefix -> 'User'). Deterministic username: `user*<12 hex chars of UUID>` (collision-free). 8 integration tests. Helper createTestUser() updated to pass displayName via raw_user_meta_data and let the trigger create the profile automatically.
 
-- [~] **F1-06** Profile screen (view/edit)
+- [x] **F1-06** Profile screen (view/edit)
   - View stats, edit display_name, avatar, bio, favorite team
   - Depends: F1-04 (complete profile)
   - Effort: 4h
+  - Notes: View mode shows avatar/display_name/@username/bio/favorite_team/points_total/sign-out. Edit mode allows editing all fields + avatar upload via expo-image-picker (SDK 55: mediaTypes: ['images']). Avatar stored in Supabase Storage `avatars` bucket (migration 00007, RLS via LIKE pattern). ProfileUpdateData all-optional (backward-compatible). Optimistic update uses "key" in payload guard for nullable fields. 13 screen tests + 2 uploadAvatar tests.
 
 - [ ] **F1-07** Biometric authentication (Face ID / Fingerprint)
   - expo-local-authentication for quick re-authentication
