@@ -22,6 +22,12 @@ mockChain.update = jest.fn(() => mockChain);
 jest.mock("@lib/supabase", () => ({
   supabase: {
     from: jest.fn(() => mockChain),
+    storage: {
+      from: jest.fn().mockReturnValue({
+        upload: jest.fn(),
+        getPublicUrl: jest.fn(),
+      }),
+    },
   },
 }));
 
@@ -31,6 +37,7 @@ const {
   checkUsernameAvailable,
   updateProfile,
   checkProfileComplete,
+  uploadAvatar,
 } = require("@lib/profile-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -197,3 +204,57 @@ describe("checkProfileComplete", () => {
     await expect(checkProfileComplete("some-id")).rejects.toThrow("Not found");
   });
 });
+
+// ── uploadAvatar ─────────────────────────────────────────────────────
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+describe("uploadAvatar", () => {
+  let mockStorageUpload: jest.Mock;
+  let mockStorageGetPublicUrl: jest.Mock;
+  let mockStorageFrom: jest.Mock;
+
+  beforeEach(() => {
+    const { supabase } = require("@lib/supabase");
+    mockStorageFrom = supabase.storage.from as jest.Mock;
+    mockStorageUpload = jest.fn();
+    mockStorageGetPublicUrl = jest.fn();
+    mockStorageFrom.mockReturnValue({
+      upload: mockStorageUpload,
+      getPublicUrl: mockStorageGetPublicUrl,
+    });
+
+    global.fetch = jest.fn().mockResolvedValue({
+      blob: jest
+        .fn()
+        .mockResolvedValue(new Blob(["img"], { type: "image/jpeg" })),
+    }) as jest.Mock;
+  });
+
+  it("uploads blob and returns public URL", async () => {
+    mockStorageUpload.mockResolvedValueOnce({ error: null });
+    mockStorageGetPublicUrl.mockReturnValueOnce({
+      data: { publicUrl: "https://example.com/avatars/uid123/avatar.jpg" },
+    });
+
+    const url = await uploadAvatar("uid123", "file:///local/photo.jpg");
+
+    expect(mockStorageFrom).toHaveBeenCalledWith("avatars");
+    expect(mockStorageUpload).toHaveBeenCalledWith(
+      expect.stringMatching(/^uid123\/\d+\.jpg$/),
+      expect.any(Blob),
+      { upsert: true, contentType: "image/jpeg" },
+    );
+    expect(url).toBe("https://example.com/avatars/uid123/avatar.jpg");
+  });
+
+  it("throws when storage upload fails", async () => {
+    mockStorageUpload.mockResolvedValueOnce({
+      error: new Error("Storage error"),
+    });
+
+    await expect(
+      uploadAvatar("uid123", "file:///local/photo.jpg"),
+    ).rejects.toThrow("Storage error");
+  });
+});
+/* eslint-enable @typescript-eslint/no-require-imports */

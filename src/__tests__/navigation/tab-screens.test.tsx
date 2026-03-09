@@ -5,14 +5,11 @@ import HomeScreen from "../../../app/(tabs)/index";
 import PredictScreen from "../../../app/(tabs)/predict";
 import RankingScreen from "../../../app/(tabs)/ranking";
 import GroupsScreen from "../../../app/(tabs)/groups/index";
-import ProfileScreen from "../../../app/(tabs)/profile";
-
 const screens = [
   { Component: HomeScreen, title: "Inicio" },
   { Component: PredictScreen, title: "Predecir" },
   { Component: RankingScreen, title: "Ranking" },
   { Component: GroupsScreen, title: "Grupos" },
-  { Component: ProfileScreen, title: "Perfil" },
 ];
 
 describe("Tab placeholder screens", () => {
