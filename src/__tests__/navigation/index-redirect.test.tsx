@@ -10,15 +10,23 @@ jest.mock("@lib/supabase");
 jest.mock("@lib/google-auth");
 jest.mock("@stores/auth-store");
 
+const mockCheckProfileComplete = jest.fn();
+jest.mock("@lib/profile-service", () => ({
+  checkProfileComplete: (...args: unknown[]) =>
+    mockCheckProfileComplete(...args),
+}));
+
 function setupAuthStore(
   overrides: Partial<{
     isInitialized: boolean;
     session: unknown;
+    user: unknown;
   }> = {},
 ) {
   const state = {
     isInitialized: true,
     session: null,
+    user: null,
     ...overrides,
   };
 
@@ -31,6 +39,7 @@ beforeEach(() => {
   (SecureStore as unknown as { __resetStore: () => void }).__resetStore();
   jest.clearAllMocks();
   setupAuthStore();
+  mockCheckProfileComplete.mockResolvedValue(true);
 });
 
 describe("App Index", () => {
@@ -64,17 +73,74 @@ describe("App Index", () => {
     });
   });
 
-  it("redirects to tabs when onboarding completed and authenticated", async () => {
+  it("redirects to tabs when onboarding completed and authenticated with complete profile", async () => {
     SecureStore.setItem("onboarding_completed", "true");
     setupAuthStore({
       isInitialized: true,
       session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
     });
+    mockCheckProfileComplete.mockResolvedValue(true);
 
     render(<Index />);
 
     await waitFor(() => {
       expect(screen.getByText("Redirect to /(tabs)")).toBeTruthy();
+    });
+  });
+
+  // ── Profile completion gating ─────────────────────────────────
+
+  it("redirects to complete-profile when profile is incomplete", async () => {
+    SecureStore.setItem("onboarding_completed", "true");
+    setupAuthStore({
+      isInitialized: true,
+      session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
+    });
+    mockCheckProfileComplete.mockResolvedValue(false);
+
+    render(<Index />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Redirect to /(auth)/complete-profile"),
+      ).toBeTruthy();
+    });
+  });
+
+  it("fails open to tabs when profile check throws", async () => {
+    SecureStore.setItem("onboarding_completed", "true");
+    setupAuthStore({
+      isInitialized: true,
+      session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
+    });
+    mockCheckProfileComplete.mockRejectedValue(new Error("Network error"));
+
+    render(<Index />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Redirect to /(tabs)")).toBeTruthy();
+    });
+  });
+
+  it("renders null while profile check is pending", async () => {
+    SecureStore.setItem("onboarding_completed", "true");
+    setupAuthStore({
+      isInitialized: true,
+      session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
+    });
+    // Never resolves
+    mockCheckProfileComplete.mockReturnValue(new Promise(() => {}));
+
+    const { toJSON } = render(<Index />);
+
+    // Give time for onboarding check to resolve
+    await waitFor(() => {
+      // toJSON returns null because profile check hasn't completed
+      expect(toJSON()).toBeNull();
     });
   });
 });
