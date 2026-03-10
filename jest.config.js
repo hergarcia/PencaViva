@@ -35,6 +35,7 @@ module.exports = {
         "^@stores/(.*)$": "<rootDir>/src/stores/$1",
         "^@types/(.*)$": "<rootDir>/src/types/$1",
         "^@utils/(.*)$": "<rootDir>/src/utils/$1",
+        "^expo-image-picker$": "<rootDir>/src/__mocks__/expo-image-picker.ts",
       },
     },
     // ========================================
