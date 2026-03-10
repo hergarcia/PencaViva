@@ -18,11 +18,6 @@ jest.mock("@lib/profile-service", () => ({
   uploadAvatar: jest
     .fn()
     .mockResolvedValue("https://example.com/new-avatar.jpg"),
-  checkUsernameAvailable: jest.fn().mockResolvedValue(true),
-  checkProfileComplete: jest.fn().mockResolvedValue(true),
-  validateUsername: jest.fn().mockReturnValue({ isValid: true }),
-  USERNAME_MAX_LENGTH: 20,
-  USERNAME_MIN_LENGTH: 3,
 }));
 
 jest.mock("expo-router", () => ({
@@ -65,7 +60,7 @@ jest.mock("@lib/supabase", () => ({
 // Must import after mocks — app/ is at repo root, not under src/
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { useAuth } = require("@hooks/use-auth");
-const { updateProfile } = require("@lib/profile-service");
+const { updateProfile, uploadAvatar } = require("@lib/profile-service");
 
 const mockSignOut = jest.fn();
 
@@ -95,6 +90,7 @@ beforeEach(() => {
     status: "granted",
   });
   updateProfile.mockResolvedValue(undefined);
+  uploadAvatar.mockResolvedValue("https://example.com/new-avatar.jpg");
 });
 
 // ── View mode ────────────────────────────────────────────────────────
@@ -193,6 +189,14 @@ describe("ProfileScreen — edit mode", () => {
     fireEvent.press(screen.getByText("Cancel"));
     expect(updateProfile).not.toHaveBeenCalled();
   });
+
+  it("does not call updateProfile when saving with no changes", async () => {
+    render(<ProfileScreen />);
+    await waitFor(() => fireEvent.press(screen.getByText("Edit Profile")));
+    fireEvent.press(screen.getByText("Save"));
+    await waitFor(() => expect(screen.getByText("Edit Profile")).toBeTruthy());
+    expect(updateProfile).not.toHaveBeenCalled();
+  });
 });
 
 // ── Avatar pick ──────────────────────────────────────────────────────
@@ -214,6 +218,55 @@ describe("ProfileScreen — avatar pick", () => {
         expect.objectContaining({ mediaTypes: ["images"] }),
       );
     });
+  });
+
+  it("does not call uploadAvatar when image is picked — defers to Save", async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: "file:///photo.jpg" }],
+    });
+    render(<ProfileScreen />);
+    await waitFor(() => fireEvent.press(screen.getByText("Edit Profile")));
+    fireEvent.press(screen.getByTestId("avatar-picker"));
+    await waitFor(() =>
+      expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled(),
+    );
+    expect(uploadAvatar).not.toHaveBeenCalled();
+  });
+
+  it("calls uploadAvatar during Save when a new avatar was picked", async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: "file:///photo.jpg" }],
+    });
+    render(<ProfileScreen />);
+    await waitFor(() => fireEvent.press(screen.getByText("Edit Profile")));
+    fireEvent.press(screen.getByTestId("avatar-picker"));
+    await waitFor(() =>
+      expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled(),
+    );
+    fireEvent.press(screen.getByText("Save"));
+    await waitFor(() => {
+      expect(uploadAvatar).toHaveBeenCalledWith(
+        "user-123",
+        "file:///photo.jpg",
+      );
+    });
+  });
+
+  it("does not call uploadAvatar when picking then canceling", async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: "file:///photo.jpg" }],
+    });
+    render(<ProfileScreen />);
+    await waitFor(() => fireEvent.press(screen.getByText("Edit Profile")));
+    fireEvent.press(screen.getByTestId("avatar-picker"));
+    await waitFor(() =>
+      expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled(),
+    );
+    fireEvent.press(screen.getByText("Cancel"));
+    expect(uploadAvatar).not.toHaveBeenCalled();
   });
 
   it("shows Alert and does not launch picker when permission denied", async () => {
@@ -242,5 +295,19 @@ describe("ProfileScreen — sign out", () => {
     await waitFor(() => expect(screen.getByText("Sign Out")).toBeTruthy());
     fireEvent.press(screen.getByText("Sign Out"));
     await waitFor(() => expect(mockSignOut).toHaveBeenCalled());
+  });
+
+  it("shows alert when signOut throws", async () => {
+    const alertSpy = jest.spyOn(Alert, "alert");
+    mockSignOut.mockRejectedValueOnce(new Error("Network error"));
+    render(<ProfileScreen />);
+    await waitFor(() => expect(screen.getByText("Sign Out")).toBeTruthy());
+    fireEvent.press(screen.getByText("Sign Out"));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Sign Out Failed",
+        "Could not sign out. Please try again.",
+      );
+    });
   });
 });

@@ -44,7 +44,9 @@ export default function ProfileScreen() {
   const [editBio, setEditBio] = useState("");
   const [editFavoriteTeam, setEditFavoriteTeam] = useState("");
   const [editAvatarUri, setEditAvatarUri] = useState<string | null>(null);
+  const [pendingAvatarUri, setPendingAvatarUri] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // ── Fetch profile ───────────────────────────────────────────────
 
@@ -79,10 +81,12 @@ export default function ProfileScreen() {
     setEditBio(profile.bio ?? "");
     setEditFavoriteTeam(profile.favorite_team ?? "");
     setEditAvatarUri(profile.avatar_url);
+    setPendingAvatarUri(null);
     setIsEditing(true);
   }, [profile]);
 
   const handleCancel = useCallback(() => {
+    setPendingAvatarUri(null);
     setIsEditing(false);
   }, []);
 
@@ -102,21 +106,24 @@ export default function ProfileScreen() {
       quality: 0.8,
     });
     if (!result.canceled && result.assets?.[0]?.uri) {
-      try {
-        if (!user?.id) return;
-        const publicUrl = await uploadAvatar(user.id, result.assets[0].uri);
-        setEditAvatarUri(publicUrl);
-      } catch {
-        Alert.alert("Error", "Failed to upload avatar. Please try again.");
-      }
+      const localUri = result.assets[0].uri;
+      setPendingAvatarUri(localUri);
+      setEditAvatarUri(localUri);
     }
-  }, [user?.id]);
+  }, []);
 
   const handleSave = useCallback(async () => {
     if (!profile || !user?.id) return;
     if (!editDisplayName.trim()) return;
     setIsSaving(true);
     try {
+      let avatarUrl: string | undefined;
+      if (pendingAvatarUri) {
+        setIsUploading(true);
+        avatarUrl = await uploadAvatar(user.id, pendingAvatarUri);
+        setIsUploading(false);
+      }
+
       const payload: Parameters<typeof updateProfile>[1] = {};
 
       if (editDisplayName.trim() !== profile.display_name) {
@@ -130,8 +137,14 @@ export default function ProfileScreen() {
       if (newFav !== profile.favorite_team) {
         payload.favorite_team = newFav;
       }
-      if (editAvatarUri !== profile.avatar_url) {
-        payload.avatar_url = editAvatarUri;
+      if (avatarUrl !== undefined) {
+        payload.avatar_url = avatarUrl;
+      }
+
+      const hasChanges = Object.keys(payload).length > 0;
+      if (!hasChanges) {
+        setIsEditing(false);
+        return;
       }
 
       await updateProfile(user.id, payload);
@@ -155,11 +168,13 @@ export default function ProfileScreen() {
         };
       });
 
+      setPendingAvatarUri(null);
       setIsEditing(false);
     } catch {
       Alert.alert("Error", "Failed to save profile. Please try again.");
     } finally {
       setIsSaving(false);
+      setIsUploading(false);
     }
   }, [
     profile,
@@ -167,11 +182,15 @@ export default function ProfileScreen() {
     editDisplayName,
     editBio,
     editFavoriteTeam,
-    editAvatarUri,
+    pendingAvatarUri,
   ]);
 
   const handleSignOut = useCallback(async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch {
+      Alert.alert("Sign Out Failed", "Could not sign out. Please try again.");
+    }
   }, [signOut]);
 
   // ── Guards ──────────────────────────────────────────────────────
@@ -240,7 +259,7 @@ export default function ProfileScreen() {
           <TouchableOpacity
             testID="avatar-picker"
             onPress={isEditing ? handlePickAvatar : undefined}
-            disabled={!isEditing}
+            disabled={!isEditing || isUploading}
             activeOpacity={isEditing ? 0.7 : 1}
           >
             {avatarDisplayUri ? (
@@ -422,13 +441,13 @@ export default function ProfileScreen() {
                 padding: 16,
                 alignItems: "center",
                 marginBottom: 12,
-                opacity: editDisplayName.trim() ? 1 : 0.5,
+                opacity: editDisplayName.trim() && !isUploading ? 1 : 0.5,
               }}
               onPress={handleSave}
-              disabled={isSaving || !editDisplayName.trim()}
+              disabled={isSaving || isUploading || !editDisplayName.trim()}
               testID="save-button"
             >
-              {isSaving ? (
+              {isSaving || isUploading ? (
                 <ActivityIndicator size="small" color={colors.background} />
               ) : (
                 <Text
