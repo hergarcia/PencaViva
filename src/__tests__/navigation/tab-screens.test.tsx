@@ -4,12 +4,14 @@ import { render, screen } from "@testing-library/react-native";
 import HomeScreen from "../../../app/(tabs)/index";
 import PredictScreen from "../../../app/(tabs)/predict";
 import RankingScreen from "../../../app/(tabs)/ranking";
-import GroupsScreen from "../../../app/(tabs)/groups/index";
+
+// GroupsScreen removed — no longer a placeholder, has its own test suite
+// in src/__tests__/navigation/groups-screen.test.tsx
+
 const screens = [
   { Component: HomeScreen, title: "Inicio" },
   { Component: PredictScreen, title: "Predecir" },
   { Component: RankingScreen, title: "Ranking" },
-  { Component: GroupsScreen, title: "Grupos" },
 ];
 
 describe("Tab placeholder screens", () => {
