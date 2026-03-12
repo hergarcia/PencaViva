@@ -40,7 +40,7 @@
     "expo-status-bar": "~55.0.4",
     "expo-updates": "~55.0.12",
     "nativewind": "5.0.0-preview.2",
-    "react": "19.2.0",
+    "react": "19.2.4",
     "react-dom": "19.2.0",
     "react-native": "0.83.2",
     "react-native-css": "3.0.4",
