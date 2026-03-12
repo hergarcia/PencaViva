@@ -146,10 +146,11 @@
 
 ### Milestone 2: Groups (Week 3)
 
-- [ ] **F1-09** "My Groups" screen (list)
+- [x] **F1-09** "My Groups" screen (list)
   - List of user's groups with avatar, name, member count
   - Depends: F1-02/F1-03 (auth)
   - Effort: 4h
+  - Notes: Service layer `src/lib/groups-service.ts` with `fetchUserGroups()` (Supabase query: group_members → groups!inner join with member count). `GroupCard` presentational component (`src/components/groups/GroupCard.tsx`) with avatar (image/letter fallback), name, description, member count (singular/plural), role badge (admin/moderator). Screen (`app/(tabs)/groups/index.tsx`) with 4 states: loading, error+retry, empty (Create/Join CTAs), populated (FlatList + header create button). 26 new tests (6 service, 10 component, 10 screen). member_count includes inactive members (PostgREST limitation, acceptable for MVP).
 
 - [ ] **F1-10** Create group (form + scoring setup)
   - Name, description, tournament selection, scoring system (presets or custom)
@@ -463,14 +464,14 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 12     | 12        | 0           | 0       |
-| Phase 1: MVP     | 28     | 4         | 0           | 24      |
+| Phase 1: MVP     | 28     | 7         | 0           | 21      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **67** | **15**    | **0**       | **52**  |
+| **Total MVP**    | **67** | **19**    | **0**       | **48**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 22.4%**
+**Overall MVP progress: 28.4%**
 
 ---
 

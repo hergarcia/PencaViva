@@ -66,6 +66,7 @@ function WelcomeScreen() {
         onMomentumScrollEnd={handleMomentumScrollEnd}
         scrollEventThrottle={16}
         testID="onboarding-scroll"
+        style={{ flex: 1 }}
       >
         {ONBOARDING_PAGES.map((page, index) => (
           <OnboardingPageView

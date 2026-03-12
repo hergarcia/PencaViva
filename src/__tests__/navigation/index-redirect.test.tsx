@@ -43,13 +43,13 @@ beforeEach(() => {
 });
 
 describe("App Index", () => {
-  it("renders null when auth is not initialized", async () => {
+  it("renders loading indicator when auth is not initialized", async () => {
     setupAuthStore({ isInitialized: false });
-    const { toJSON } = render(<Index />);
+    render(<Index />);
 
     // Wait for onboarding check, but auth not initialized yet
     await waitFor(() => {
-      expect(toJSON()).toBeNull();
+      expect(screen.getByTestId("loading-indicator")).toBeTruthy();
     });
   });
 
@@ -125,7 +125,7 @@ describe("App Index", () => {
     });
   });
 
-  it("renders null while profile check is pending", async () => {
+  it("renders loading indicator while profile check is pending", async () => {
     SecureStore.setItem("onboarding_completed", "true");
     setupAuthStore({
       isInitialized: true,
@@ -135,12 +135,11 @@ describe("App Index", () => {
     // Never resolves
     mockCheckProfileComplete.mockReturnValue(new Promise(() => {}));
 
-    const { toJSON } = render(<Index />);
+    render(<Index />);
 
     // Give time for onboarding check to resolve
     await waitFor(() => {
-      // toJSON returns null because profile check hasn't completed
-      expect(toJSON()).toBeNull();
+      expect(screen.getByTestId("loading-indicator")).toBeTruthy();
     });
   });
 });

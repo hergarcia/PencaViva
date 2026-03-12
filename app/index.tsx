@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { Redirect } from "expo-router";
 import { getStorageItem } from "@lib/storage";
 import { ONBOARDING_STORAGE_KEY } from "@lib/onboarding";
@@ -53,7 +54,18 @@ export default function Index() {
 
   // Wait for onboarding check and auth initialization
   if (!isReady || !isInitialized) {
-    return null;
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#0D0D0D",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator testID="loading-indicator" color="#00D4AA" />
+      </View>
+    );
   }
 
   if (!hasCompletedOnboarding) {
@@ -66,7 +78,18 @@ export default function Index() {
 
   // Wait for profile completion check
   if (!isProfileChecked) {
-    return null;
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#0D0D0D",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator testID="loading-indicator" color="#00D4AA" />
+      </View>
+    );
   }
 
   if (!isProfileComplete) {

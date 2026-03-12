@@ -1,17 +1,23 @@
+import { useEffect } from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { colors } from "@/lib/constants";
 import { useAuth } from "@hooks/use-auth";
 
 export default function LoginScreen() {
-  const { signInWithGoogle, isLoading, error, clearError } = useAuth();
+  const { signInWithGoogle, isLoading, error, clearError, session } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session) {
+      router.replace("/");
+    }
+  }, [session, router]);
 
   return (
-    <SafeAreaView
-      style={{ backgroundColor: colors.background }}
-      className="flex-1"
-    >
-      <View className="flex-1 items-center justify-center px-6">
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={{ flex: 1 }} className="items-center justify-center px-6">
         {/* App Title */}
         <Text
           style={{ color: colors.primary }}

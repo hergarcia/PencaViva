@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function OnboardingPageView({ page, isActive }: Props) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
   const iconScale = useSharedValue(0.5);
   const iconOpacity = useSharedValue(0);
@@ -48,8 +48,13 @@ export default function OnboardingPageView({ page, isActive }: Props) {
 
   return (
     <View
-      style={{ width }}
-      className="flex-1 items-center justify-center px-8"
+      style={{
+        width,
+        height,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 32,
+      }}
       testID={`onboarding-page-${page.id}`}
     >
       <Animated.View style={iconAnimatedStyle} className="mb-8">
