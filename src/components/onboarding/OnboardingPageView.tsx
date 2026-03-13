@@ -17,10 +17,10 @@ interface Props {
 export default function OnboardingPageView({ page, isActive }: Props) {
   const { width, height } = useWindowDimensions();
 
-  const iconScale = useSharedValue(0.5);
-  const iconOpacity = useSharedValue(0);
-  const textTranslateY = useSharedValue(30);
-  const textOpacity = useSharedValue(0);
+  const iconScale = useSharedValue(isActive ? 1 : 0.5);
+  const iconOpacity = useSharedValue(isActive ? 1 : 0);
+  const textTranslateY = useSharedValue(isActive ? 0 : 30);
+  const textOpacity = useSharedValue(isActive ? 1 : 0);
 
   useEffect(() => {
     if (isActive) {
