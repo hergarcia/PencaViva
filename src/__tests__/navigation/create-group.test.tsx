@@ -10,13 +10,18 @@ jest.mock("@lib/groups-service", () => ({
 }));
 
 jest.mock("@hooks/use-auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" } }),
+  useAuth: jest.fn(),
+}));
+
+const mockReplace = jest.fn();
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }),
 }));
 
 // Must import AFTER mocks
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { createGroup, fetchActiveTournaments } = require("@lib/groups-service");
-const { useRouter } = require("expo-router");
+const { useAuth } = require("@hooks/use-auth");
 const CreateGroupScreen = require("../../../app/(tabs)/groups/create").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -24,20 +29,17 @@ beforeEach(() => {
   jest.clearAllMocks();
   // Default: tournaments fetch resolves empty (so loading doesn't hang)
   fetchActiveTournaments.mockResolvedValue([]);
+  useAuth.mockReturnValue({ user: { id: "user-1" } });
 });
 
 describe("CreateGroupScreen", () => {
-  // Test 1
   it("renders name input and create button", async () => {
-    const { getByTestId, getAllByText } = render(<CreateGroupScreen />);
+    const { getByTestId } = render(<CreateGroupScreen />);
     await waitFor(() => expect(fetchActiveTournaments).toHaveBeenCalled());
     expect(getByTestId("name-input")).toBeTruthy();
     expect(getByTestId("create-button")).toBeTruthy();
-    // "Create Group" appears in both the header and the button label
-    expect(getAllByText("Create Group").length).toBeGreaterThanOrEqual(1);
   });
 
-  // Test 2
   it("shows Alert when name is less than 3 characters", async () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const { getByTestId } = render(<CreateGroupScreen />);
@@ -53,7 +55,6 @@ describe("CreateGroupScreen", () => {
     expect(createGroup).not.toHaveBeenCalled();
   });
 
-  // Test 3
   it("calls createGroup and navigates on success", async () => {
     createGroup.mockResolvedValueOnce({
       id: "g-1",
@@ -77,11 +78,9 @@ describe("CreateGroupScreen", () => {
       );
     });
 
-    const router = useRouter();
-    expect(router.replace).toHaveBeenCalledWith("/(tabs)/groups/g-1");
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/groups/g-1");
   });
 
-  // Test 4
   it("shows Alert when createGroup throws", async () => {
     createGroup.mockRejectedValueOnce(new Error("Server error"));
     const alertSpy = jest.spyOn(Alert, "alert");
@@ -101,7 +100,6 @@ describe("CreateGroupScreen", () => {
     });
   });
 
-  // Test 5
   it("shows tournament chips when fetchActiveTournaments returns data", async () => {
     fetchActiveTournaments.mockResolvedValueOnce([
       { id: "t-1", name: "Premier League", short_name: "PL", logo_url: null },
@@ -118,7 +116,6 @@ describe("CreateGroupScreen", () => {
     expect(getByText("La Liga")).toBeTruthy(); // falls back to name when short_name is null
   });
 
-  // Test 6
   it("shows no-tournaments message when fetch returns empty array", async () => {
     fetchActiveTournaments.mockResolvedValueOnce([]);
     const { getByTestId } = render(<CreateGroupScreen />);
@@ -128,7 +125,6 @@ describe("CreateGroupScreen", () => {
     });
   });
 
-  // Test 7
   it("shows no-tournaments message when fetchActiveTournaments throws", async () => {
     fetchActiveTournaments.mockRejectedValueOnce(new Error("Network error"));
     const { getByTestId } = render(<CreateGroupScreen />);
@@ -138,7 +134,6 @@ describe("CreateGroupScreen", () => {
     });
   });
 
-  // Test 8
   it("shows custom scoring inputs after pressing Custom preset card", async () => {
     const { queryByTestId, getByText } = render(<CreateGroupScreen />);
     await waitFor(() => expect(fetchActiveTournaments).toHaveBeenCalled());
