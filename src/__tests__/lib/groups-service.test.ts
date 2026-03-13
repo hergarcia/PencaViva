@@ -6,9 +6,12 @@ mockChain.order = jest.fn(() => mockChain);
 mockChain.insert = jest.fn(() => mockChain);
 mockChain.single = jest.fn(() => mockChain);
 
+const mockRpc = jest.fn();
+
 jest.mock("@lib/supabase", () => ({
   supabase: {
     from: jest.fn(() => mockChain),
+    rpc: mockRpc,
   },
 }));
 
@@ -147,14 +150,11 @@ describe("createGroup", () => {
     wrong: 0,
   };
 
-  it("inserts group and member, returns created group data", async () => {
-    mockChain.single.mockReturnValueOnce({
-      data: { id: "g-1", name: "Test Group", invite_code: "ABC123" },
+  it("calls rpc and returns created group data", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ id: "g-1", name: "Test Group", invite_code: "ABC123" }],
       error: null,
     });
-    mockChain.insert
-      .mockReturnValueOnce(mockChain) // groups insert → chain continues to .select().single()
-      .mockReturnValueOnce({ error: null }); // group_members insert → terminates
 
     const result = await createGroup("user-1", {
       name: "Test Group",
@@ -166,17 +166,19 @@ describe("createGroup", () => {
       name: "Test Group",
       invite_code: "ABC123",
     });
+    expect(mockRpc).toHaveBeenCalledWith("create_group_for_user", {
+      p_name: "Test Group",
+      p_description: null,
+      p_scoring_system: scoringSystem,
+      p_tournament_ids: null,
+    });
   });
 
-  it("throws when group INSERT fails and does not insert member", async () => {
-    mockChain.single.mockReturnValueOnce({
+  it("throws when rpc returns an error", async () => {
+    mockRpc.mockResolvedValueOnce({
       data: null,
       error: new Error("DB error"),
     });
-    mockChain.insert.mockReturnValueOnce(mockChain); // groups insert → chain for .select().single()
-
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { supabase } = require("@lib/supabase");
 
     await expect(
       createGroup("user-1", {
@@ -184,41 +186,24 @@ describe("createGroup", () => {
         scoring_system: scoringSystem,
       }),
     ).rejects.toThrow("DB error");
-
-    // Only called once: for 'groups'. Not for 'group_members'.
-    expect(supabase.from).toHaveBeenCalledTimes(1);
-    expect(supabase.from).toHaveBeenCalledWith("groups");
   });
 
-  it("throws when member INSERT fails", async () => {
-    mockChain.single.mockReturnValueOnce({
-      data: { id: "g-1", name: "Test Group", invite_code: "ABC123" },
-      error: null,
-    });
-    mockChain.insert
-      .mockReturnValueOnce(mockChain) // groups insert → chain continues
-      .mockReturnValueOnce({ error: new Error("Member error") }); // group_members insert → error
+  it("throws when rpc returns empty data", async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
     await expect(
       createGroup("user-1", {
         name: "Test Group",
         scoring_system: scoringSystem,
       }),
-    ).rejects.toThrow("Member error");
+    ).rejects.toThrow("Failed to create group");
   });
 
-  it("calls from('group_tournaments').insert when tournament_ids provided", async () => {
-    mockChain.single.mockReturnValueOnce({
-      data: { id: "g-1", name: "Test Group", invite_code: "ABC123" },
+  it("passes tournament_ids when provided", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ id: "g-1", name: "Test Group", invite_code: "ABC123" }],
       error: null,
     });
-    mockChain.insert
-      .mockReturnValueOnce(mockChain) // groups insert
-      .mockReturnValueOnce({ error: null }) // group_members insert
-      .mockReturnValueOnce({ error: null }); // group_tournaments insert
-
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { supabase } = require("@lib/supabase");
 
     await createGroup("user-1", {
       name: "Test Group",
@@ -226,29 +211,29 @@ describe("createGroup", () => {
       tournament_ids: ["t-1", "t-2"],
     });
 
-    expect(supabase.from).toHaveBeenCalledWith("group_tournaments");
+    expect(mockRpc).toHaveBeenCalledWith("create_group_for_user", {
+      p_name: "Test Group",
+      p_description: null,
+      p_scoring_system: scoringSystem,
+      p_tournament_ids: ["t-1", "t-2"],
+    });
   });
 
-  it("calls from() exactly twice when no tournament_ids provided", async () => {
-    mockChain.single.mockReturnValueOnce({
-      data: { id: "g-1", name: "Test Group", invite_code: "ABC123" },
+  it("passes null tournament_ids when none provided", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ id: "g-1", name: "Test Group", invite_code: "ABC123" }],
       error: null,
     });
-    mockChain.insert
-      .mockReturnValueOnce(mockChain) // groups insert
-      .mockReturnValueOnce({ error: null }); // group_members insert
-
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { supabase } = require("@lib/supabase");
 
     await createGroup("user-1", {
       name: "Test Group",
       scoring_system: scoringSystem,
     });
 
-    expect(supabase.from).toHaveBeenCalledTimes(2);
-    expect(supabase.from).toHaveBeenNthCalledWith(1, "groups");
-    expect(supabase.from).toHaveBeenNthCalledWith(2, "group_members");
+    expect(mockRpc).toHaveBeenCalledWith(
+      "create_group_for_user",
+      expect.objectContaining({ p_tournament_ids: null }),
+    );
   });
 });
 

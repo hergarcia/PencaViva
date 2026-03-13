@@ -97,46 +97,19 @@ export async function createGroup(
   userId: string,
   input: CreateGroupInput,
 ): Promise<CreatedGroup> {
-  // INSERT groups
-  const { data: group, error: groupError } = await supabase
-    .from("groups")
-    .insert({
-      name: input.name.trim(),
-      description: input.description?.trim() || null,
-      created_by: userId,
-      scoring_system: input.scoring_system,
-      max_members: 50,
-      is_public: false,
-    })
-    .select("id, name, invite_code")
-    .single();
-  if (groupError) throw groupError;
-
-  // INSERT group_members (creator as admin)
-  // NOTE: group_tournaments RLS uses get_user_admin_group_ids() which queries
-  // group_members. This group_members row is inserted first, so the subsequent
-  // group_tournaments INSERT will see it and pass the admin check.
-  const { error: memberError } = await supabase.from("group_members").insert({
-    group_id: group.id,
-    user_id: userId,
-    role: "admin" as GroupRole,
-    is_active: true,
+  // Use SECURITY DEFINER RPC to avoid RLS issues with ES256 JWT tokens
+  const { data, error } = await supabase.rpc("create_group_for_user", {
+    p_name: input.name.trim(),
+    p_description: input.description?.trim() || null,
+    p_scoring_system: input.scoring_system,
+    p_tournament_ids:
+      input.tournament_ids && input.tournament_ids.length > 0
+        ? input.tournament_ids
+        : null,
   });
-  if (memberError) throw memberError;
-
-  // INSERT group_tournaments (optional)
-  if (input.tournament_ids && input.tournament_ids.length > 0) {
-    const rows = input.tournament_ids.map((tid) => ({
-      group_id: group.id,
-      tournament_id: tid,
-    }));
-    const { error: tournamentError } = await supabase
-      .from("group_tournaments")
-      .insert(rows);
-    if (tournamentError) throw tournamentError;
-  }
-
-  return group;
+  if (error) throw error;
+  if (!data || data.length === 0) throw new Error("Failed to create group");
+  return data[0] as CreatedGroup;
 }
 
 /**
