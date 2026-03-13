@@ -20,14 +20,15 @@ export function ScoringPresetCard({ preset, selected, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={{
+      style={({ pressed }) => ({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: selected ? colors.primary : colors.surfaceBorder,
-        backgroundColor: selected ? colors.primary + "1A" : colors.surface,
+        backgroundColor: selected ? colors.primary + "20" : colors.surface,
         padding: 16,
         marginBottom: 12,
-      }}
+        opacity: pressed ? 0.7 : 1,
+      })}
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={preset.label}
