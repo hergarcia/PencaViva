@@ -247,6 +247,8 @@ describe("createGroup", () => {
     });
 
     expect(supabase.from).toHaveBeenCalledTimes(2);
+    expect(supabase.from).toHaveBeenNthCalledWith(1, "groups");
+    expect(supabase.from).toHaveBeenNthCalledWith(2, "group_members");
   });
 });
 
