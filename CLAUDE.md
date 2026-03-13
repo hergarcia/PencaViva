@@ -83,9 +83,10 @@ src/
 ├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, reanimated, css, etc.)
 ├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
 ├── components/         # Feature-organized components
-│   └── onboarding/     # OnboardingPageView, PageIndicator
+│   ├── onboarding/     # OnboardingPageView, PageIndicator
+│   └── groups/         # ScoringPresetCard
 ├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce)
-├── lib/                # Supabase client, secure-store adapter, google-auth, constants, onboarding data
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants, onboarding data, groups-service, profile-service
 ├── stores/             # Zustand stores (auth-store)
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):

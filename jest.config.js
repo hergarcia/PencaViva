@@ -1,3 +1,9 @@
+// On Windows, Jest replaces <rootDir> with a backslash path, and when that path
+// contains a dot-prefixed directory (like .worktrees), the dot gets regex-escaped
+// to `\\.`, which breaks micromatch glob resolution. Using a dynamic rootDir with
+// forward slashes as the testMatch base fixes this on Windows worktrees.
+const rootDir = __dirname.replace(/\\/g, "/");
+
 /** @type {import('jest').Config} */
 module.exports = {
   projects: [
@@ -7,7 +13,7 @@ module.exports = {
     {
       displayName: "unit",
       preset: "jest-expo",
-      testMatch: ["<rootDir>/src/**/*.test.{ts,tsx}"],
+      testMatch: [`${rootDir}/src/**/*.test.{ts,tsx}`],
       collectCoverageFrom: [
         "src/**/*.{ts,tsx}",
         "!src/**/*.d.ts",
@@ -44,7 +50,7 @@ module.exports = {
     {
       displayName: "supabase",
       testEnvironment: "node",
-      testMatch: ["<rootDir>/supabase/__tests__/**/*.test.ts"],
+      testMatch: [`${rootDir}/supabase/__tests__/**/*.test.ts`],
       transform: {
         "^.+\\.ts$": [
           "ts-jest",
