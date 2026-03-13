@@ -47,7 +47,10 @@ function WelcomeScreen() {
   }, [activeIndex, isLastPage, width, completeOnboarding]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0D0D0D]" testID="welcome-screen">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#0D0D0D" }}
+      testID="welcome-screen"
+    >
       {/* Skip button */}
       <View className="flex-row justify-end px-4 pt-2">
         {!isLastPage && (
