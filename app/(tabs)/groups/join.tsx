@@ -5,9 +5,9 @@ export default function JoinGroupScreen() {
   return (
     <SafeAreaView className="flex-1 bg-[#0D0D0D]">
       <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-3xl font-bold text-white">Unirse a Grupo</Text>
+        <Text className="text-3xl font-bold text-white">Join Group</Text>
         <Text className="mt-2 text-base text-[#A0A0B8]">
-          Unite a un grupo existente
+          Join an existing group
         </Text>
       </View>
     </SafeAreaView>

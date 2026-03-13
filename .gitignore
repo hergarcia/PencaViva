@@ -50,3 +50,6 @@ __snapshots__/
 
 # Supabase local development
 .supabase/
+
+# Git worktrees
+.worktrees/

@@ -152,11 +152,12 @@
   - Effort: 4h
   - Notes: Service layer `src/lib/groups-service.ts` with `fetchUserGroups()` (Supabase query: group_members → groups!inner join with member count). `GroupCard` presentational component (`src/components/groups/GroupCard.tsx`) with avatar (image/letter fallback), name, description, member count (singular/plural), role badge (admin/moderator). Screen (`app/(tabs)/groups/index.tsx`) with 4 states: loading, error+retry, empty (Create/Join CTAs), populated (FlatList + header create button). 26 new tests (6 service, 10 component, 10 screen). member_count includes inactive members (PostgREST limitation, acceptable for MVP).
 
-- [ ] **F1-10** Create group (form + scoring setup)
+- [x] **F1-10** Create group (form + scoring setup)
   - Name, description, tournament selection, scoring system (presets or custom)
   - Member limit (default 50)
   - Depends: F0-07 (DB)
   - Effort: 6h
+  - Notes: Service layer adds `createGroup()` + `fetchActiveTournaments()` to `src/lib/groups-service.ts`. `ScoringPresetCard` presentational component (`src/components/groups/ScoringPresetCard.tsx`) with 4 presets (Balanced, Punish Draws, Reward Accuracy, Custom) and inline custom scoring inputs. Screen (`app/(tabs)/groups/create.tsx`) replaces Spanish placeholder with full form: name/description inputs, tournament chips (optional), scoring preset selection, custom scoring panel, submit handler with validation + Alert feedback. 16 new tests (8 service, 6 component, 8 screen integration, 1 regression fix in group-screens test).
 
 - [ ] **F1-11** Generate invite code + QR
   - Unique 8-character code
