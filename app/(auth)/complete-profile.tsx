@@ -179,17 +179,16 @@ export default function CompleteProfileScreen() {
 
   return (
     <SafeAreaView
-      style={{ backgroundColor: colors.background }}
-      className="flex-1"
+      style={{ flex: 1, backgroundColor: colors.background }}
       testID="complete-profile-screen"
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-6 pb-8"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
         >
           {/* Header */}
