@@ -24,6 +24,8 @@ const {
   createGroup,
   fetchActiveTournaments,
   fetchGroupById,
+  lookupGroupByInviteCode,
+  joinGroupByCode,
 } = require("@lib/groups-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -329,5 +331,82 @@ describe("fetchGroupById", () => {
     });
 
     await expect(fetchGroupById("g1")).rejects.toThrow("DB error");
+  });
+});
+
+describe("lookupGroupByInviteCode", () => {
+  it("calls RPC with uppercased code and returns GroupPreview", async () => {
+    const preview = {
+      id: "g-1",
+      name: "Test Group",
+      description: "A group",
+      avatar_url: null,
+      member_count: 5,
+      max_members: 50,
+      scoring_system: {
+        exact_score: 5,
+        correct_result: 3,
+        correct_goal_diff: 1,
+        wrong: 0,
+      },
+    };
+    mockRpc.mockResolvedValueOnce({ data: preview, error: null });
+
+    const result = await lookupGroupByInviteCode("abc12345");
+
+    expect(mockRpc).toHaveBeenCalledWith("lookup_group_by_invite_code", {
+      p_invite_code: "ABC12345",
+    });
+    expect(result).toEqual(preview);
+  });
+
+  it("throws on RPC error", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: new Error("group_not_found"),
+    });
+
+    await expect(lookupGroupByInviteCode("abc12345")).rejects.toThrow(
+      "group_not_found",
+    );
+  });
+
+  it("throws when code is not 8 characters", async () => {
+    await expect(lookupGroupByInviteCode("short")).rejects.toThrow();
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("joinGroupByCode", () => {
+  it("calls RPC with uppercased code and returns CreatedGroup", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: { id: "g-1", name: "Test Group", invite_code: "ABC12345" },
+      error: null,
+    });
+
+    const result = await joinGroupByCode("abc12345");
+
+    expect(mockRpc).toHaveBeenCalledWith("join_group_by_code", {
+      p_invite_code: "ABC12345",
+    });
+    expect(result).toEqual({
+      id: "g-1",
+      name: "Test Group",
+      invite_code: "ABC12345",
+    });
+  });
+
+  it("throws on RPC error", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: new Error("already_member"),
+    });
+
+    await expect(joinGroupByCode("abc12345")).rejects.toThrow("already_member");
+  });
+
+  it("throws when code is not 8 characters", async () => {
+    await expect(joinGroupByCode("short")).rejects.toThrow();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 });
