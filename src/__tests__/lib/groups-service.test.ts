@@ -350,7 +350,7 @@ describe("lookupGroupByInviteCode", () => {
         wrong: 0,
       },
     };
-    mockRpc.mockResolvedValueOnce({ data: preview, error: null });
+    mockRpc.mockResolvedValueOnce({ data: [preview], error: null });
 
     const result = await lookupGroupByInviteCode("abc12345");
 
@@ -380,7 +380,7 @@ describe("lookupGroupByInviteCode", () => {
 describe("joinGroupByCode", () => {
   it("calls RPC with uppercased code and returns CreatedGroup", async () => {
     mockRpc.mockResolvedValueOnce({
-      data: { id: "g-1", name: "Test Group", invite_code: "ABC12345" },
+      data: [{ id: "g-1", name: "Test Group", invite_code: "ABC12345" }],
       error: null,
     });
 

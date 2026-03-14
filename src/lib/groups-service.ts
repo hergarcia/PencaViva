@@ -186,7 +186,10 @@ export async function lookupGroupByInviteCode(
     p_invite_code: code.toUpperCase(),
   });
   if (error) throw error;
-  return data as GroupPreview;
+  // RETURNS TABLE RPCs return an array — take the first row
+  const rows = data as GroupPreview[];
+  if (!rows || rows.length === 0) throw new Error("group_not_found");
+  return rows[0];
 }
 
 /**
@@ -202,7 +205,10 @@ export async function joinGroupByCode(code: string): Promise<CreatedGroup> {
     p_invite_code: code.toUpperCase(),
   });
   if (error) throw error;
-  return data as CreatedGroup;
+  // RETURNS TABLE RPCs return an array — take the first row
+  const rows = data as CreatedGroup[];
+  if (!rows || rows.length === 0) throw new Error("Failed to join group");
+  return rows[0];
 }
 
 /**
