@@ -17,6 +17,8 @@ jest.mock("@lib/groups-service", () => ({
   createGroup: jest.fn(),
   fetchActiveTournaments: jest.fn().mockResolvedValue([]),
   fetchGroupById: jest.fn(),
+  lookupGroupByInviteCode: jest.fn(),
+  joinGroupByCode: jest.fn(),
 }));
 
 jest.mock("@hooks/use-group-detail", () => ({
