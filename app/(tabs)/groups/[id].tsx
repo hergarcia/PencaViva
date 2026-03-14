@@ -134,13 +134,15 @@ export default function GroupDetailScreen() {
             {group.invite_code}
           </Text>
 
-          <View style={{ marginTop: 24 }}>
-            <QRCode
-              value={inviteUrl}
-              size={200}
-              color={colors.textPrimary}
-              backgroundColor={colors.surface}
-            />
+          <View
+            style={{
+              marginTop: 24,
+              backgroundColor: "#FFFFFF",
+              padding: 8,
+              borderRadius: 8,
+            }}
+          >
+            <QRCode value={inviteUrl} size={200} color="#000000" />
           </View>
 
           <TouchableOpacity
