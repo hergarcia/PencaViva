@@ -161,7 +161,7 @@ describe("GroupsScreen", () => {
     expect(toJSON()).toBeNull();
   });
 
-  it("shows header create button when groups exist", async () => {
+  it("shows header add button and menu options when groups exist", async () => {
     mockFetchUserGroups.mockResolvedValueOnce([
       {
         id: "g1",
@@ -178,10 +178,42 @@ describe("GroupsScreen", () => {
     const { getByTestId } = render(<GroupsScreen />);
 
     await waitFor(() => {
-      expect(getByTestId("header-create-button")).toBeTruthy();
+      expect(getByTestId("header-add-button")).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId("header-create-button"));
+    // Open menu
+    fireEvent.press(getByTestId("header-add-button"));
+
+    // Tap Create Group
+    await waitFor(() => expect(getByTestId("menu-create-group")).toBeTruthy());
+    fireEvent.press(getByTestId("menu-create-group"));
     expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/create");
+  });
+
+  it("navigates to join group from header menu", async () => {
+    mockFetchUserGroups.mockResolvedValueOnce([
+      {
+        id: "g1",
+        name: "Test Group",
+        description: null,
+        avatar_url: null,
+        invite_code: "abc12345",
+        created_by: "user-1",
+        member_count: 2,
+        role: "member",
+      },
+    ]);
+
+    const { getByTestId } = render(<GroupsScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId("header-add-button")).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId("header-add-button"));
+
+    await waitFor(() => expect(getByTestId("menu-join-group")).toBeTruthy());
+    fireEvent.press(getByTestId("menu-join-group"));
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/join");
   });
 });
