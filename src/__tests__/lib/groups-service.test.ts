@@ -7,11 +7,13 @@ mockChain.insert = jest.fn(() => mockChain);
 mockChain.single = jest.fn(() => mockChain);
 
 const mockRpc = jest.fn();
+const mockGetUser = jest.fn();
 
 jest.mock("@lib/supabase", () => ({
   supabase: {
     from: jest.fn(() => mockChain),
     rpc: mockRpc,
+    auth: { getUser: mockGetUser },
   },
 }));
 
@@ -21,6 +23,7 @@ const {
   fetchUserGroups,
   createGroup,
   fetchActiveTournaments,
+  fetchGroupById,
 } = require("@lib/groups-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -264,5 +267,67 @@ describe("fetchActiveTournaments", () => {
     });
 
     await expect(fetchActiveTournaments()).rejects.toThrow("DB error");
+  });
+});
+
+describe("fetchGroupById", () => {
+  const fakeGroup = {
+    id: "g1",
+    name: "Test Group",
+    description: "desc",
+    avatar_url: null,
+    invite_code: "ABC12345",
+    created_by: "u1",
+    group_members: [{ count: 3 }],
+  };
+
+  it("returns UserGroup on success", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1" } } });
+    mockChain.single.mockResolvedValueOnce({
+      data: { role: "admin", group: fakeGroup },
+      error: null,
+    });
+
+    const result = await fetchGroupById("g1");
+
+    expect(result).toEqual({
+      id: "g1",
+      name: "Test Group",
+      description: "desc",
+      avatar_url: null,
+      invite_code: "ABC12345",
+      created_by: "u1",
+      member_count: 3,
+      role: "admin",
+    });
+  });
+
+  it("filters by group_id and is_active", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1" } } });
+    mockChain.single.mockResolvedValueOnce({
+      data: { role: "member", group: fakeGroup },
+      error: null,
+    });
+
+    await fetchGroupById("g1");
+
+    expect(mockChain.eq).toHaveBeenCalledWith("group_id", "g1");
+    expect(mockChain.eq).toHaveBeenCalledWith("is_active", true);
+  });
+
+  it("throws 'Not authenticated' when user is null", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: null } });
+
+    await expect(fetchGroupById("g1")).rejects.toThrow("Not authenticated");
+  });
+
+  it("throws on Supabase error", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1" } } });
+    mockChain.single.mockResolvedValueOnce({
+      data: null,
+      error: new Error("DB error"),
+    });
+
+    await expect(fetchGroupById("g1")).rejects.toThrow("DB error");
   });
 });

@@ -42,6 +42,9 @@ module.exports = {
         "^@types/(.*)$": "<rootDir>/src/types/$1",
         "^@utils/(.*)$": "<rootDir>/src/utils/$1",
         "^expo-image-picker$": "<rootDir>/src/__mocks__/expo-image-picker.ts",
+        "^react-native-qrcode-svg$":
+          "<rootDir>/src/__mocks__/react-native-qrcode-svg.ts",
+        "^react-native-svg$": "<rootDir>/src/__mocks__/react-native-svg.ts",
       },
     },
     // ========================================

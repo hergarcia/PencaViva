@@ -13,3 +13,5 @@ export const colors = {
   textPrimary: "#FFFFFF",
   textSecondary: "#A0A0B8",
 } as const;
+
+export const APP_BASE_URL = "https://pencaviva.app";

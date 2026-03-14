@@ -10,19 +10,50 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@hooks/use-auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" } }),
+  useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),
 }));
 
 jest.mock("@lib/groups-service", () => ({
   createGroup: jest.fn(),
   fetchActiveTournaments: jest.fn().mockResolvedValue([]),
+  fetchGroupById: jest.fn(),
+}));
+
+jest.mock("@hooks/use-group-detail", () => ({
+  useGroupDetail: jest.fn().mockReturnValue({
+    group: null,
+    loading: true,
+    error: null,
+  }),
 }));
 
 describe("Group nested screens", () => {
-  it("renders group detail with id", () => {
+  it("renders loading state for group detail", () => {
     render(<GroupDetailScreen />);
-    expect(screen.getByText("Group")).toBeTruthy();
-    expect(screen.getByText("Group detail 7")).toBeTruthy();
+    expect(screen.getByTestId("loading-indicator")).toBeTruthy();
+  });
+
+  it("renders group name and invite code when loaded", () => {
+    /* eslint-disable @typescript-eslint/no-require-imports */
+    const { useGroupDetail } = require("@hooks/use-group-detail");
+    /* eslint-enable @typescript-eslint/no-require-imports */
+    (useGroupDetail as jest.Mock).mockReturnValueOnce({
+      group: {
+        id: "7",
+        name: "My Penca",
+        description: null,
+        avatar_url: null,
+        invite_code: "ABCD1234",
+        created_by: "u1",
+        member_count: 5,
+        role: "admin",
+      },
+      loading: false,
+      error: null,
+    });
+    render(<GroupDetailScreen />);
+    expect(screen.getByText("My Penca")).toBeTruthy();
+    expect(screen.getByTestId("invite-code")).toBeTruthy();
   });
 
   it("renders create group screen", async () => {
