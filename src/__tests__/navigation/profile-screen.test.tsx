@@ -9,6 +9,17 @@ import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 // Mocks must be declared before imports that use them
+jest.mock("react-native-safe-area-context", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require("react-native");
+  return {
+    SafeAreaView: View,
+    SafeAreaProvider: View,
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+  };
+});
+
 jest.mock("@hooks/use-auth", () => ({
   useAuth: jest.fn(),
 }));
