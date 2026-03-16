@@ -45,6 +45,8 @@ module.exports = {
         "^react-native-qrcode-svg$":
           "<rootDir>/src/__mocks__/react-native-qrcode-svg.ts",
         "^react-native-svg$": "<rootDir>/src/__mocks__/react-native-svg.ts",
+        "^@react-native-clipboard/clipboard$":
+          "<rootDir>/src/__mocks__/@react-native-clipboard/clipboard.ts",
       },
     },
     // ========================================
