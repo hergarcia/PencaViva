@@ -392,13 +392,28 @@ describe("JoinGroupScreen", () => {
     });
   });
 
-  it("does not auto-trigger lookup when pre-filling from code param", async () => {
+  it("auto-triggers lookup when pre-filling from code param", async () => {
+    lookupGroupByInviteCode.mockResolvedValueOnce({
+      id: "g-1",
+      name: "Test Group",
+      description: null,
+      avatar_url: null,
+      member_count: 5,
+      max_members: 50,
+      scoring_system: {
+        exact_score: 5,
+        correct_result: 3,
+        correct_goal_diff: 1,
+        wrong: 0,
+      },
+    });
     mockUseLocalSearchParams.mockReturnValue({ code: "ABC12345" });
 
     render(<JoinGroupScreen />);
 
-    await new Promise((r) => setTimeout(r, 50));
-    expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(lookupGroupByInviteCode).toHaveBeenCalledWith("ABC12345");
+    });
   });
 
   it("ignores invalid code param (wrong length) on mount", async () => {

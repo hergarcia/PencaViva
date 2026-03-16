@@ -65,11 +65,6 @@ export default function JoinGroupScreen() {
     setErrorText("");
   }, []);
 
-  useEffect(() => {
-    if (!codeParam || !/^[0-9a-fA-F]{8}$/.test(codeParam)) return;
-    updateDigits(codeParam.toUpperCase().split(""));
-  }, [codeParam, updateDigits]);
-
   const triggerLookup = useCallback(async (code: string) => {
     setState("loading");
     setErrorText("");
@@ -83,6 +78,12 @@ export default function JoinGroupScreen() {
       setState("error");
     }
   }, []);
+
+  useEffect(() => {
+    if (!codeParam || !/^[0-9a-fA-F]{8}$/.test(codeParam)) return;
+    updateDigits(codeParam.toUpperCase().split(""));
+    triggerLookup(codeParam.toUpperCase());
+  }, [codeParam, updateDigits, triggerLookup]);
 
   const handleChangeText = useCallback(
     (text: string, index: number) => {
