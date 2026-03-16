@@ -174,10 +174,11 @@
   - Effort: 4h
   - Notes: Two SECURITY DEFINER RPCs: `lookup_group_by_invite_code` (preview for non-members) and `join_group_by_code` (atomic join with race-condition guard via FOR UPDATE). Service layer adds `GroupPreview` type + 2 validated functions (8-char check, uppercase). Join screen: 8 hex char boxes (ref-based state to avoid stale closure), auto-triggers lookup, shows inline group preview card with scoring chips, join button with loading state. Error mapping: group_not_found / group_full / already_member. Migration 00009 applied to remote DB. 14 screen tests + 6 service tests + 9 SQL integration tests.
 
-- [ ] **F1-13** Deep link for invitations
+- [x] **F1-13** Deep link for invitations
   - `pencaviva://join/ABC12345` or universal link
   - Depends: F0-06 (Expo Router)
   - Effort: 3h
+  - Notes: Custom scheme `pencaviva://join/[code]` configured in app.config.ts. Deep link handler in root `_layout.tsx` uses `useEffect` + `Linking.getInitialURL()` + `Linking.addEventListener` to intercept links at any app state (cold start, background, foreground). Pending invite stored via `pending-invite.ts` (AsyncStorage) when user is not yet authenticated, consumed after login in `app/index.tsx` redirect logic. `app/join/[code].tsx` screen handles both direct navigation and deep-link entry. 10 unit tests for pending-invite, 7 tests for deep-link handler, 4 integration tests for end-to-end flow.
 
 - [ ] **F1-14** Group detail (members, info)
   - Member list with roles
