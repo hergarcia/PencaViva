@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@hooks/use-auth";
+import { ScreenHeader } from "@components/common/ScreenHeader";
 import {
   lookupGroupByInviteCode,
   joinGroupByCode,
@@ -194,29 +194,7 @@ export default function JoinGroupScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       testID="join-group-screen"
     >
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          padding: 24,
-          paddingBottom: 12,
-        }}
-      >
-        <TouchableOpacity onPress={() => router.back()} testID="back-button">
-          <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 20,
-            fontWeight: "bold",
-          }}
-        >
-          Join Group
-        </Text>
-      </View>
+      <ScreenHeader title="Join Group" />
 
       {/* Subtitle */}
       <Text

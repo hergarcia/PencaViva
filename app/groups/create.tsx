@@ -23,6 +23,7 @@ import {
   ScoringPreset,
 } from "@components/groups/ScoringPresetCard";
 import { colors } from "@lib/constants";
+import { ScreenHeader } from "@components/common/ScreenHeader";
 
 // ── Scoring presets ──────────────────────────────────────────────────
 
@@ -173,32 +174,16 @@ export default function CreateGroupScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <ScreenHeader title="Create Group" />
       <ScrollView
-        contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingBottom: 48,
+          paddingTop: 8,
+        }}
         keyboardShouldPersistTaps="handled"
         style={{ backgroundColor: colors.background }}
       >
-        {/* Header */}
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 26,
-            fontWeight: "700",
-            marginBottom: 4,
-          }}
-        >
-          Create Group
-        </Text>
-        <Text
-          style={{
-            color: colors.textSecondary,
-            fontSize: 14,
-            marginBottom: 28,
-          }}
-        >
-          Set up your group and invite friends to predict together.
-        </Text>
-
         {/* Group Name */}
         <Text
           style={{

@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Clipboard from "@react-native-clipboard/clipboard";
 import { colors, APP_BASE_URL } from "@lib/constants";
 import { useGroupDetail } from "@hooks/use-group-detail";
+import { ScreenHeader } from "@components/common/ScreenHeader";
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -89,36 +90,7 @@ export default function GroupDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Header bar */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.surfaceBorder,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          testID="back-button"
-          style={{ padding: 4, marginRight: 12 }}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 18,
-            fontWeight: "700",
-            flex: 1,
-          }}
-          numberOfLines={1}
-        >
-          {group.name}
-        </Text>
-      </View>
+      <ScreenHeader title={group.name} />
 
       <ScrollView
         testID="group-detail-screen"
