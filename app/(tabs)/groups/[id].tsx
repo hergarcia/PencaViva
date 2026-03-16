@@ -89,41 +89,61 @@ export default function GroupDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Header bar */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.surfaceBorder,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          testID="back-button"
+          style={{ padding: 4, marginRight: 12 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
+        </TouchableOpacity>
+        <Text
+          style={{
+            color: colors.textPrimary,
+            fontSize: 18,
+            fontWeight: "700",
+            flex: 1,
+          }}
+          numberOfLines={1}
+        >
+          {group.name}
+        </Text>
+      </View>
+
       <ScrollView
         testID="group-detail-screen"
         contentContainerStyle={{ padding: 24 }}
       >
-        {/* Header */}
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 28,
-            fontWeight: "700",
-          }}
-        >
-          {group.name}
-        </Text>
+        {/* Group info */}
         {group.description ? (
           <Text
             style={{
               color: colors.textSecondary,
-              marginTop: 8,
               fontSize: 15,
+              marginBottom: 4,
             }}
           >
             {group.description}
           </Text>
         ) : null}
-        <Text
-          style={{ color: colors.textSecondary, marginTop: 4, fontSize: 13 }}
-        >
+        <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
           {group.member_count} {group.member_count === 1 ? "member" : "members"}
         </Text>
 
         {/* Invite section */}
         <View
           style={{
-            marginTop: 32,
+            marginTop: 24,
             backgroundColor: colors.surface,
             borderRadius: 12,
             padding: 20,
@@ -185,7 +205,7 @@ export default function GroupDetailScreen() {
             </Text>
           ) : null}
 
-          {/* QR code — unchanged */}
+          {/* QR code */}
           <View
             style={{
               marginTop: 24,
@@ -194,78 +214,41 @@ export default function GroupDetailScreen() {
               borderRadius: 8,
             }}
           >
-            <QRCode value={inviteUrl} size={200} color="#000000" />
+            <QRCode value={inviteUrl} size={160} color="#000000" />
           </View>
 
-          {/* Copy action buttons */}
-          <View
+          {/* Copy link button */}
+          <TouchableOpacity
+            testID="copy-link-button"
+            onPress={() => copyWithFeedback(inviteUrl, "link")}
             style={{
-              flexDirection: "row",
-              gap: 8,
+              marginTop: 16,
               width: "100%",
-              marginTop: 20,
+              borderWidth: 1,
+              borderColor: colors.surfaceBorder,
+              borderRadius: 8,
+              paddingVertical: 10,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
             }}
           >
-            {/* Copy code */}
-            <TouchableOpacity
-              testID="copy-code-button"
-              onPress={() => copyWithFeedback(group.invite_code, "code")}
+            <Ionicons
+              name="link-outline"
+              size={16}
+              color={colors.textSecondary}
+            />
+            <Text
               style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: colors.primary,
-                borderRadius: 8,
-                paddingVertical: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
+                color: colors.textSecondary,
+                fontSize: 13,
+                fontWeight: "600",
               }}
             >
-              <Ionicons name="copy-outline" size={16} color={colors.primary} />
-              <Text
-                style={{
-                  color: colors.primary,
-                  fontSize: 13,
-                  fontWeight: "600",
-                }}
-              >
-                Copy code
-              </Text>
-            </TouchableOpacity>
-
-            {/* Copy link */}
-            <TouchableOpacity
-              testID="copy-link-button"
-              onPress={() => copyWithFeedback(inviteUrl, "link")}
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: colors.surfaceBorder,
-                borderRadius: 8,
-                paddingVertical: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-              }}
-            >
-              <Ionicons
-                name="link-outline"
-                size={16}
-                color={colors.textSecondary}
-              />
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  fontSize: 13,
-                  fontWeight: "600",
-                }}
-              >
-                Copy link
-              </Text>
-            </TouchableOpacity>
-          </View>
+              Copy link
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Share button */}
@@ -282,7 +265,7 @@ export default function GroupDetailScreen() {
             }
           }}
           style={{
-            marginTop: 24,
+            marginTop: 16,
             backgroundColor: colors.primary,
             borderRadius: 12,
             paddingVertical: 16,

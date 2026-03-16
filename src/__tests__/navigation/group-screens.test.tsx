@@ -51,7 +51,7 @@ describe("Group nested screens", () => {
     expect(screen.getByTestId("loading-indicator")).toBeTruthy();
   });
 
-  it("renders group name and invite code when loaded", () => {
+  it("renders group name, back button, and invite code when loaded", () => {
     /* eslint-disable @typescript-eslint/no-require-imports */
     const { useGroupDetail } = require("@hooks/use-group-detail");
     /* eslint-enable @typescript-eslint/no-require-imports */
@@ -71,6 +71,7 @@ describe("Group nested screens", () => {
     });
     render(<GroupDetailScreen />);
     expect(screen.getByText("My Penca")).toBeTruthy();
+    expect(screen.getByTestId("back-button")).toBeTruthy();
     expect(screen.getByTestId("invite-code")).toBeTruthy();
   });
 
@@ -107,12 +108,6 @@ describe("Invite code section", () => {
   it("tapping invite-code pill copies the code", () => {
     const { getByTestId } = render(<GroupDetailScreen />);
     fireEvent.press(getByTestId("invite-code"));
-    expect(Clipboard.setString).toHaveBeenCalledWith("ABCD1234");
-  });
-
-  it("tapping copy-code-button copies the code", () => {
-    const { getByTestId } = render(<GroupDetailScreen />);
-    fireEvent.press(getByTestId("copy-code-button"));
     expect(Clipboard.setString).toHaveBeenCalledWith("ABCD1234");
   });
 
