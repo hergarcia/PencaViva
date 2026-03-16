@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import QRCode from "react-native-qrcode-svg";
+import { Ionicons } from "@expo/vector-icons";
+import Clipboard from "@react-native-clipboard/clipboard";
 import { colors, APP_BASE_URL } from "@lib/constants";
 import { useGroupDetail } from "@hooks/use-group-detail";
 
@@ -19,6 +21,22 @@ export default function GroupDetailScreen() {
   const { group, loading, error } = useGroupDetail(id);
 
   const inviteUrl = group ? `${APP_BASE_URL}/join/${group.invite_code}` : "";
+
+  const [copiedState, setCopiedState] = useState<"code" | "link" | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
+  function copyWithFeedback(text: string, type: "code" | "link") {
+    Clipboard.setString(text);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    setCopiedState(type);
+    copyTimeoutRef.current = setTimeout(() => setCopiedState(null), 1500);
+  }
 
   if (loading) {
     return (
@@ -122,18 +140,52 @@ export default function GroupDetailScreen() {
           >
             INVITE CODE
           </Text>
-          <Text
+
+          {/* Tap-to-copy code pill */}
+          <TouchableOpacity
             testID="invite-code"
+            onPress={() => copyWithFeedback(group.invite_code, "code")}
             style={{
-              color: colors.primary,
-              fontSize: 28,
-              fontWeight: "700",
-              letterSpacing: 6,
+              backgroundColor: colors.surface,
+              borderWidth: 1.5,
+              borderColor: colors.primary + "4D",
+              borderRadius: 10,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 12,
+              paddingHorizontal: 18,
+              width: "100%",
             }}
           >
-            {group.invite_code}
-          </Text>
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: 26,
+                fontWeight: "700",
+                letterSpacing: 6,
+              }}
+            >
+              {group.invite_code}
+            </Text>
+            <Ionicons name="copy-outline" size={18} color={colors.primary} />
+          </TouchableOpacity>
 
+          {/* Inline copy feedback */}
+          {copiedState !== null ? (
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: 12,
+                marginTop: 6,
+                marginBottom: 4,
+              }}
+            >
+              {copiedState === "code" ? "Code copied!" : "Link copied!"}
+            </Text>
+          ) : null}
+
+          {/* QR code — unchanged */}
           <View
             style={{
               marginTop: 24,
@@ -145,28 +197,75 @@ export default function GroupDetailScreen() {
             <QRCode value={inviteUrl} size={200} color="#000000" />
           </View>
 
-          <TouchableOpacity
-            testID="copy-button"
-            onPress={() => {
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              const Clipboard = require("react-native").Clipboard;
-              // TODO: migrate to @react-native-clipboard/clipboard (requires native module rebuild)
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-              Clipboard.setString(inviteUrl);
-            }}
+          {/* Copy action buttons */}
+          <View
             style={{
+              flexDirection: "row",
+              gap: 8,
+              width: "100%",
               marginTop: 20,
-              borderWidth: 1,
-              borderColor: colors.primary,
-              borderRadius: 8,
-              paddingVertical: 10,
-              paddingHorizontal: 24,
             }}
           >
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>
-              Copy invite link
-            </Text>
-          </TouchableOpacity>
+            {/* Copy code */}
+            <TouchableOpacity
+              testID="copy-code-button"
+              onPress={() => copyWithFeedback(group.invite_code, "code")}
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+              }}
+            >
+              <Ionicons name="copy-outline" size={16} color={colors.primary} />
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 13,
+                  fontWeight: "600",
+                }}
+              >
+                Copy code
+              </Text>
+            </TouchableOpacity>
+
+            {/* Copy link */}
+            <TouchableOpacity
+              testID="copy-link-button"
+              onPress={() => copyWithFeedback(inviteUrl, "link")}
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: colors.surfaceBorder,
+                borderRadius: 8,
+                paddingVertical: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+              }}
+            >
+              <Ionicons
+                name="link-outline"
+                size={16}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 13,
+                  fontWeight: "600",
+                }}
+              >
+                Copy link
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Share button */}
