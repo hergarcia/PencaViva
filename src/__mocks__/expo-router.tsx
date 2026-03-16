@@ -48,9 +48,9 @@ function useRouter() {
   return mockRouter;
 }
 
-function useLocalSearchParams() {
-  return {};
-}
+const useLocalSearchParams = jest.fn(
+  () => ({}) as Record<string, string | string[]>,
+);
 
 function useSegments() {
   return [];
