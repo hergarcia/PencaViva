@@ -430,6 +430,19 @@ describe("JoinGroupScreen", () => {
     expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
   });
 
+  it("ignores invalid code param (non-hex characters) on mount", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ code: "ZZZZZZZZ" });
+
+    const { getAllByTestId } = render(<JoinGroupScreen />);
+    const inputs = getAllByTestId(/^code-input-/);
+
+    await new Promise((r) => setTimeout(r, 50));
+    inputs.forEach((input) => {
+      expect(input.props.value).toBe("");
+    });
+    expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
+  });
+
   it("shows subtitle text", () => {
     const { getByText } = render(<JoinGroupScreen />);
     expect(

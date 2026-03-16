@@ -224,7 +224,7 @@ export default function JoinGroupScreen() {
           color: colors.textSecondary,
           fontSize: 13,
           paddingHorizontal: 24,
-          marginBottom: 4,
+          marginBottom: 8,
         }}
       >
         Enter the 8-character code shared by your group
@@ -328,7 +328,7 @@ export default function JoinGroupScreen() {
             color: colors.textSecondary,
             fontSize: 11,
             textAlign: "center",
-            marginTop: 12,
+            marginTop: 16,
             opacity: 0.6,
           }}
         >
