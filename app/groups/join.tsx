@@ -218,6 +218,18 @@ export default function JoinGroupScreen() {
         </Text>
       </View>
 
+      {/* Subtitle */}
+      <Text
+        style={{
+          color: colors.textSecondary,
+          fontSize: 13,
+          paddingHorizontal: 24,
+          marginBottom: 4,
+        }}
+      >
+        Enter the 8-character code shared by your group
+      </Text>
+
       {/* Code Input */}
       <View style={{ paddingHorizontal: 24, marginTop: 16 }}>
         <Text
@@ -284,7 +296,45 @@ export default function JoinGroupScreen() {
             {errorText}
           </Text>
         ) : null}
+
+        {/* Error empty state */}
+        {state === "error" ? (
+          <View
+            testID="error-empty-state"
+            style={{
+              alignItems: "center",
+              marginTop: 24,
+              paddingHorizontal: 24,
+            }}
+          >
+            <Text style={{ fontSize: 28, marginBottom: 8 }}>🔍</Text>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                fontSize: 13,
+                textAlign: "center",
+              }}
+            >
+              Ask your admin for the correct invite code
+            </Text>
+          </View>
+        ) : null}
       </View>
+
+      {/* Paste tip */}
+      {state === "idle" ? (
+        <Text
+          style={{
+            color: colors.textSecondary,
+            fontSize: 11,
+            textAlign: "center",
+            marginTop: 12,
+            opacity: 0.6,
+          }}
+        >
+          Tip: you can paste the full code at once
+        </Text>
+      ) : null}
 
       {/* Loading spinner */}
       {state === "loading" ? (

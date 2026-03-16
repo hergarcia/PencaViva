@@ -430,6 +430,42 @@ describe("JoinGroupScreen", () => {
     expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
   });
 
+  it("shows subtitle text", () => {
+    const { getByText } = render(<JoinGroupScreen />);
+    expect(
+      getByText("Enter the 8-character code shared by your group"),
+    ).toBeTruthy();
+  });
+
+  it("shows error empty state with helper text when group not found", async () => {
+    lookupGroupByInviteCode.mockRejectedValueOnce(new Error("group_not_found"));
+
+    const { getAllByTestId, getByTestId, getByText } = render(
+      <JoinGroupScreen />,
+    );
+    const inputs = getAllByTestId(/^code-input-/);
+
+    await act(async () => {
+      const code = "AB12CD34";
+      for (let i = 0; i < 8; i++) {
+        fireEvent.changeText(inputs[i], code[i]);
+      }
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("error-message")).toBeTruthy();
+    });
+    expect(getByTestId("error-empty-state")).toBeTruthy();
+    expect(
+      getByText("Ask your admin for the correct invite code"),
+    ).toBeTruthy();
+  });
+
+  it("shows paste tip in idle state", () => {
+    const { getByText } = render(<JoinGroupScreen />);
+    expect(getByText("Tip: you can paste the full code at once")).toBeTruthy();
+  });
+
   it("clears preview when a character is deleted", async () => {
     lookupGroupByInviteCode.mockResolvedValueOnce({
       id: "g-1",
