@@ -64,4 +64,5 @@ export {
   useRouter,
   useLocalSearchParams,
   useSegments,
+  mockRouter,
 };

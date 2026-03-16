@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { getStorageItem } from "@lib/storage";
 import { ONBOARDING_STORAGE_KEY } from "@lib/onboarding";
 import { useAuthStore } from "@stores/auth-store";
 import { checkProfileComplete } from "@lib/profile-service";
+import {
+  getPendingInviteCode,
+  clearPendingInviteCode,
+} from "@lib/pending-invite";
 
 export default function Index() {
   const [isReady, setIsReady] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [isProfileChecked, setIsProfileChecked] = useState(false);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(
+    null,
+  );
   const isInitialized = useAuthStore((s) => s.isInitialized);
   const session = useAuthStore((s) => s.session);
   const user = useAuthStore((s) => s.user);
+  const router = useRouter();
 
   useEffect(() => {
     getStorageItem(ONBOARDING_STORAGE_KEY).then((value) => {
@@ -33,15 +41,18 @@ export default function Index() {
     let cancelled = false;
 
     checkProfileComplete(user.id)
-      .then((complete) => {
-        if (!cancelled) {
-          setIsProfileComplete(complete);
-          setIsProfileChecked(true);
-        }
+      .then(async (complete) => {
+        if (cancelled) return;
+        const localCode = complete ? await getPendingInviteCode() : null;
+        if (cancelled) return;
+        setPendingInviteCode(localCode);
+        setIsProfileComplete(complete);
+        setIsProfileChecked(true);
       })
       .catch(() => {
         // Fail-open: allow through on error to avoid blocking the user
         if (!cancelled) {
+          setPendingInviteCode(null);
           setIsProfileComplete(true);
           setIsProfileChecked(true);
         }
@@ -51,6 +62,18 @@ export default function Index() {
       cancelled = true;
     };
   }, [user?.id]);
+
+  // ── Final redirect (tabs or join screen for pending invite) ─────
+  useEffect(() => {
+    if (!isProfileChecked || !isProfileComplete) return;
+    if (pendingInviteCode) {
+      clearPendingInviteCode().then(() => {
+        router.replace(`/(tabs)/groups/join?code=${pendingInviteCode}`);
+      });
+    } else {
+      router.replace("/(tabs)");
+    }
+  }, [isProfileChecked, isProfileComplete, pendingInviteCode, router]);
 
   // Wait for onboarding check and auth initialization
   if (!isReady || !isInitialized) {
@@ -96,5 +119,5 @@ export default function Index() {
     return <Redirect href="/(auth)/complete-profile" />;
   }
 
-  return <Redirect href="/(tabs)" />;
+  return null;
 }

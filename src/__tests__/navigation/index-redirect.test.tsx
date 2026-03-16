@@ -5,10 +5,28 @@ import { useAuthStore } from "@stores/auth-store";
 
 import Index from "../../../app/index";
 
+// Access the mock router object exported by our expo-router mock.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mockRouter = require("expo-router").mockRouter as {
+  push: jest.Mock;
+  replace: jest.Mock;
+  back: jest.Mock;
+  canGoBack: jest.Mock;
+};
+
 // Mock supabase to prevent env var validation at import time
 jest.mock("@lib/supabase");
 jest.mock("@lib/google-auth");
 jest.mock("@stores/auth-store");
+
+const mockGetPendingInviteCode = jest.fn().mockResolvedValue(null);
+const mockClearPendingInviteCode = jest.fn().mockResolvedValue(undefined);
+jest.mock("@lib/pending-invite", () => ({
+  getPendingInviteCode: (...args: unknown[]) =>
+    mockGetPendingInviteCode(...args),
+  clearPendingInviteCode: (...args: unknown[]) =>
+    mockClearPendingInviteCode(...args),
+}));
 
 const mockCheckProfileComplete = jest.fn();
 jest.mock("@lib/profile-service", () => ({
@@ -40,6 +58,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   setupAuthStore();
   mockCheckProfileComplete.mockResolvedValue(true);
+  mockGetPendingInviteCode.mockResolvedValue(null);
+  mockClearPendingInviteCode.mockResolvedValue(undefined);
 });
 
 describe("App Index", () => {
@@ -81,11 +101,12 @@ describe("App Index", () => {
       user: { id: "123" },
     });
     mockCheckProfileComplete.mockResolvedValue(true);
+    mockGetPendingInviteCode.mockResolvedValue(null);
 
     render(<Index />);
 
     await waitFor(() => {
-      expect(screen.getByText("Redirect to /(tabs)")).toBeTruthy();
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)");
     });
   });
 
@@ -121,8 +142,46 @@ describe("App Index", () => {
     render(<Index />);
 
     await waitFor(() => {
-      expect(screen.getByText("Redirect to /(tabs)")).toBeTruthy();
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)");
     });
+  });
+
+  it("redirects to join screen when profile is complete and pending invite code exists", async () => {
+    SecureStore.setItem("onboarding_completed", "true");
+    setupAuthStore({
+      isInitialized: true,
+      session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
+    });
+    mockCheckProfileComplete.mockResolvedValue(true);
+    mockGetPendingInviteCode.mockResolvedValue("ABC12345");
+
+    render(<Index />);
+
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        "/(tabs)/groups/join?code=ABC12345",
+      );
+    });
+    expect(mockClearPendingInviteCode).toHaveBeenCalled();
+  });
+
+  it("redirects to tabs when profile is complete and no pending invite code", async () => {
+    SecureStore.setItem("onboarding_completed", "true");
+    setupAuthStore({
+      isInitialized: true,
+      session: { access_token: "test", user: { id: "123" } },
+      user: { id: "123" },
+    });
+    mockCheckProfileComplete.mockResolvedValue(true);
+    mockGetPendingInviteCode.mockResolvedValue(null);
+
+    render(<Index />);
+
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)");
+    });
+    expect(mockClearPendingInviteCode).not.toHaveBeenCalled();
   });
 
   it("renders loading indicator while profile check is pending", async () => {

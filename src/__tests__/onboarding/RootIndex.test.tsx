@@ -10,6 +10,23 @@ jest.mock("@lib/supabase");
 jest.mock("@lib/google-auth");
 jest.mock("@stores/auth-store");
 
+const mockGetPendingInviteCode = jest.fn().mockResolvedValue(null);
+const mockClearPendingInviteCode = jest.fn().mockResolvedValue(undefined);
+jest.mock("@lib/pending-invite", () => ({
+  getPendingInviteCode: (...args: unknown[]) =>
+    mockGetPendingInviteCode(...args),
+  clearPendingInviteCode: (...args: unknown[]) =>
+    mockClearPendingInviteCode(...args),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mockRouter = require("expo-router").mockRouter as {
+  push: jest.Mock;
+  replace: jest.Mock;
+  back: jest.Mock;
+  canGoBack: jest.Mock;
+};
+
 const mockCheckProfileComplete = jest.fn();
 jest.mock("@lib/profile-service", () => ({
   checkProfileComplete: (...args: unknown[]) =>
@@ -40,6 +57,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   setupAuthStore();
   mockCheckProfileComplete.mockResolvedValue(true);
+  mockGetPendingInviteCode.mockResolvedValue(null);
+  mockClearPendingInviteCode.mockResolvedValue(undefined);
 });
 
 describe("Root index redirect", () => {
@@ -69,11 +88,12 @@ describe("Root index redirect", () => {
       user: { id: "123" },
     });
     mockCheckProfileComplete.mockResolvedValue(true);
+    mockGetPendingInviteCode.mockResolvedValue(null);
 
     render(<Index />);
 
     await waitFor(() => {
-      expect(screen.getByText("Redirect to /(tabs)")).toBeTruthy();
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)");
     });
   });
 });
