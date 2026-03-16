@@ -157,7 +157,7 @@ export default function CompleteProfileScreen() {
         display_name: displayName.trim(),
         favorite_team: favoriteTeam.trim() || null,
       });
-      router.replace("/(tabs)");
+      router.replace("/");
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to save profile";

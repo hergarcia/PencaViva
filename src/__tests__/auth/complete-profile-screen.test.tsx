@@ -221,7 +221,7 @@ describe("CompleteProfileScreen", () => {
         display_name: "Test User",
         favorite_team: null,
       });
-      expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
+      expect(mockReplace).toHaveBeenCalledWith("/");
     });
   });
 
