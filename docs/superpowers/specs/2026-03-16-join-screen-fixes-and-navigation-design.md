@@ -63,6 +63,8 @@ All `router.push` / `router.replace` calls that reference `/(tabs)/groups/join`,
 Files that contain these calls:
 
 - `app/(tabs)/groups/index.tsx` — links to join, create, and [id]
+- `app/(tabs)/groups/join.tsx` → `app/groups/join.tsx` — `handleJoin` navigates to `/(tabs)/groups/${result.id}` after a successful join; must become `/groups/${result.id}`
+- `app/(tabs)/groups/create.tsx` → `app/groups/create.tsx` — navigates to `/(tabs)/groups/${created.id}` after group creation; must become `/groups/${created.id}`
 - `app/join/[code].tsx` — links to `/(tabs)/groups/join?code=...` (also changes replace → push)
 - `app/index.tsx` — links to `/(tabs)/groups/join?code=...` in the pending invite redirect
 
@@ -194,28 +196,35 @@ Update all navigation calls from `/(tabs)/groups/<screen>` to `/groups/<screen>`
 
 ## Testing Plan
 
-| Test                                             | File                                                        |
-| ------------------------------------------------ | ----------------------------------------------------------- |
-| Pre-fill triggers lookup on mount                | `src/__tests__/navigation/join-group.test.tsx` (extend)     |
-| Pre-fill with nonexistent code shows error state | `src/__tests__/navigation/join-group.test.tsx` (extend)     |
-| Paste tip visible in idle state                  | `src/__tests__/navigation/join-group.test.tsx` (extend)     |
-| Deep link uses router.push for auth'd path       | `src/__tests__/navigation/deep-link.test.tsx` (update)      |
-| Deep link invalid code uses /groups/join path    | `src/__tests__/navigation/deep-link.test.tsx` (update)      |
-| index.tsx pending invite uses /groups/join path  | `src/__tests__/navigation/index-redirect.test.tsx` (update) |
+| Test                                             | File                                                                  |
+| ------------------------------------------------ | --------------------------------------------------------------------- |
+| Pre-fill triggers lookup on mount                | `src/__tests__/navigation/join-group.test.tsx` (extend)               |
+| Pre-fill with nonexistent code shows error state | `src/__tests__/navigation/join-group.test.tsx` (extend)               |
+| Paste tip visible in idle state                  | `src/__tests__/navigation/join-group.test.tsx` (extend)               |
+| Deep link uses router.push for auth'd path       | `src/__tests__/navigation/deep-link.test.tsx` (update)                |
+| Deep link invalid code uses /groups/join path    | `src/__tests__/navigation/deep-link.test.tsx` (update)                |
+| index.tsx pending invite uses /groups/join path  | `src/__tests__/navigation/index-redirect.test.tsx` (update)           |
+| groups/index navigation calls use new paths      | `src/__tests__/navigation/groups-screen.test.tsx` (update)            |
+| Import paths updated after file moves            | `src/__tests__/navigation/group-screens.test.tsx` (update)            |
+| Import path updated after join move              | `src/__tests__/navigation/join-group.test.tsx` (update import path)   |
+| Import path updated after create move            | `src/__tests__/navigation/create-group.test.tsx` (update import path) |
 
 No SQL changes needed.
 
 ## Files Changed
 
-| File                                               | Change                                                                                              |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `app/(tabs)/groups/join.tsx`                       | Moved to `app/groups/join.tsx` + subtitle + auto-lookup on pre-fill + error empty state + paste tip |
-| `app/(tabs)/groups/create.tsx`                     | Moved to `app/groups/create.tsx`                                                                    |
-| `app/(tabs)/groups/[id].tsx`                       | Moved to `app/groups/[id].tsx`                                                                      |
-| `app/(tabs)/groups/_layout.tsx`                    | Deleted                                                                                             |
-| `app/(tabs)/groups/index.tsx`                      | Updated nav calls to `/groups/<screen>`                                                             |
-| `app/join/[code].tsx`                              | replace → push for auth'd path; update paths to `/groups/join`                                      |
-| `app/index.tsx`                                    | Update pending invite path to `/groups/join`                                                        |
-| `src/__tests__/navigation/join-group.test.tsx`     | Extend with new test cases                                                                          |
-| `src/__tests__/navigation/deep-link.test.tsx`      | Update path assertions                                                                              |
-| `src/__tests__/navigation/index-redirect.test.tsx` | Update path assertions                                                                              |
+| File                                               | Change                                                                                                                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/(tabs)/groups/join.tsx`                       | Moved to `app/groups/join.tsx` + subtitle + auto-lookup on pre-fill + error empty state + paste tip + update internal nav call (`/(tabs)/groups/${id}` → `/groups/${id}`) |
+| `app/(tabs)/groups/create.tsx`                     | Moved to `app/groups/create.tsx` + update internal nav call (`/(tabs)/groups/${id}` → `/groups/${id}`)                                                                    |
+| `app/(tabs)/groups/[id].tsx`                       | Moved to `app/groups/[id].tsx`                                                                                                                                            |
+| `app/(tabs)/groups/_layout.tsx`                    | Deleted — contains only a passthrough `<Stack headerShown={false}>` with no custom options; safe to remove                                                                |
+| `app/(tabs)/groups/index.tsx`                      | Updated nav calls to `/groups/<screen>`                                                                                                                                   |
+| `app/join/[code].tsx`                              | replace → push for auth'd path; update paths to `/groups/join`                                                                                                            |
+| `app/index.tsx`                                    | Update pending invite path to `/groups/join`                                                                                                                              |
+| `src/__tests__/navigation/join-group.test.tsx`     | Update import path + extend with new test cases                                                                                                                           |
+| `src/__tests__/navigation/deep-link.test.tsx`      | Update path assertions                                                                                                                                                    |
+| `src/__tests__/navigation/index-redirect.test.tsx` | Update path assertions                                                                                                                                                    |
+| `src/__tests__/navigation/groups-screen.test.tsx`  | Update 5 path assertions to `/groups/<screen>`                                                                                                                            |
+| `src/__tests__/navigation/group-screens.test.tsx`  | Update import paths to new file locations                                                                                                                                 |
+| `src/__tests__/navigation/create-group.test.tsx`   | Update import path to new file location                                                                                                                                   |
