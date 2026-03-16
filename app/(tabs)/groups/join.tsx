@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@hooks/use-auth";
 import {
@@ -50,6 +50,8 @@ export default function JoinGroupScreen() {
   const [groupPreview, setGroupPreview] = useState<GroupPreview | null>(null);
   const [errorText, setErrorText] = useState("");
 
+  const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
+
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const updateDigits = useCallback((newDigits: string[]) => {
@@ -62,6 +64,11 @@ export default function JoinGroupScreen() {
     setGroupPreview(null);
     setErrorText("");
   }, []);
+
+  useEffect(() => {
+    if (!codeParam || !/^[0-9a-fA-F]{8}$/.test(codeParam)) return;
+    updateDigits(codeParam.toUpperCase().split(""));
+  }, [codeParam, updateDigits]);
 
   const triggerLookup = useCallback(async (code: string) => {
     setState("loading");

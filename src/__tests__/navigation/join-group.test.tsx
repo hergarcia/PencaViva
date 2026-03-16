@@ -14,12 +14,15 @@ jest.mock("@hooks/use-auth", () => ({
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
+const mockUseLocalSearchParams = jest.fn(() => ({}) as Record<string, string>);
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
     push: jest.fn(),
     back: mockBack,
   }),
+  useLocalSearchParams: () => mockUseLocalSearchParams(),
 }));
 
 // Must import AFTER mocks
@@ -35,6 +38,7 @@ const JoinGroupScreen = require("../../../app/(tabs)/groups/join").default;
 beforeEach(() => {
   jest.clearAllMocks();
   useAuth.mockReturnValue({ user: { id: "user-1" } });
+  mockUseLocalSearchParams.mockReturnValue({});
 });
 
 describe("JoinGroupScreen", () => {
@@ -368,6 +372,47 @@ describe("JoinGroupScreen", () => {
     await waitFor(() => {
       expect(getByText("Something went wrong. Please try again.")).toBeTruthy();
     });
+  });
+
+  it("pre-fills digits from code param on mount", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ code: "ABC12345" });
+
+    const { getAllByTestId } = render(<JoinGroupScreen />);
+    const inputs = getAllByTestId(/^code-input-/);
+
+    await waitFor(() => {
+      expect(inputs[0].props.value).toBe("A");
+      expect(inputs[1].props.value).toBe("B");
+      expect(inputs[2].props.value).toBe("C");
+      expect(inputs[3].props.value).toBe("1");
+      expect(inputs[4].props.value).toBe("2");
+      expect(inputs[5].props.value).toBe("3");
+      expect(inputs[6].props.value).toBe("4");
+      expect(inputs[7].props.value).toBe("5");
+    });
+  });
+
+  it("does not auto-trigger lookup when pre-filling from code param", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ code: "ABC12345" });
+
+    render(<JoinGroupScreen />);
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
+  });
+
+  it("ignores invalid code param (wrong length) on mount", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ code: "SHORT" });
+
+    const { getAllByTestId } = render(<JoinGroupScreen />);
+    const inputs = getAllByTestId(/^code-input-/);
+
+    await new Promise((r) => setTimeout(r, 50));
+    // All inputs remain empty
+    inputs.forEach((input) => {
+      expect(input.props.value).toBe("");
+    });
+    expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
   });
 
   it("clears preview when a character is deleted", async () => {
