@@ -32,7 +32,7 @@ const {
   joinGroupByCode,
 } = require("@lib/groups-service");
 const { useAuth } = require("@hooks/use-auth");
-const JoinGroupScreen = require("../../../app/(tabs)/groups/join").default;
+const JoinGroupScreen = require("../../../app/groups/join").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 beforeEach(() => {
@@ -328,7 +328,7 @@ describe("JoinGroupScreen", () => {
 
     await waitFor(() => {
       expect(joinGroupByCode).toHaveBeenCalledWith("AB12CD34");
-      expect(mockReplace).toHaveBeenCalledWith("/(tabs)/groups/g-1");
+      expect(mockReplace).toHaveBeenCalledWith("/groups/g-1");
     });
   });
 

@@ -28,8 +28,9 @@ jest.mock("@lib/storage", () => ({
 }));
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ replace: mockReplace }),
+  useRouter: () => ({ replace: mockReplace, push: mockPush }),
   useLocalSearchParams: jest.fn(() => ({})),
 }));
 
@@ -69,7 +70,7 @@ describe("app/join/[code]", () => {
     render(<DeepLinkScreen />);
 
     await new Promise((r) => setTimeout(r, 50));
-    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/groups/join");
+    expect(mockReplace).toHaveBeenCalledWith("/groups/join");
     expect(mockSavePendingInviteCode).not.toHaveBeenCalled();
   });
 
@@ -86,9 +87,7 @@ describe("app/join/[code]", () => {
     render(<DeepLinkScreen />);
 
     await new Promise((r) => setTimeout(r, 50));
-    expect(mockReplace).toHaveBeenCalledWith(
-      "/(tabs)/groups/join?code=ABC12345",
-    );
+    expect(mockPush).toHaveBeenCalledWith("/groups/join?code=ABC12345");
     expect(mockSavePendingInviteCode).not.toHaveBeenCalled();
   });
 

@@ -160,7 +160,7 @@ describe("App Index", () => {
 
     await waitFor(() => {
       expect(mockRouter.replace).toHaveBeenCalledWith(
-        "/(tabs)/groups/join?code=ABC12345",
+        "/groups/join?code=ABC12345",
       );
     });
     expect(mockClearPendingInviteCode).toHaveBeenCalled();

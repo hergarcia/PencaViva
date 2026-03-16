@@ -125,7 +125,7 @@ describe("GroupsScreen", () => {
     });
 
     fireEvent.press(getByTestId("group-card-g1"));
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/g1");
+    expect(mockPush).toHaveBeenCalledWith("/groups/g1");
   });
 
   it("navigates to create group screen when create button is pressed", async () => {
@@ -138,7 +138,7 @@ describe("GroupsScreen", () => {
     });
 
     fireEvent.press(getByTestId("create-group-button"));
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/create");
+    expect(mockPush).toHaveBeenCalledWith("/groups/create");
   });
 
   it("navigates to join group screen when join button is pressed", async () => {
@@ -151,7 +151,7 @@ describe("GroupsScreen", () => {
     });
 
     fireEvent.press(getByTestId("join-group-button"));
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/join");
+    expect(mockPush).toHaveBeenCalledWith("/groups/join");
   });
 
   it("returns null when user is not authenticated", () => {
@@ -187,7 +187,7 @@ describe("GroupsScreen", () => {
     // Tap Create Group
     await waitFor(() => expect(getByTestId("menu-create-group")).toBeTruthy());
     fireEvent.press(getByTestId("menu-create-group"));
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/create");
+    expect(mockPush).toHaveBeenCalledWith("/groups/create");
   });
 
   it("navigates to join group from header menu", async () => {
@@ -214,6 +214,6 @@ describe("GroupsScreen", () => {
 
     await waitFor(() => expect(getByTestId("menu-join-group")).toBeTruthy());
     fireEvent.press(getByTestId("menu-join-group"));
-    expect(mockPush).toHaveBeenCalledWith("/(tabs)/groups/join");
+    expect(mockPush).toHaveBeenCalledWith("/groups/join");
   });
 });

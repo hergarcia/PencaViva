@@ -22,7 +22,7 @@ jest.mock("expo-router", () => ({
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { createGroup, fetchActiveTournaments } = require("@lib/groups-service");
 const { useAuth } = require("@hooks/use-auth");
-const CreateGroupScreen = require("../../../app/(tabs)/groups/create").default;
+const CreateGroupScreen = require("../../../app/groups/create").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 beforeEach(() => {
@@ -78,7 +78,7 @@ describe("CreateGroupScreen", () => {
       );
     });
 
-    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/groups/g-1");
+    expect(mockReplace).toHaveBeenCalledWith("/groups/g-1");
   });
 
   it("shows Alert when createGroup throws", async () => {
