@@ -16,118 +16,203 @@
 **Out of scope:**
 
 - Group header (name, description, member count)
-- QR code size or placement
+- QR code size, content, or surrounding spacing
 - "Share with friends" button
 - Overall screen layout (to be redesigned when leaderboard/participants land)
+- Haptic feedback (deferred — no haptic library is installed yet)
 
 ---
 
 ## UI Design
 
+### Invite Card — Vertical Layout
+
+The invite card (`backgroundColor: colors.surface`, `borderRadius: 12`, `padding: 20`, `alignItems: center`) contains elements in this exact vertical order:
+
+```
+INVITE CODE label
+[code pill]                           ← tappable, testID="invite-code"
+"Code copied!" / "Link copied!"       ← conditional feedback, hidden when null
+[QR code]                             ← unchanged, same size and spacing
+[Copy code]   [Copy link]             ← side-by-side row, marginTop: 20
+```
+
 ### Invite Code Pill
 
-The 8-character invite code is displayed inside a tappable container:
+A `TouchableOpacity` (`testID="invite-code"`) wrapping a horizontal row:
 
-- Background: `colors.surface` (`#1A1A2E`)
-- Border: `colors.primary` at 30% opacity, 1.5px
+- Background: `colors.surface`
+- Border: `colors.primary + "4D"` (30% opacity hex), 1.5px
 - Border radius: 10px
-- Code text: `colors.primary` (`#00D4AA`), 28px, bold, letter-spacing 8
-- Right side: small copy icon (`Ionicons` `copy-outline`, 18px, `colors.primary`)
-- Padding: 14px horizontal, 12px vertical
+- `flexDirection: "row"`, `alignItems: "center"`, `justifyContent: "space-between"`
+- `paddingVertical: 12`, `paddingHorizontal: 18`
+- `width: "100%"`
+- Left: code text — `color: colors.primary`, `fontSize: 26`, `fontWeight: "700"`, `letterSpacing: 6`
+- Right: `<Ionicons name="copy-outline" size={18} color={colors.primary} />`
 
-**On press:** copies the 8-char code via `@react-native-clipboard/clipboard`, sets `codeCopied = true` for 1500ms, then resets.
+**On press:** `copyWithFeedback(group.invite_code, "code")`
 
-### "Copied!" Feedback
+**Note:** `group.invite_code` is always present when the screen renders (required field in the DB schema, non-nullable). No null guard needed.
 
-A single line of text below the code pill:
+### Feedback Line
 
-- Text: `"Copied!"` in `colors.primary`, 12px
-- Visible only when `codeCopied === true` or `linkCopied === true`
-- Shows which was copied: `"Code copied!"` or `"Link copied!"`
-- No animation library — plain conditional render is sufficient
+Rendered between the code pill and the QR code. No `testID` — asserted in tests by text content.
+
+```tsx
+{
+  copiedState !== null ? (
+    <Text
+      style={{
+        color: colors.primary,
+        fontSize: 12,
+        marginTop: 6,
+        marginBottom: 4,
+      }}
+    >
+      {copiedState === "code" ? "Code copied!" : "Link copied!"}
+    </Text>
+  ) : null;
+}
+```
+
+Only one message is ever visible at a time (enforced by the state model).
 
 ### Copy Action Buttons
 
-Two buttons side-by-side below the QR code, replacing the current single "Copy invite link" button:
+A `View` with `flexDirection: "row"`, `gap: 8`, `width: "100%"`, `marginTop: 20` — replaces the current single "Copy invite link" `TouchableOpacity`.
 
-**Copy code** (primary):
+**Copy code** (`testID="copy-code-button"`):
 
-- Border: `colors.primary`, 1px
-- Text: `colors.primary`
-- Icon: `copy-outline` (Ionicons)
-- Action: copies 8-char invite code, sets `codeCopied = true`
+- `flex: 1`
+- `borderWidth: 1`, `borderColor: colors.primary`
+- `borderRadius: 8`, `paddingVertical: 10`
+- `flexDirection: "row"`, `alignItems: "center"`, `justifyContent: "center"`, `gap: 6`
+- Icon: `<Ionicons name="copy-outline" size={16} color={colors.primary} />`
+- Text: `"Copy code"`, `color: colors.primary`, `fontSize: 13`, `fontWeight: "600"`
+- On press: `copyWithFeedback(group.invite_code, "code")`
 
-**Copy link** (secondary):
+**Copy link** (`testID="copy-link-button"`):
 
-- Border: `colors.surfaceBorder`
-- Text: `colors.textSecondary`
-- Icon: `link-outline` (Ionicons)
-- Action: copies full URL (`APP_BASE_URL/join/<invite_code>`), sets `linkCopied = true`
+- `flex: 1`
+- `borderWidth: 1`, `borderColor: colors.surfaceBorder`
+- `borderRadius: 8`, `paddingVertical: 10`
+- `flexDirection: "row"`, `alignItems: "center"`, `justifyContent: "center"`, `gap: 6`
+- Icon: `<Ionicons name="link-outline" size={16} color={colors.textSecondary} />`
+- Text: `"Copy link"`, `color: colors.textSecondary`, `fontSize: 13`, `fontWeight: "600"`
+- On press: `copyWithFeedback(inviteUrl, "link")`
 
-Both buttons: `flex: 1`, `borderRadius: 8`, `paddingVertical: 10`, icon + text row with `gap: 6`.
-
----
-
-## Clipboard Migration
-
-Replace:
-
-```typescript
-const Clipboard = require("react-native").Clipboard;
-Clipboard.setString(inviteUrl);
-```
-
-With:
-
-```typescript
-import Clipboard from "@react-native-clipboard/clipboard";
-Clipboard.setString(value);
-```
-
-Install: `npx expo install @react-native-clipboard/clipboard`
-
-This package is Expo-compatible and doesn't require a native rebuild in Expo Go.
+**`inviteUrl`** is constructed as: `` `${APP_BASE_URL}/join/${group.invite_code}` `` — same as the current code. `APP_BASE_URL` is imported from `@lib/constants`.
 
 ---
 
 ## State
 
-Add to `GroupDetailScreen`:
-
 ```typescript
-const [codeCopied, setCodeCopied] = useState(false);
-const [linkCopied, setLinkCopied] = useState(false);
+const [copiedState, setCopiedState] = useState<"code" | "link" | null>(null);
+const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+// Cleanup on unmount to prevent setState on unmounted component
+useEffect(() => {
+  return () => {
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+  };
+}, []);
+
+function copyWithFeedback(text: string, type: "code" | "link") {
+  Clipboard.setString(text);
+  if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+  setCopiedState(type);
+  copyTimeoutRef.current = setTimeout(() => setCopiedState(null), 1500);
+}
 ```
 
-Helper:
+The `clearTimeout` guard ensures that rapid sequential taps show only the most recent action's feedback.
+
+---
+
+## Clipboard Migration
+
+Install:
+
+```bash
+npx expo install @react-native-clipboard/clipboard
+```
+
+> **Important:** `@react-native-clipboard/clipboard` is a native module. It is **not available in Expo Go** — a development client rebuild (EAS) is required after adding this dependency.
+
+Replace existing clipboard usage:
 
 ```typescript
-function copyWithFeedback(text: string, setter: (v: boolean) => void) {
-  Clipboard.setString(text);
-  setter(true);
-  setTimeout(() => setter(false), 1500);
-}
+// Before (deprecated, remove this)
+const Clipboard = require("react-native").Clipboard;
+Clipboard.setString(inviteUrl);
+```
+
+```typescript
+// After
+import Clipboard from "@react-native-clipboard/clipboard";
+// used as: Clipboard.setString(value)
 ```
 
 ---
 
 ## Files Changed
 
-| File                                 | Change                                                                               |
-| ------------------------------------ | ------------------------------------------------------------------------------------ |
-| `app/(tabs)/groups/[id].tsx`         | Implement tap-to-copy pill, split copy buttons, inline feedback, clipboard migration |
-| `package.json` / `package-lock.json` | Add `@react-native-clipboard/clipboard`                                              |
+| File                                                 | Change                                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `app/(tabs)/groups/[id].tsx`                         | Implement tap-to-copy pill, split copy buttons, inline feedback, clipboard migration |
+| `src/__mocks__/@react-native-clipboard/clipboard.ts` | New manual mock for Jest                                                             |
+| `jest.config.js`                                     | Add `moduleNameMapper` entry for `@react-native-clipboard/clipboard`                 |
+| `src/__tests__/navigation/group-screens.test.tsx`    | Add clipboard mock import + new test cases                                           |
+| `package.json` / `package-lock.json`                 | Add `@react-native-clipboard/clipboard`                                              |
 
 ---
 
 ## Tests
 
-Update `src/__tests__/navigation/group-screens.test.tsx`:
+### Manual mock
 
-- Mock `@react-native-clipboard/clipboard`
-- Test: tapping invite code pill calls `Clipboard.setString` with the 8-char code
-- Test: tapping "Copy code" button calls `Clipboard.setString` with the 8-char code
-- Test: tapping "Copy link" button calls `Clipboard.setString` with the full URL
-- Test: "Code copied!" text appears after tapping code pill
-- Test: "Link copied!" text appears after tapping copy link button
-- Keep existing tests passing
+Add `src/__mocks__/@react-native-clipboard/clipboard.ts`:
+
+```typescript
+const Clipboard = {
+  setString: jest.fn(),
+  getString: jest.fn().mockResolvedValue(""),
+};
+export default Clipboard;
+```
+
+### Jest config
+
+Add to `moduleNameMapper` in `jest.config.js` (unit project):
+
+```javascript
+"^@react-native-clipboard/clipboard$":
+  "<rootDir>/src/__mocks__/@react-native-clipboard/clipboard.ts",
+```
+
+### Test cases
+
+In `src/__tests__/navigation/group-screens.test.tsx`, add at the top alongside existing mocks:
+
+```typescript
+jest.mock("@react-native-clipboard/clipboard");
+/* eslint-disable @typescript-eslint/no-require-imports */
+const Clipboard = require("@react-native-clipboard/clipboard").default;
+/* eslint-enable @typescript-eslint/no-require-imports */
+```
+
+Add a new `describe("Invite code section")` block (requires `useGroupDetail` mock to return a loaded group with `invite_code: "ABCD1234"`):
+
+- `testID="invite-code"` is present (preserves existing test)
+- Tapping `testID="invite-code"` calls `Clipboard.setString("ABCD1234")`
+- Tapping `testID="copy-code-button"` calls `Clipboard.setString("ABCD1234")`
+- Tapping `testID="copy-link-button"` calls `Clipboard.setString("https://pencaviva.app/join/ABCD1234")`
+- After tapping `testID="invite-code"`, `"Code copied!"` text is visible
+- After tapping `testID="copy-link-button"`, `"Link copied!"` text is visible
+- `"Code copied!"` text is not visible on initial render
+
+Existing tests must keep passing:
+
+- `testID="invite-code"` findable (now on the `TouchableOpacity` pill wrapper)
+- `testID="share-button"` still present
