@@ -7,11 +7,13 @@ mockChain.insert = jest.fn(() => mockChain);
 mockChain.single = jest.fn(() => mockChain);
 
 const mockRpc = jest.fn();
+const mockGetUser = jest.fn();
 
 jest.mock("@lib/supabase", () => ({
   supabase: {
     from: jest.fn(() => mockChain),
     rpc: mockRpc,
+    auth: { getUser: mockGetUser },
   },
 }));
 
@@ -21,6 +23,9 @@ const {
   fetchUserGroups,
   createGroup,
   fetchActiveTournaments,
+  fetchGroupById,
+  lookupGroupByInviteCode,
+  joinGroupByCode,
 } = require("@lib/groups-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -264,5 +269,144 @@ describe("fetchActiveTournaments", () => {
     });
 
     await expect(fetchActiveTournaments()).rejects.toThrow("DB error");
+  });
+});
+
+describe("fetchGroupById", () => {
+  const fakeGroup = {
+    id: "g1",
+    name: "Test Group",
+    description: "desc",
+    avatar_url: null,
+    invite_code: "ABC12345",
+    created_by: "u1",
+    group_members: [{ count: 3 }],
+  };
+
+  it("returns UserGroup on success", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1" } } });
+    mockChain.single.mockResolvedValueOnce({
+      data: { role: "admin", group: fakeGroup },
+      error: null,
+    });
+
+    const result = await fetchGroupById("g1");
+
+    expect(result).toEqual({
+      id: "g1",
+      name: "Test Group",
+      description: "desc",
+      avatar_url: null,
+      invite_code: "ABC12345",
+      created_by: "u1",
+      member_count: 3,
+      role: "admin",
+    });
+  });
+
+  it("filters by group_id and is_active", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1" } } });
+    mockChain.single.mockResolvedValueOnce({
+      data: { role: "member", group: fakeGroup },
+      error: null,
+    });
+
+    await fetchGroupById("g1");
+
+    expect(mockChain.eq).toHaveBeenCalledWith("group_id", "g1");
+    expect(mockChain.eq).toHaveBeenCalledWith("is_active", true);
+  });
+
+  it("throws 'Not authenticated' when user is null", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: null } });
+
+    await expect(fetchGroupById("g1")).rejects.toThrow("Not authenticated");
+  });
+
+  it("throws on Supabase error", async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: "u1" } } });
+    mockChain.single.mockResolvedValueOnce({
+      data: null,
+      error: new Error("DB error"),
+    });
+
+    await expect(fetchGroupById("g1")).rejects.toThrow("DB error");
+  });
+});
+
+describe("lookupGroupByInviteCode", () => {
+  it("calls RPC with uppercased code and returns GroupPreview", async () => {
+    const preview = {
+      id: "g-1",
+      name: "Test Group",
+      description: "A group",
+      avatar_url: null,
+      member_count: 5,
+      max_members: 50,
+      scoring_system: {
+        exact_score: 5,
+        correct_result: 3,
+        correct_goal_diff: 1,
+        wrong: 0,
+      },
+    };
+    mockRpc.mockResolvedValueOnce({ data: [preview], error: null });
+
+    const result = await lookupGroupByInviteCode("abc12345");
+
+    expect(mockRpc).toHaveBeenCalledWith("lookup_group_by_invite_code", {
+      p_invite_code: "ABC12345",
+    });
+    expect(result).toEqual(preview);
+  });
+
+  it("throws on RPC error", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: new Error("group_not_found"),
+    });
+
+    await expect(lookupGroupByInviteCode("abc12345")).rejects.toThrow(
+      "group_not_found",
+    );
+  });
+
+  it("throws when code is not 8 characters", async () => {
+    await expect(lookupGroupByInviteCode("short")).rejects.toThrow();
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("joinGroupByCode", () => {
+  it("calls RPC with uppercased code and returns CreatedGroup", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ id: "g-1", name: "Test Group", invite_code: "ABC12345" }],
+      error: null,
+    });
+
+    const result = await joinGroupByCode("abc12345");
+
+    expect(mockRpc).toHaveBeenCalledWith("join_group_by_code", {
+      p_invite_code: "ABC12345",
+    });
+    expect(result).toEqual({
+      id: "g-1",
+      name: "Test Group",
+      invite_code: "ABC12345",
+    });
+  });
+
+  it("throws on RPC error", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: new Error("already_member"),
+    });
+
+    await expect(joinGroupByCode("abc12345")).rejects.toThrow("already_member");
+  });
+
+  it("throws when code is not 8 characters", async () => {
+    await expect(joinGroupByCode("short")).rejects.toThrow();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 });

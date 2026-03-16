@@ -113,6 +113,105 @@ export async function createGroup(
 }
 
 /**
+ * Fetch a single group by ID for the authenticated user.
+ * Uses the same group:groups!inner alias as fetchUserGroups.
+ * RLS is enforced implicitly — only members can load a group.
+ */
+export async function fetchGroupById(groupId: string): Promise<UserGroup> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("group_members")
+    .select(
+      `
+      role,
+      group:groups!inner (
+        id,
+        name,
+        description,
+        avatar_url,
+        invite_code,
+        created_by,
+        group_members ( count )
+      )
+    `,
+    )
+    .eq("user_id", user.id)
+    .eq("group_id", groupId)
+    .eq("is_active", true)
+    .single();
+
+  if (error) throw error;
+  if (!data) throw new Error("Group not found");
+
+  const g = data.group as unknown as Record<string, unknown>;
+  const memberCountArr = g.group_members as { count: number }[];
+  return {
+    id: g.id as string,
+    name: g.name as string,
+    description: g.description as string | null,
+    avatar_url: g.avatar_url as string | null,
+    invite_code: g.invite_code as string,
+    created_by: g.created_by as string,
+    member_count: memberCountArr?.[0]?.count ?? 0,
+    role: data.role as GroupRole,
+  };
+}
+
+export interface GroupPreview {
+  id: string;
+  name: string;
+  description: string | null;
+  avatar_url: string | null;
+  member_count: number;
+  max_members: number;
+  scoring_system: ScoringSystem;
+}
+
+/**
+ * Look up a group by its 8-character invite code.
+ * Returns a preview with group info, member count, and scoring.
+ * SECURITY DEFINER RPC — bypasses RLS so non-members can preview.
+ */
+export async function lookupGroupByInviteCode(
+  code: string,
+): Promise<GroupPreview> {
+  if (code.length !== 8) {
+    throw new Error("Invite code must be exactly 8 characters");
+  }
+  const { data, error } = await supabase.rpc("lookup_group_by_invite_code", {
+    p_invite_code: code.toUpperCase(),
+  });
+  if (error) throw new Error(error.message);
+  // RETURNS TABLE RPCs return an array — take the first row
+  const rows = data as GroupPreview[];
+  if (!rows || rows.length === 0) throw new Error("group_not_found");
+  return rows[0];
+}
+
+/**
+ * Join a group by its 8-character invite code.
+ * Atomically validates membership capacity and inserts the user.
+ * SECURITY DEFINER RPC — handles all validation server-side.
+ */
+export async function joinGroupByCode(code: string): Promise<CreatedGroup> {
+  if (code.length !== 8) {
+    throw new Error("Invite code must be exactly 8 characters");
+  }
+  const { data, error } = await supabase.rpc("join_group_by_code", {
+    p_invite_code: code.toUpperCase(),
+  });
+  if (error) throw new Error(error.message);
+  // RETURNS TABLE RPCs return an array — take the first row
+  const rows = data as CreatedGroup[];
+  if (!rows || rows.length === 0) throw new Error("Failed to join group");
+  return rows[0];
+}
+
+/**
  * Fetch all active tournaments for display in the group creation form.
  */
 export async function fetchActiveTournaments(): Promise<Tournament[]> {

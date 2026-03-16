@@ -8,8 +8,12 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@hooks/use-auth";
 import { updateProfile, uploadAvatar } from "@lib/profile-service";
@@ -32,6 +36,68 @@ type Profile = {
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const { width } = useWindowDimensions();
+  const showThreeStats = width >= 390;
+  const insets = useSafeAreaInsets();
+
+  const deviceLocale =
+    typeof Intl !== "undefined"
+      ? Intl.DateTimeFormat().resolvedOptions().locale
+      : "en";
+  const isTest =
+    typeof process !== "undefined" && Boolean(process.env?.JEST_WORKER_ID);
+  const isEs = !isTest && deviceLocale.toLowerCase().startsWith("es");
+  const copy = isEs
+    ? {
+        editProfile: "Editar perfil",
+        signOut: "Cerrar sesion",
+        editAvatar: "Editar avatar",
+        points: "Puntos",
+        team: "Equipo",
+        user: "Usuario",
+        displayName: "Nombre visible *",
+        bio: "Bio",
+        favoriteTeam: "Equipo favorito",
+        save: "Guardar",
+        cancel: "Cancelar",
+        emptyBio: "Sin bio todavia",
+        emptyTeam: "Sin equipo",
+        retry: "Reintentar",
+        loadError: "No se pudo cargar el perfil.",
+        permissionTitle: "Permiso requerido",
+        permissionBody: "Permiti el acceso a tu galeria.",
+        saveErrorTitle: "Error",
+        saveErrorBody: "No se pudo guardar el perfil. Intenta nuevamente.",
+        signOutErrorTitle: "Cerrar sesion",
+        signOutErrorBody: "No se pudo cerrar sesion. Intenta nuevamente.",
+        sectionProfile: "Tu perfil",
+        sectionTeam: "Preferencias",
+      }
+    : {
+        editProfile: "Edit Profile",
+        signOut: "Sign Out",
+        editAvatar: "Edit avatar",
+        points: "Points",
+        team: "Team",
+        user: "User",
+        displayName: "Display Name *",
+        bio: "Bio",
+        favoriteTeam: "Favorite Team",
+        save: "Save",
+        cancel: "Cancel",
+        emptyBio: "No bio yet",
+        emptyTeam: "No team",
+        retry: "Retry",
+        loadError: "Failed to load profile.",
+        permissionTitle: "Permission required",
+        permissionBody: "Please allow access to your photo library.",
+        saveErrorTitle: "Error",
+        saveErrorBody: "Failed to save profile. Please try again.",
+        signOutErrorTitle: "Sign Out Failed",
+        signOutErrorBody: "Could not sign out. Please try again.",
+        sectionProfile: "Profile",
+        sectionTeam: "Preferences",
+      };
 
   // ── Data state ──────────────────────────────────────────────────
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -62,12 +128,12 @@ export default function ProfileScreen() {
       .eq("id", user.id)
       .single();
     if (error) {
-      setFetchError("Failed to load profile.");
+      setFetchError(copy.loadError);
     } else {
       setProfile(data);
     }
     setIsLoading(false);
-  }, [user?.id]);
+  }, [copy.loadError, user?.id]);
 
   useEffect(() => {
     fetchProfile();
@@ -93,10 +159,7 @@ export default function ProfileScreen() {
   const handlePickAvatar = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission required",
-        "Please allow access to your photo library.",
-      );
+      Alert.alert(copy.permissionTitle, copy.permissionBody);
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -110,7 +173,12 @@ export default function ProfileScreen() {
       setPendingAvatarUri(localUri);
       setEditAvatarUri(localUri);
     }
-  }, []);
+  }, [copy.permissionBody, copy.permissionTitle]);
+
+  const handleEditAvatar = useCallback(() => {
+    handleEdit();
+    handlePickAvatar();
+  }, [handleEdit, handlePickAvatar]);
 
   const handleSave = useCallback(async () => {
     if (!profile || !user?.id) return;
@@ -171,12 +239,14 @@ export default function ProfileScreen() {
       setPendingAvatarUri(null);
       setIsEditing(false);
     } catch {
-      Alert.alert("Error", "Failed to save profile. Please try again.");
+      Alert.alert(copy.saveErrorTitle, copy.saveErrorBody);
     } finally {
       setIsSaving(false);
       setIsUploading(false);
     }
   }, [
+    copy.saveErrorBody,
+    copy.saveErrorTitle,
     profile,
     user?.id,
     editDisplayName,
@@ -189,9 +259,9 @@ export default function ProfileScreen() {
     try {
       await signOut();
     } catch {
-      Alert.alert("Sign Out Failed", "Could not sign out. Please try again.");
+      Alert.alert(copy.signOutErrorTitle, copy.signOutErrorBody);
     }
-  }, [signOut]);
+  }, [copy.signOutErrorBody, copy.signOutErrorTitle, signOut]);
 
   // ── Guards ──────────────────────────────────────────────────────
 
@@ -233,7 +303,7 @@ export default function ProfileScreen() {
           style={{ marginTop: 16, alignItems: "center" }}
           testID="retry-button"
         >
-          <Text style={{ color: colors.primary }}>Retry</Text>
+          <Text style={{ color: colors.primary }}>{copy.retry}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -245,6 +315,12 @@ export default function ProfileScreen() {
   const initials = (profile.display_name ||
     profile.username ||
     "?")[0].toUpperCase();
+  const hasBio = Boolean(profile.bio && profile.bio.trim());
+  const bioText = hasBio ? profile.bio!.trim() : copy.emptyBio;
+  const hasTeam = Boolean(
+    profile.favorite_team && profile.favorite_team.trim(),
+  );
+  const teamText = hasTeam ? profile.favorite_team!.trim() : copy.emptyTeam;
 
   // ── Render ──────────────────────────────────────────────────────
 
@@ -253,140 +329,292 @@ export default function ProfileScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       testID="profile-screen"
     >
-      <ScrollView contentContainerStyle={{ padding: 24 }}>
-        {/* Avatar */}
-        <View style={{ alignItems: "center", marginBottom: 24 }}>
-          <TouchableOpacity
-            testID="avatar-picker"
-            onPress={isEditing ? handlePickAvatar : undefined}
-            disabled={!isEditing || isUploading}
-            activeOpacity={isEditing ? 0.7 : 1}
-          >
-            {avatarDisplayUri ? (
-              <Image
-                source={{ uri: avatarDisplayUri }}
-                style={{ width: 96, height: 96, borderRadius: 48 }}
-                testID="avatar-image"
-              />
-            ) : (
-              <View
-                style={{
-                  width: 96,
-                  height: 96,
-                  borderRadius: 48,
-                  backgroundColor: colors.surface,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
+      <ScrollView
+        contentContainerStyle={{
+          padding: 24,
+          paddingBottom: Math.max(24, insets.bottom + 24),
+          flexGrow: 1,
+        }}
+      >
+        {!isEditing ? (
+          <View style={{ flex: 1, justifyContent: "space-between" }}>
+            <View>
+              <View style={{ alignItems: "center" }}>
+                {/* Avatar */}
+                <View style={{ alignItems: "center", marginBottom: 24 }}>
+                  <TouchableOpacity
+                    testID="avatar-picker"
+                    onPress={isEditing ? handlePickAvatar : undefined}
+                    disabled={!isEditing || isUploading}
+                    activeOpacity={isEditing ? 0.7 : 1}
+                  >
+                    {avatarDisplayUri ? (
+                      <Image
+                        source={{ uri: avatarDisplayUri }}
+                        style={{ width: 96, height: 96, borderRadius: 48 }}
+                        testID="avatar-image"
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          width: 96,
+                          height: 96,
+                          borderRadius: 48,
+                          backgroundColor: colors.surface,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: colors.textPrimary,
+                            fontSize: 32,
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {initials}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleEditAvatar}
+                  style={{ marginBottom: 8 }}
+                  testID="edit-avatar-button"
+                >
+                  <Text style={{ color: colors.primary, fontWeight: "bold" }}>
+                    {copy.editAvatar}
+                  </Text>
+                </TouchableOpacity>
+
                 <Text
                   style={{
                     color: colors.textPrimary,
-                    fontSize: 32,
+                    fontSize: 22,
                     fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                  testID="profile-display-name"
+                >
+                  {profile.display_name}
+                </Text>
+                {!showThreeStats ? (
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      textAlign: "center",
+                      marginTop: 4,
+                    }}
+                  >
+                    @{profile.username}
+                  </Text>
+                ) : null}
+                <Text
+                  style={{
+                    color: hasBio ? colors.textSecondary : colors.textSecondary,
+                    textAlign: "center",
+                    marginTop: 8,
+                    opacity: hasBio ? 1 : 0.7,
                   }}
                 >
-                  {initials}
+                  {bioText}
                 </Text>
               </View>
-            )}
-          </TouchableOpacity>
-        </View>
+              <View
+                style={{
+                  marginTop: 20,
+                  flexDirection: "row",
+                  alignSelf: "stretch",
+                }}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.surface,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor: colors.surfaceBorder,
+                    marginRight: 12,
+                  }}
+                >
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                    {copy.points}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontSize: 20,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {profile.points_total}
+                  </Text>
+                </View>
 
-        {/* View mode */}
-        {!isEditing && (
-          <>
-            <Text
-              style={{
-                color: colors.textPrimary,
-                fontSize: 22,
-                fontWeight: "bold",
-                textAlign: "center",
-              }}
-              testID="profile-display-name"
-            >
-              {profile.display_name}
-            </Text>
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.surface,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor: colors.surfaceBorder,
+                    marginRight: showThreeStats ? 12 : 0,
+                  }}
+                >
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                    {copy.team}
+                  </Text>
+                  <Text
+                    style={{
+                      color: hasTeam
+                        ? colors.textPrimary
+                        : colors.textSecondary,
+                      fontSize: 16,
+                      fontWeight: "bold",
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {teamText}
+                  </Text>
+                </View>
+                {showThreeStats ? (
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: colors.surface,
+                      borderRadius: 12,
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderWidth: 1,
+                      borderColor: colors.surfaceBorder,
+                    }}
+                  >
+                    <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                      {copy.user}
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: "bold",
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      @{profile.username}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+
+            <View style={{ marginTop: 24, alignItems: "stretch" }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: colors.primary,
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: "center",
+                }}
+                onPress={handleEdit}
+                testID="edit-button"
+              >
+                <Text style={{ color: colors.background, fontWeight: "bold" }}>
+                  {copy.editProfile}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  marginTop: 12,
+                  padding: 16,
+                  alignItems: "center",
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "#EF4444",
+                }}
+                onPress={handleSignOut}
+                testID="sign-out-button"
+              >
+                <Text style={{ color: "#EF4444", fontWeight: "bold" }}>
+                  {copy.signOut}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <View>
+            {/* Avatar */}
+            <View style={{ alignItems: "center", marginBottom: 24 }}>
+              <TouchableOpacity
+                testID="avatar-picker"
+                onPress={isEditing ? handlePickAvatar : undefined}
+                disabled={!isEditing || isUploading}
+                activeOpacity={isEditing ? 0.7 : 1}
+              >
+                {avatarDisplayUri ? (
+                  <Image
+                    source={{ uri: avatarDisplayUri }}
+                    style={{ width: 96, height: 96, borderRadius: 48 }}
+                    testID="avatar-image"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 96,
+                      height: 96,
+                      borderRadius: 48,
+                      backgroundColor: colors.surface,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.textPrimary,
+                        fontSize: 32,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {initials}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Edit mode */}
             <Text
               style={{
                 color: colors.textSecondary,
-                textAlign: "center",
-                marginTop: 4,
+                marginBottom: 8,
+                fontWeight: "bold",
               }}
             >
-              @{profile.username}
+              {copy.sectionProfile}
             </Text>
-            {profile.bio ? (
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  textAlign: "center",
-                  marginTop: 8,
-                }}
-              >
-                {profile.bio}
-              </Text>
-            ) : null}
-            {profile.favorite_team ? (
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  textAlign: "center",
-                  marginTop: 4,
-                }}
-              >
-                {profile.favorite_team}
-              </Text>
-            ) : null}
-
             <View
               style={{
-                marginTop: 16,
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-                alignItems: "center",
-                alignSelf: "center",
+                height: 1,
+                backgroundColor: colors.surfaceBorder,
+                marginBottom: 16,
               }}
-            >
-              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-                Points
-              </Text>
-              <Text
-                style={{
-                  color: colors.primary,
-                  fontSize: 20,
-                  fontWeight: "bold",
-                }}
-              >
-                {profile.points_total}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={{
-                marginTop: 24,
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 16,
-                alignItems: "center",
-              }}
-              onPress={handleEdit}
-              testID="edit-button"
-            >
-              <Text style={{ color: colors.textPrimary, fontWeight: "bold" }}>
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        {/* Edit mode */}
-        {isEditing && (
-          <>
+            />
             <Text style={{ color: colors.textSecondary, marginBottom: 4 }}>
-              Display Name *
+              {copy.displayName}
             </Text>
             <TextInput
               value={editDisplayName}
@@ -401,7 +629,7 @@ export default function ProfileScreen() {
               testID="display-name-input"
             />
             <Text style={{ color: colors.textSecondary, marginBottom: 4 }}>
-              Bio
+              {copy.bio}
             </Text>
             <TextInput
               value={editBio}
@@ -416,8 +644,24 @@ export default function ProfileScreen() {
               }}
               testID="bio-input"
             />
+            <Text
+              style={{
+                color: colors.textSecondary,
+                marginBottom: 8,
+                fontWeight: "bold",
+              }}
+            >
+              {copy.sectionTeam}
+            </Text>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: colors.surfaceBorder,
+                marginBottom: 16,
+              }}
+            />
             <Text style={{ color: colors.textSecondary, marginBottom: 4 }}>
-              Favorite Team
+              {copy.favoriteTeam}
             </Text>
             <TextInput
               value={editFavoriteTeam}
@@ -458,7 +702,7 @@ export default function ProfileScreen() {
                     fontWeight: "bold",
                   }}
                 >
-                  Save
+                  {copy.save}
                 </Text>
               )}
             </TouchableOpacity>
@@ -468,19 +712,10 @@ export default function ProfileScreen() {
               onPress={handleCancel}
               testID="cancel-button"
             >
-              <Text style={{ color: colors.textSecondary }}>Cancel</Text>
+              <Text style={{ color: colors.textSecondary }}>{copy.cancel}</Text>
             </TouchableOpacity>
-          </>
+          </View>
         )}
-
-        {/* Sign out */}
-        <TouchableOpacity
-          style={{ marginTop: 24, padding: 16, alignItems: "center" }}
-          onPress={handleSignOut}
-          testID="sign-out-button"
-        >
-          <Text style={{ color: "#EF4444", fontWeight: "bold" }}>Sign Out</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

@@ -159,18 +159,20 @@
   - Effort: 6h
   - Notes: Service layer adds `createGroup()` + `fetchActiveTournaments()` to `src/lib/groups-service.ts`. `ScoringPresetCard` presentational component (`src/components/groups/ScoringPresetCard.tsx`) with 4 presets (Balanced, Punish Draws, Reward Accuracy, Custom) and inline custom scoring inputs. Screen (`app/(tabs)/groups/create.tsx`) replaces Spanish placeholder with full form: name/description inputs, tournament chips (optional), scoring preset selection, custom scoring panel, submit handler with validation + Alert feedback. 16 new tests (8 service, 6 component, 8 screen integration, 1 regression fix in group-screens test).
 
-- [ ] **F1-11** Generate invite code + QR
+- [x] **F1-11** Generate invite code + QR
   - Unique 8-character code
   - QR generated in-app
   - Share via social media
   - Depends: F1-10 (create group)
   - Effort: 3h
+  - Notes: Replaced groups/[id].tsx stub with full group detail screen. `invite_code` already in DB from migration 00001. `fetchGroupById()` added to groups-service.ts (mirrors fetchUserGroups join alias). `useGroupDetail` hook guards on `isInitialized` (not `isLoading`). QR via `react-native-qrcode-svg` (SVG-based, Expo SDK 55 compatible). Sharing via `Share.share` from react-native core (text links, not files). Invite URL: `https://pencaviva.app/join/<invite_code>`. Copy uses deprecated `Clipboard` from react-native (TODO: migrate to @react-native-clipboard/clipboard). 9 new tests. No DB migration needed.
 
-- [ ] **F1-12** Join group (by code)
+- [x] **F1-12** Join group (by code)
   - 8-character code input
   - Validation that group exists and has space
   - Depends: F0-07 (DB)
   - Effort: 4h
+  - Notes: Two SECURITY DEFINER RPCs: `lookup_group_by_invite_code` (preview for non-members) and `join_group_by_code` (atomic join with race-condition guard via FOR UPDATE). Service layer adds `GroupPreview` type + 2 validated functions (8-char check, uppercase). Join screen: 8 hex char boxes (ref-based state to avoid stale closure), auto-triggers lookup, shows inline group preview card with scoring chips, join button with loading state. Error mapping: group_not_found / group_full / already_member. Migration 00009 applied to remote DB. 14 screen tests + 6 service tests + 9 SQL integration tests.
 
 - [ ] **F1-13** Deep link for invitations
   - `pencaviva://join/ABC12345` or universal link
@@ -465,14 +467,14 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 12     | 12        | 0           | 0       |
-| Phase 1: MVP     | 28     | 7         | 0           | 21      |
+| Phase 1: MVP     | 28     | 9         | 0           | 19      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **67** | **19**    | **0**       | **48**  |
+| **Total MVP**    | **67** | **21**    | **0**       | **46**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 28.4%**
+**Overall MVP progress: 31.3%**
 
 ---
 

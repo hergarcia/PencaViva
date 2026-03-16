@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Modal,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -22,6 +24,8 @@ export default function GroupsScreen() {
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const menuAnchorRef = useRef<View>(null);
 
   const loadGroups = useCallback(async () => {
     if (!user?.id) return;
@@ -49,10 +53,12 @@ export default function GroupsScreen() {
   );
 
   const handleCreateGroup = useCallback(() => {
+    setMenuVisible(false);
     router.push("/(tabs)/groups/create");
   }, [router]);
 
   const handleJoinGroup = useCallback(() => {
+    setMenuVisible(false);
     router.push("/(tabs)/groups/join");
   }, [router]);
 
@@ -272,8 +278,8 @@ export default function GroupsScreen() {
           My Groups
         </Text>
         <TouchableOpacity
-          testID="header-create-button"
-          onPress={handleCreateGroup}
+          testID="header-add-button"
+          onPress={() => setMenuVisible(true)}
           style={{
             backgroundColor: colors.primary + "20",
             borderRadius: 20,
@@ -282,10 +288,76 @@ export default function GroupsScreen() {
             alignItems: "center",
             justifyContent: "center",
           }}
+          ref={menuAnchorRef}
         >
           <Ionicons name="add" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
+
+      {/* Action menu modal */}
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <Pressable style={{ flex: 1 }} onPress={() => setMenuVisible(false)}>
+          <View
+            style={{
+              position: "absolute",
+              top: 100,
+              right: 20,
+              backgroundColor: colors.surface,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.surfaceBorder,
+              minWidth: 180,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <TouchableOpacity
+              testID="menu-create-group"
+              onPress={handleCreateGroup}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                padding: 14,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.surfaceBorder,
+              }}
+            >
+              <Ionicons
+                name="add-circle-outline"
+                size={20}
+                color={colors.primary}
+              />
+              <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
+                Create Group
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID="menu-join-group"
+              onPress={handleJoinGroup}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                padding: 14,
+              }}
+            >
+              <Ionicons name="enter-outline" size={20} color={colors.primary} />
+              <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
+                Join Group
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
 
       <FlatList
         data={groups}
