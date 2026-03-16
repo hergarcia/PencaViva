@@ -26,7 +26,13 @@ type ScreenState = "idle" | "loading" | "preview" | "error" | "joining";
 
 /** Map RPC error messages to user-friendly text. */
 function getErrorMessage(error: unknown): string {
-  const msg = error instanceof Error ? error.message : String(error);
+  // Supabase RPC errors are plain objects with a `message` property, not Error instances
+  const msg =
+    error instanceof Error
+      ? error.message
+      : typeof error === "object" && error !== null && "message" in error
+        ? String((error as { message: string }).message)
+        : String(error);
   if (msg.includes("group_not_found")) return "No group found with this code";
   if (msg.includes("group_full")) return "This group is full";
   if (msg.includes("already_member"))

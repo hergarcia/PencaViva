@@ -185,7 +185,7 @@ export async function lookupGroupByInviteCode(
   const { data, error } = await supabase.rpc("lookup_group_by_invite_code", {
     p_invite_code: code.toUpperCase(),
   });
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   // RETURNS TABLE RPCs return an array — take the first row
   const rows = data as GroupPreview[];
   if (!rows || rows.length === 0) throw new Error("group_not_found");
@@ -204,7 +204,7 @@ export async function joinGroupByCode(code: string): Promise<CreatedGroup> {
   const { data, error } = await supabase.rpc("join_group_by_code", {
     p_invite_code: code.toUpperCase(),
   });
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   // RETURNS TABLE RPCs return an array — take the first row
   const rows = data as CreatedGroup[];
   if (!rows || rows.length === 0) throw new Error("Failed to join group");
