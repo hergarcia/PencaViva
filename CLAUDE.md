@@ -74,9 +74,10 @@ app/                    # Expo Router file-based routing
 │   ├── index.tsx       # Home tab
 │   ├── predict.tsx     # Predict tab
 │   ├── ranking.tsx     # Ranking tab
-│   ├── groups/         # Groups tab + nested routes ([id], create, join)
+│   ├── groups/         # Groups tab root (index only — join/create/detail moved to app/groups/)
 │   └── profile.tsx     # Profile tab
 ├── match/[id].tsx      # Dynamic match detail
+├── groups/             # Group detail, create, join screens (no tab bar)
 └── _layout.tsx         # Root layout
 
 src/
@@ -139,6 +140,7 @@ supabase/
 - **No custom backend**: Supabase client SDK + RLS for data access; Edge Functions (Deno) only for server-side logic (cron syncs, score calculation, push notifications)
 - **Zustand (not Redux)**: Minimal global state (auth, active group); server state managed by React Query
 - **NativeWind v5**: Uses Tailwind CSS v4 (not v3). Metro config: `withNativewind(config)` with no second argument
+- **Navigation pattern**: The 5-tab bar is the app's home base. Tab root screens live in `app/(tabs)/<name>.tsx` (tab bar visible). All other screens (detail, action, form) live at root level in `app/<feature>/<name>.tsx` (no tab bar, back arrow returns to previous screen). Example: `app/groups/join.tsx`, `app/groups/create.tsx`, `app/groups/[id].tsx`, `app/match/[id].tsx`. This rule applies to all tabs and all future features.
 
 ## Database Schema
 

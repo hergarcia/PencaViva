@@ -174,6 +174,11 @@
   - Effort: 4h
   - Notes: Two SECURITY DEFINER RPCs: `lookup_group_by_invite_code` (preview for non-members) and `join_group_by_code` (atomic join with race-condition guard via FOR UPDATE). Service layer adds `GroupPreview` type + 2 validated functions (8-char check, uppercase). Join screen: 8 hex char boxes (ref-based state to avoid stale closure), auto-triggers lookup, shows inline group preview card with scoring chips, join button with loading state. Error mapping: group_not_found / group_full / already_member. Migration 00009 applied to remote DB. 14 screen tests + 6 service tests + 9 SQL integration tests.
 
+- [x] **F1-13b** Join screen bug fixes + navigation architecture
+  - Auto-lookup on deep link pre-fill, join screen UI improvements, global nav rule (non-tab screens at root Stack)
+  - Depends: F1-13
+  - Notes: All non-tab screens now live in app/<feature>/ at root level, not inside app/(tabs)/
+
 - [x] **F1-13** Deep link for invitations
   - `pencaviva://join/ABC12345` or universal link
   - Depends: F0-06 (Expo Router)
