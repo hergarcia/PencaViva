@@ -177,7 +177,7 @@ export default function JoinGroupScreen() {
     setState("joining");
     try {
       const result = await joinGroupByCode(digitsRef.current.join(""));
-      router.replace(`/(tabs)/groups/${result.id}`);
+      router.replace(`/groups/${result.id}`);
     } catch (err) {
       setErrorText(getErrorMessage(err));
       setState("error");

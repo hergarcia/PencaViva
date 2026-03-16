@@ -68,7 +68,7 @@ export default function Index() {
     if (!isProfileChecked || !isProfileComplete) return;
     if (pendingInviteCode) {
       clearPendingInviteCode().then(() => {
-        router.replace(`/(tabs)/groups/join?code=${pendingInviteCode}`);
+        router.replace(`/groups/join?code=${pendingInviteCode}`);
       });
     } else {
       router.replace("/(tabs)");

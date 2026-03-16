@@ -157,7 +157,7 @@ export default function CreateGroupScreen() {
         tournament_ids:
           selectedTournamentIds.length > 0 ? selectedTournamentIds : undefined,
       });
-      router.replace(`/(tabs)/groups/${created.id}`);
+      router.replace(`/groups/${created.id}`);
     } catch (err) {
       Alert.alert(
         "Could not create group",

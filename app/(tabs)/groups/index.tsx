@@ -47,19 +47,19 @@ export default function GroupsScreen() {
 
   const handleGroupPress = useCallback(
     (groupId: string) => {
-      router.push(`/(tabs)/groups/${groupId}`);
+      router.push(`/groups/${groupId}`);
     },
     [router],
   );
 
   const handleCreateGroup = useCallback(() => {
     setMenuVisible(false);
-    router.push("/(tabs)/groups/create");
+    router.push("/groups/create");
   }, [router]);
 
   const handleJoinGroup = useCallback(() => {
     setMenuVisible(false);
-    router.push("/(tabs)/groups/join");
+    router.push("/groups/join");
   }, [router]);
 
   // ── Guards ──────────────────────────────────────────────────────

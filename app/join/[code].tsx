@@ -29,7 +29,7 @@ export default function DeepLinkJoinScreen() {
     async function decide() {
       // Invalid code
       if (!code || !CODE_REGEX.test(code)) {
-        router.replace("/(tabs)/groups/join");
+        router.replace("/groups/join");
         return;
       }
 
@@ -38,7 +38,7 @@ export default function DeepLinkJoinScreen() {
         const complete = await checkProfileComplete(user.id);
         if (cancelled) return;
         if (complete) {
-          router.replace(`/(tabs)/groups/join?code=${code}`);
+          router.push(`/groups/join?code=${code}`);
         } else {
           await savePendingInviteCode(code);
           if (cancelled) return;

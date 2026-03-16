@@ -1,8 +1,8 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
-import GroupDetailScreen from "../../../app/(tabs)/groups/[id]";
-import CreateGroupScreen from "../../../app/(tabs)/groups/create";
-import JoinGroupScreen from "../../../app/(tabs)/groups/join";
+import GroupDetailScreen from "../../../app/groups/[id]";
+import CreateGroupScreen from "../../../app/groups/create";
+import JoinGroupScreen from "../../../app/groups/join";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "7" }),
