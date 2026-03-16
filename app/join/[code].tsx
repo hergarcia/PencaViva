@@ -4,7 +4,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuthStore } from "@stores/auth-store";
 import { checkProfileComplete } from "@lib/profile-service";
 import { savePendingInviteCode } from "@lib/pending-invite";
-import { getStorageItem } from "@lib/storage";
 import { colors } from "@lib/constants";
 
 const CODE_REGEX = /^[0-9a-fA-F]{8}$/;
@@ -12,19 +11,14 @@ const CODE_REGEX = /^[0-9a-fA-F]{8}$/;
 export default function DeepLinkJoinScreen() {
   const router = useRouter();
   const { code } = useLocalSearchParams<{ code: string }>();
-  const { isInitialized, session, user } = useAuthStore();
+  const isInitialized = useAuthStore((s) => s.isInitialized);
+  const session = useAuthStore((s) => s.session);
+  const user = useAuthStore((s) => s.user);
   const [isReady, setIsReady] = useState(false);
 
-  // Wait for both auth init and onboarding SecureStore read
+  // Set ready once auth store has finished initializing
   useEffect(() => {
-    if (!isInitialized) return;
-    let cancelled = false;
-    getStorageItem("onboarding_completed").then(() => {
-      if (!cancelled) setIsReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
+    if (isInitialized) setIsReady(true);
   }, [isInitialized]);
 
   // Once ready, decide where to go

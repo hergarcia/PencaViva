@@ -53,7 +53,11 @@ function setupAuthStore(
     user: null,
     ...overrides,
   };
-  (useAuthStore as unknown as jest.Mock).mockReturnValue(state);
+  // Support both selector form (s => s.field) and direct destructuring
+  (useAuthStore as unknown as jest.Mock).mockImplementation(
+    (selector?: (s: typeof state) => unknown) =>
+      selector ? selector(state) : state,
+  );
 }
 
 describe("app/join/[code]", () => {
