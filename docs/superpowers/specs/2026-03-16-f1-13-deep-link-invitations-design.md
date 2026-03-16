@@ -82,9 +82,27 @@ Uses `setStorageItem` / `getStorageItem` / `deleteStorageItem` from `src/lib/sto
 
 ### `app/index.tsx` (modified)
 
-Add a new state variable `pendingInviteCode: string | null` (initialized to `null`). The pending invite check is integrated into the existing profile-completion `useEffect`: after the `checkProfileComplete` promise resolves with `complete = true`, also `await getPendingInviteCode()` and store it in a local variable, then call `setPendingInviteCode(localCode)` and `setIsProfileChecked(true)` together (React 18 batches these in async callbacks, so no extra render).
+Add a new state variable `pendingInviteCode: string | null` (initialized to `null`). Integrate the pending invite check into the existing profile-completion `useEffect` as follows — both state setters must be called synchronously in the same callback frame (no `await` between them) so React 18 batches them into a single render:
 
-Add a new `useEffect` with dependency array `[isProfileChecked, isProfileComplete, pendingInviteCode]` that fires the final redirect:
+```ts
+checkProfileComplete(user.id)
+  .then(async (complete) => {
+    if (cancelled) return;
+    const localCode = complete ? await getPendingInviteCode() : null;
+    if (cancelled) return;
+    setPendingInviteCode(localCode); // ← called synchronously with next line
+    setIsProfileComplete(complete);
+    setIsProfileChecked(true);
+  })
+  .catch(() => {
+    if (cancelled) return;
+    setPendingInviteCode(null);
+    setIsProfileComplete(true);
+    setIsProfileChecked(true);
+  });
+```
+
+Add a new `useEffect` with dependency array `[isProfileChecked, isProfileComplete, pendingInviteCode]` that fires the final redirect. Because `setPendingInviteCode` and `setIsProfileChecked(true)` are batched together above, `pendingInviteCode` will already hold the correct value when this effect first runs with `isProfileChecked = true`:
 
 ```ts
 useEffect(() => {
@@ -129,10 +147,21 @@ Remove the `<Redirect href="/(tabs)" />` JSX branch — replace with `null` (the
 
 No SQL integration tests needed — no new DB logic.
 
+### Mock requirement
+
+`src/__mocks__/expo-router.tsx` currently exports `useLocalSearchParams` as a plain function returning `{}`. Tests for `app/join/[code].tsx` and `join.tsx` pre-fill need to inject `{ code: 'ABC12345' }`. Change the mock export to a `jest.fn()`:
+
+```ts
+const useLocalSearchParams = jest.fn(() => ({}) as Record<string, string>);
+```
+
+Individual test files can then override per-test: `(useLocalSearchParams as jest.Mock).mockReturnValue({ code: 'ABC12345' })`. Add this change to `src/__mocks__/expo-router.tsx` and update existing tests that call `useLocalSearchParams` if any rely on the non-mock behavior (none currently do — it always returned `{}`).
+
 ## Files Changed
 
 | File                                               | Change                                                   |
 | -------------------------------------------------- | -------------------------------------------------------- |
+| `src/__mocks__/expo-router.tsx`                    | Modified — convert `useLocalSearchParams` to `jest.fn()` |
 | `src/lib/storage.ts`                               | Modified — add `deleteStorageItem(key)` helper           |
 | `src/lib/pending-invite.ts`                        | New                                                      |
 | `app/join/[code].tsx`                              | New                                                      |
