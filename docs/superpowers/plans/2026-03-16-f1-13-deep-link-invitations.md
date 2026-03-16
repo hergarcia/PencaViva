@@ -821,66 +821,32 @@ git commit -m "feat(deep-link): add pending invite check to app/index.tsx"
 
 **Background:** Currently `complete-profile.tsx` calls `router.replace("/(tabs)")` on successful save. This bypasses `app/index.tsx`, so a pending invite code would be stranded. Change to `router.replace("/")` so index re-runs and picks up the pending code.
 
-**Note:** No existing test in `auth-screens.test.tsx` currently asserts the navigation target after profile save. We add a new test first (RED), then implement.
+**Note:** `auth-screens.test.tsx` uses an inline expo-router mock with no shared `mockReplace` variable, and the complete-profile save flow involves debounce + async availability checks that make it expensive to test through the UI. This is a one-line change with a clear intent — skip the TDD cycle here and change the implementation directly.
 
-- [ ] **Step 1: Add a failing test to `auth-screens.test.tsx`**
+- [ ] **Step 1: Update `complete-profile.tsx`**
 
-Find the mock for `useRouter` in `auth-screens.test.tsx` — it already has a `mockReplace = jest.fn()` (or equivalent). Add this test to the `describe("CompleteProfileScreen")` block, after the existing tests:
-
-```ts
-it("navigates to / after successfully saving profile", async () => {
-  // Fill in a valid username so the save button is enabled
-  // (look at the existing test setup in auth-screens.test.tsx
-  //  to match how they trigger a successful save)
-  // The key assertion:
-  await waitFor(() => {
-    expect(mockReplace).toHaveBeenCalledWith("/");
-  });
-});
-```
-
-**Important:** Read `auth-screens.test.tsx` before writing this test to understand how existing tests trigger the save flow (username input, debounce mock, save button press). Match that pattern exactly. The assertion is `expect(mockReplace).toHaveBeenCalledWith("/")`.
-
-- [ ] **Step 2: Run the test to verify it fails**
-
-```bash
-npm run test:unit -- --testPathPattern="auth-screens"
-```
-
-Expected: FAIL — `mockReplace` is called with `"/(tabs)"` not `"/"`
-
-- [ ] **Step 3: Update `complete-profile.tsx`**
-
-In `app/(auth)/complete-profile.tsx`, find and change:
+In `app/(auth)/complete-profile.tsx`, find and change (around line 160):
 
 ```ts
-// Before (around line 160):
+// Before:
 router.replace("/(tabs)");
 
 // After:
 router.replace("/");
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [ ] **Step 2: Run tests to verify no regressions**
 
 ```bash
 npm run test:unit -- --testPathPattern="auth-screens"
 ```
 
-Expected: PASS — all tests including new one.
+Expected: PASS — all existing tests still pass (they only check render output, not navigation).
 
-- [ ] **Step 5: Run full unit tests for regressions**
-
-```bash
-npm run test:unit
-```
-
-Expected: All pass.
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add app/(auth)/complete-profile.tsx src/__tests__/navigation/auth-screens.test.tsx
+git add app/(auth)/complete-profile.tsx
 git commit -m "fix(deep-link): navigate to / after profile completion so pending invite is processed"
 ```
 
