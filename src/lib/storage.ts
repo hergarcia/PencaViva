@@ -22,3 +22,11 @@ export async function setStorageItem(
   }
   await SecureStore.setItemAsync(key, value);
 }
+
+export async function deleteStorageItem(key: string): Promise<void> {
+  if (Platform.OS === "web") {
+    localStorage.removeItem(key);
+    return;
+  }
+  await SecureStore.deleteItemAsync(key);
+}
