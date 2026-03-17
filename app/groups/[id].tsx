@@ -129,7 +129,7 @@ export default function GroupDetailScreen() {
                 fontSize: 14,
               }}
             >
-              {tab === "members" ? `Members (${group.member_count})` : "Info"}
+              {tab === "members" ? `Members (${members.length})` : "Info"}
             </Text>
           </TouchableOpacity>
         ))}
