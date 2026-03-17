@@ -280,12 +280,17 @@ export default function JoinGroupScreen() {
           <View
             testID="error-empty-state"
             style={{
-              alignItems: "center",
               marginTop: 24,
-              paddingHorizontal: 24,
+              marginHorizontal: 24,
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.surfaceBorder,
+              borderRadius: 12,
+              padding: 24,
+              alignItems: "center",
             }}
           >
-            <Text style={{ fontSize: 28, marginBottom: 8 }}>🔍</Text>
+            <Text style={{ fontSize: 32, marginBottom: 10 }}>🔍</Text>
             <Text
               style={{
                 color: colors.textSecondary,

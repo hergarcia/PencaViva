@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "@hooks/use-auth";
 import {
@@ -170,264 +171,268 @@ export default function CreateGroupScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScreenHeader title="Create Group" />
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingBottom: 48,
-          paddingTop: 8,
-        }}
-        keyboardShouldPersistTaps="handled"
-        style={{ backgroundColor: colors.background }}
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Group Name */}
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 13,
-            fontWeight: "600",
-            marginBottom: 8,
+        <ScreenHeader title="Create Group" />
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingBottom: 48,
+            paddingTop: 8,
           }}
+          keyboardShouldPersistTaps="handled"
+          style={{ backgroundColor: colors.background }}
         >
-          Group Name *
-        </Text>
-        <TextInput
-          testID="name-input"
-          value={name}
-          onChangeText={setName}
-          placeholder="e.g. Weekend Warriors"
-          placeholderTextColor={colors.textSecondary}
-          maxLength={50}
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: colors.surfaceBorder,
-            color: colors.textPrimary,
-            padding: 14,
-            fontSize: 15,
-            marginBottom: 20,
-          }}
-        />
-
-        {/* Description */}
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 13,
-            fontWeight: "600",
-            marginBottom: 8,
-          }}
-        >
-          Description (optional)
-        </Text>
-        <TextInput
-          testID="description-input"
-          value={description}
-          onChangeText={setDescription}
-          placeholder="What is this group about?"
-          placeholderTextColor={colors.textSecondary}
-          multiline
-          maxLength={200}
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: colors.surfaceBorder,
-            color: colors.textPrimary,
-            padding: 14,
-            fontSize: 15,
-            minHeight: 80,
-            marginBottom: 20,
-            textAlignVertical: "top",
-          }}
-        />
-
-        {/* Tournaments */}
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 13,
-            fontWeight: "600",
-            marginBottom: 8,
-          }}
-        >
-          Tournaments (optional)
-        </Text>
-        {isFetchingTournaments ? (
-          <ActivityIndicator
-            testID="tournaments-loading"
-            color={colors.primary}
-            style={{ marginBottom: 20, alignSelf: "flex-start" }}
-          />
-        ) : tournaments.length === 0 ? (
+          {/* Group Name */}
           <Text
-            testID="no-tournaments"
             style={{
-              color: colors.textSecondary,
+              color: colors.textPrimary,
               fontSize: 13,
-              marginBottom: 20,
+              fontWeight: "600",
+              marginBottom: 8,
             }}
           >
-            No active tournaments available.
+            Group Name *
           </Text>
-        ) : (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 8,
-              marginBottom: 20,
-            }}
-          >
-            {tournaments.map((t) => {
-              const isSelected = selectedTournamentIds.includes(t.id);
-              return (
-                <Pressable
-                  key={t.id}
-                  testID={`tournament-chip-${t.id}`}
-                  onPress={() => toggleTournament(t.id)}
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    borderColor: isSelected
-                      ? colors.primary
-                      : colors.surfaceBorder,
-                    backgroundColor: isSelected
-                      ? colors.primary + "20"
-                      : colors.surface,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: isSelected ? colors.primary : colors.textSecondary,
-                      fontSize: 13,
-                    }}
-                  >
-                    {t.short_name ?? t.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Scoring System */}
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 13,
-            fontWeight: "600",
-            marginBottom: 12,
-          }}
-        >
-          Scoring System
-        </Text>
-        {SCORING_PRESETS.map((preset) => (
-          <ScoringPresetCard
-            key={preset.key}
-            preset={preset}
-            selected={selectedPreset === preset.key}
-            onPress={() => setSelectedPreset(preset.key)}
-          />
-        ))}
-
-        {/* Custom scoring inputs */}
-        {selectedPreset === "custom" && (
-          <View
-            testID="custom-scoring-inputs"
+          <TextInput
+            testID="name-input"
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Weekend Warriors"
+            placeholderTextColor={colors.textSecondary}
+            maxLength={50}
             style={{
               backgroundColor: colors.surface,
-              borderRadius: 12,
+              borderRadius: 10,
               borderWidth: 1,
               borderColor: colors.surfaceBorder,
-              padding: 16,
+              color: colors.textPrimary,
+              padding: 14,
+              fontSize: 15,
+              marginBottom: 20,
+            }}
+          />
+
+          {/* Description */}
+          <Text
+            style={{
+              color: colors.textPrimary,
+              fontSize: 13,
+              fontWeight: "600",
+              marginBottom: 8,
+            }}
+          >
+            Description (optional)
+          </Text>
+          <TextInput
+            testID="description-input"
+            value={description}
+            onChangeText={setDescription}
+            placeholder="What is this group about?"
+            placeholderTextColor={colors.textSecondary}
+            multiline
+            maxLength={200}
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: colors.surfaceBorder,
+              color: colors.textPrimary,
+              padding: 14,
+              fontSize: 15,
+              minHeight: 80,
+              marginBottom: 20,
+              textAlignVertical: "top",
+            }}
+          />
+
+          {/* Tournaments */}
+          <Text
+            style={{
+              color: colors.textPrimary,
+              fontSize: 13,
+              fontWeight: "600",
+              marginBottom: 8,
+            }}
+          >
+            Tournaments (optional)
+          </Text>
+          {isFetchingTournaments ? (
+            <ActivityIndicator
+              testID="tournaments-loading"
+              color={colors.primary}
+              style={{ marginBottom: 20, alignSelf: "flex-start" }}
+            />
+          ) : tournaments.length === 0 ? (
+            <Text
+              testID="no-tournaments"
+              style={{
+                color: colors.textSecondary,
+                fontSize: 13,
+                marginBottom: 20,
+              }}
+            >
+              No active tournaments available.
+            </Text>
+          ) : (
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 8,
+                marginBottom: 20,
+              }}
+            >
+              {tournaments.map((t) => {
+                const isSelected = selectedTournamentIds.includes(t.id);
+                return (
+                  <Pressable
+                    key={t.id}
+                    testID={`tournament-chip-${t.id}`}
+                    onPress={() => toggleTournament(t.id)}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 7,
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: isSelected
+                        ? colors.primary
+                        : colors.surfaceBorder,
+                      backgroundColor: isSelected
+                        ? colors.primary + "20"
+                        : colors.surface,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: isSelected
+                          ? colors.primary
+                          : colors.textSecondary,
+                        fontSize: 13,
+                      }}
+                    >
+                      {t.short_name ?? t.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Scoring System */}
+          <Text
+            style={{
+              color: colors.textPrimary,
+              fontSize: 13,
+              fontWeight: "600",
               marginBottom: 12,
             }}
           >
-            {(
-              [
-                { field: "exact_score", label: "Exact score" },
-                { field: "correct_result", label: "Correct result" },
-                { field: "correct_goal_diff", label: "Goal difference" },
-                { field: "wrong", label: "Wrong prediction" },
-              ] as const
-            ).map(({ field, label }) => (
-              <View
-                key={field}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
-                <Text style={{ color: colors.textPrimary, fontSize: 14 }}>
-                  {label}
-                </Text>
-                <TextInput
-                  testID={`custom-${field}`}
-                  value={String(customScoring[field])}
-                  onChangeText={(v) =>
-                    setCustomScoring((prev) => ({
-                      ...prev,
-                      [field]: toNonNegativeInt(v),
-                    }))
-                  }
-                  keyboardType="number-pad"
-                  maxLength={2}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: colors.surfaceBorder,
-                    color: colors.textPrimary,
-                    padding: 8,
-                    width: 56,
-                    textAlign: "center",
-                    fontSize: 15,
-                  }}
-                />
-              </View>
-            ))}
-          </View>
-        )}
+            Scoring System
+          </Text>
+          {SCORING_PRESETS.map((preset) => (
+            <ScoringPresetCard
+              key={preset.key}
+              preset={preset}
+              selected={selectedPreset === preset.key}
+              onPress={() => setSelectedPreset(preset.key)}
+            />
+          ))}
 
-        {/* Submit */}
-        <Pressable
-          testID="create-button"
-          onPress={handleCreate}
-          disabled={isSubmitting}
-          style={{
-            backgroundColor: colors.primary,
-            borderRadius: 12,
-            padding: 16,
-            alignItems: "center",
-            marginTop: 8,
-            opacity: isSubmitting ? 0.6 : 1,
-          }}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color={colors.background} />
-          ) : (
-            <Text
+          {/* Custom scoring inputs */}
+          {selectedPreset === "custom" && (
+            <View
+              testID="custom-scoring-inputs"
               style={{
-                color: colors.background,
-                fontSize: 16,
-                fontWeight: "700",
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: colors.surfaceBorder,
+                padding: 16,
+                marginBottom: 12,
               }}
             >
-              Create Group
-            </Text>
+              {(
+                [
+                  { field: "exact_score", label: "Exact score" },
+                  { field: "correct_result", label: "Correct result" },
+                  { field: "correct_goal_diff", label: "Goal difference" },
+                  { field: "wrong", label: "Wrong prediction" },
+                ] as const
+              ).map(({ field, label }) => (
+                <View
+                  key={field}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 12,
+                  }}
+                >
+                  <Text style={{ color: colors.textPrimary, fontSize: 14 }}>
+                    {label}
+                  </Text>
+                  <TextInput
+                    testID={`custom-${field}`}
+                    value={String(customScoring[field])}
+                    onChangeText={(v) =>
+                      setCustomScoring((prev) => ({
+                        ...prev,
+                        [field]: toNonNegativeInt(v),
+                      }))
+                    }
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    style={{
+                      backgroundColor: colors.background,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: colors.surfaceBorder,
+                      color: colors.textPrimary,
+                      padding: 8,
+                      width: 56,
+                      textAlign: "center",
+                      fontSize: 15,
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
           )}
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+          {/* Submit */}
+          <Pressable
+            testID="create-button"
+            onPress={handleCreate}
+            disabled={isSubmitting}
+            style={{
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              padding: 16,
+              alignItems: "center",
+              marginTop: 8,
+              opacity: isSubmitting ? 0.6 : 1,
+            }}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color={colors.background} />
+            ) : (
+              <Text
+                style={{
+                  color: colors.background,
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                Create Group
+              </Text>
+            )}
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
