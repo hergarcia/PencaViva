@@ -185,11 +185,12 @@
   - Depends: F1-13
   - Notes: All non-tab screens now live in app/<feature>/ at root level, not inside app/(tabs)/
 
-- [ ] **F1-14** Group detail (members, info)
+- [x] **F1-14** Group detail (members, info)
   - Member list with roles
   - Group info, assigned tournaments
   - Depends: F1-09 (group list)
   - Effort: 4h
+  - Notes: Tabbed layout (Members | Info). Service layer adds `fetchGroupMembers()` (group_members→profiles join, sorted by role then joined_at) and `fetchGroupTournaments()` (group_tournaments→tournaments join). `UserGroup` now includes `scoring_system`. `useGroupDetail` fetches all three in parallel via `Promise.all`. `MemberRow` component with letter avatar + role badge. Info tab: scoring 2×2 grid + tournaments list + invite/QR section (moved from root of screen). No DB migration needed (RLS from 00005 already allows member queries).
 
 - [ ] **F1-15** Assign tournaments to group
   - Multi-select of available tournaments
