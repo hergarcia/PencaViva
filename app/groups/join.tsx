@@ -20,7 +20,7 @@ import {
 import { colors } from "@lib/constants";
 
 const CODE_LENGTH = 8;
-const HEX_REGEX = /^[0-9a-fA-F]$/;
+const ALPHANUMERIC_REGEX = /^[0-9a-zA-Z]$/;
 
 type ScreenState = "idle" | "loading" | "preview" | "error" | "joining";
 
@@ -80,7 +80,7 @@ export default function JoinGroupScreen() {
   }, []);
 
   useEffect(() => {
-    if (!codeParam || !/^[0-9a-fA-F]{8}$/.test(codeParam)) return;
+    if (!codeParam || !/^[0-9a-zA-Z]{8}$/.test(codeParam)) return;
     updateDigits(codeParam.toUpperCase().split(""));
     triggerLookup(codeParam.toUpperCase());
   }, [codeParam, updateDigits, triggerLookup]);
@@ -95,7 +95,7 @@ export default function JoinGroupScreen() {
         const chars = text
           .toUpperCase()
           .split("")
-          .filter((c) => HEX_REGEX.test(c))
+          .filter((c) => ALPHANUMERIC_REGEX.test(c))
           .slice(0, CODE_LENGTH);
         if (chars.length === 0) return;
 
@@ -133,7 +133,7 @@ export default function JoinGroupScreen() {
         return;
       }
 
-      if (!HEX_REGEX.test(char)) return;
+      if (!ALPHANUMERIC_REGEX.test(char)) return;
 
       const newDigits = [...current];
       newDigits[index] = char;

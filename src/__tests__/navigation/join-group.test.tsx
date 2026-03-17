@@ -74,7 +74,7 @@ describe("JoinGroupScreen", () => {
     const { getAllByTestId } = render(<JoinGroupScreen />);
     const inputs = getAllByTestId(/^code-input-/);
 
-    // Type 8 hex characters
+    // Type 8 alphanumeric characters
     const code = "AB12CD34";
     await act(async () => {
       for (let i = 0; i < 8; i++) {
@@ -108,19 +108,19 @@ describe("JoinGroupScreen", () => {
     expect(inputs[0].props.value).toBe("A");
   });
 
-  it("rejects non-hex characters", () => {
+  it("rejects non-alphanumeric characters", () => {
     const { getAllByTestId } = render(<JoinGroupScreen />);
     const inputs = getAllByTestId(/^code-input-/);
 
-    fireEvent.changeText(inputs[0], "G");
+    fireEvent.changeText(inputs[0], "!");
     expect(inputs[0].props.value).toBe("");
 
-    fireEvent.changeText(inputs[0], "Z");
+    fireEvent.changeText(inputs[0], " ");
     expect(inputs[0].props.value).toBe("");
 
-    // Valid hex should work
-    fireEvent.changeText(inputs[0], "F");
-    expect(inputs[0].props.value).toBe("F");
+    // Any letter A-Z or digit should work
+    fireEvent.changeText(inputs[0], "W");
+    expect(inputs[0].props.value).toBe("W");
   });
 
   it("shows group preview card on successful lookup", async () => {
@@ -430,8 +430,8 @@ describe("JoinGroupScreen", () => {
     expect(lookupGroupByInviteCode).not.toHaveBeenCalled();
   });
 
-  it("ignores invalid code param (non-hex characters) on mount", async () => {
-    mockUseLocalSearchParams.mockReturnValue({ code: "ZZZZZZZZ" });
+  it("ignores invalid code param (non-alphanumeric characters) on mount", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ code: "!!!!!!!! " });
 
     const { getAllByTestId } = render(<JoinGroupScreen />);
     const inputs = getAllByTestId(/^code-input-/);
