@@ -23,6 +23,12 @@ const fakeGroup: UserGroup = {
   invite_code: "ABC12345",
   created_by: "u1",
   member_count: 3,
+  scoring_system: {
+    exact_score: 5,
+    correct_result: 3,
+    correct_goal_diff: 1,
+    wrong: 0,
+  },
   role: "admin",
 };
 

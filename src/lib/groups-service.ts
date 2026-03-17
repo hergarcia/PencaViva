@@ -4,6 +4,13 @@ import { supabase } from "@/lib/supabase";
 
 export type GroupRole = "admin" | "moderator" | "member";
 
+export interface ScoringSystem {
+  exact_score: number;
+  correct_result: number;
+  correct_goal_diff: number;
+  wrong: number;
+}
+
 export type UserGroup = {
   id: string;
   name: string;
@@ -12,15 +19,9 @@ export type UserGroup = {
   invite_code: string;
   created_by: string;
   member_count: number;
+  scoring_system: ScoringSystem;
   role: GroupRole;
 };
-
-export interface ScoringSystem {
-  exact_score: number;
-  correct_result: number;
-  correct_goal_diff: number;
-  wrong: number;
-}
 
 export interface CreateGroupInput {
   name: string;
@@ -41,6 +42,23 @@ export interface Tournament {
   short_name: string | null;
   logo_url: string | null;
 }
+
+export type GroupMember = {
+  user_id: string;
+  display_name: string;
+  username: string;
+  avatar_url: string | null;
+  points_total: number;
+  role: GroupRole;
+  joined_at: string;
+};
+
+export type GroupTournament = {
+  id: string;
+  name: string;
+  short_name: string | null;
+  logo_url: string | null;
+};
 
 // ── Supabase queries ────────────────────────────────────────────────
 
@@ -63,6 +81,7 @@ export async function fetchUserGroups(userId: string): Promise<UserGroup[]> {
         avatar_url,
         invite_code,
         created_by,
+        scoring_system,
         group_members ( count )
       )
     `,
@@ -84,6 +103,7 @@ export async function fetchUserGroups(userId: string): Promise<UserGroup[]> {
       invite_code: group.invite_code as string,
       created_by: group.created_by as string,
       member_count: memberCountArr?.[0]?.count ?? 0,
+      scoring_system: group.scoring_system as ScoringSystem,
       role: row.role as GroupRole,
     };
   });
@@ -135,6 +155,7 @@ export async function fetchGroupById(groupId: string): Promise<UserGroup> {
         avatar_url,
         invite_code,
         created_by,
+        scoring_system,
         group_members ( count )
       )
     `,
@@ -157,8 +178,101 @@ export async function fetchGroupById(groupId: string): Promise<UserGroup> {
     invite_code: g.invite_code as string,
     created_by: g.created_by as string,
     member_count: memberCountArr?.[0]?.count ?? 0,
+    scoring_system: g.scoring_system as ScoringSystem,
     role: data.role as GroupRole,
   };
+}
+
+const ROLE_ORDER: Record<string, number> = {
+  admin: 0,
+  moderator: 1,
+  member: 2,
+};
+
+/**
+ * Fetch all active members of a group, joined with their profile data.
+ * Sorted admin → moderator → member, then joined_at ascending.
+ * RLS allows members to query group_members for their own groups.
+ */
+export async function fetchGroupMembers(
+  groupId: string,
+): Promise<GroupMember[]> {
+  const { data, error } = await supabase
+    .from("group_members")
+    .select(
+      `
+      user_id,
+      role,
+      joined_at,
+      profile:profiles!user_id (
+        display_name,
+        username,
+        avatar_url,
+        points_total
+      )
+    `,
+    )
+    .eq("group_id", groupId)
+    .eq("is_active", true);
+
+  if (error) throw error;
+
+  type RawMember = {
+    user_id: string;
+    role: string;
+    joined_at: string;
+    profile: {
+      display_name: string;
+      username: string;
+      avatar_url: string | null;
+      points_total: number;
+    };
+  };
+
+  return ((data ?? []) as unknown as RawMember[])
+    .map((row) => ({
+      user_id: row.user_id,
+      display_name: row.profile.display_name,
+      username: row.profile.username,
+      avatar_url: row.profile.avatar_url,
+      points_total: row.profile.points_total,
+      role: row.role as GroupRole,
+      joined_at: row.joined_at,
+    }))
+    .sort((a, b) => {
+      const roleDiff = (ROLE_ORDER[a.role] ?? 2) - (ROLE_ORDER[b.role] ?? 2);
+      if (roleDiff !== 0) return roleDiff;
+      return a.joined_at.localeCompare(b.joined_at);
+    });
+}
+
+/**
+ * Fetch tournaments assigned to a group, ordered by when they were added.
+ * RLS allows group members to query group_tournaments.
+ */
+export async function fetchGroupTournaments(
+  groupId: string,
+): Promise<GroupTournament[]> {
+  const { data, error } = await supabase
+    .from("group_tournaments")
+    .select(
+      `
+      tournament:tournaments!tournament_id (
+        id,
+        name,
+        short_name,
+        logo_url
+      )
+    `,
+    )
+    .eq("group_id", groupId)
+    .order("added_at", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    return row.tournament as GroupTournament;
+  });
 }
 
 export interface GroupPreview {

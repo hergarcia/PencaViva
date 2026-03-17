@@ -26,6 +26,8 @@ const {
   fetchGroupById,
   lookupGroupByInviteCode,
   joinGroupByCode,
+  fetchGroupMembers,
+  fetchGroupTournaments,
 } = require("@lib/groups-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -280,6 +282,12 @@ describe("fetchGroupById", () => {
     avatar_url: null,
     invite_code: "ABC12345",
     created_by: "u1",
+    scoring_system: {
+      exact_score: 5,
+      correct_result: 3,
+      correct_goal_diff: 1,
+      wrong: 0,
+    },
     group_members: [{ count: 3 }],
   };
 
@@ -300,6 +308,12 @@ describe("fetchGroupById", () => {
       invite_code: "ABC12345",
       created_by: "u1",
       member_count: 3,
+      scoring_system: {
+        exact_score: 5,
+        correct_result: 3,
+        correct_goal_diff: 1,
+        wrong: 0,
+      },
       role: "admin",
     });
   });
@@ -331,6 +345,118 @@ describe("fetchGroupById", () => {
     });
 
     await expect(fetchGroupById("g1")).rejects.toThrow("DB error");
+  });
+});
+
+describe("fetchGroupMembers", () => {
+  it("returns members sorted admin first then joined_at", async () => {
+    const mockData = [
+      {
+        user_id: "u2",
+        role: "member",
+        joined_at: "2024-01-01T00:00:00Z",
+        profile: {
+          display_name: "Alice",
+          username: "alice",
+          avatar_url: null,
+          points_total: 10,
+        },
+      },
+      {
+        user_id: "u1",
+        role: "admin",
+        joined_at: "2024-01-01T00:00:00Z",
+        profile: {
+          display_name: "Bob",
+          username: "bob",
+          avatar_url: null,
+          points_total: 20,
+        },
+      },
+    ];
+
+    let eqCallCount = 0;
+    mockChain.eq = jest.fn(() => {
+      eqCallCount++;
+      if (eqCallCount >= 2) {
+        return Promise.resolve({ data: mockData, error: null });
+      }
+      return mockChain;
+    });
+
+    const result = await fetchGroupMembers("g1");
+
+    expect(result[0].role).toBe("admin");
+    expect(result[0].display_name).toBe("Bob");
+    expect(result[1].role).toBe("member");
+    expect(result[1].display_name).toBe("Alice");
+  });
+
+  it("throws on Supabase error", async () => {
+    let eqCallCount = 0;
+    mockChain.eq = jest.fn(() => {
+      eqCallCount++;
+      if (eqCallCount >= 2) {
+        return Promise.resolve({ data: null, error: new Error("DB error") });
+      }
+      return mockChain;
+    });
+
+    await expect(fetchGroupMembers("g1")).rejects.toThrow("DB error");
+  });
+
+  it("returns empty array when group has no members", async () => {
+    let eqCallCount = 0;
+    mockChain.eq = jest.fn(() => {
+      eqCallCount++;
+      if (eqCallCount >= 2) {
+        return Promise.resolve({ data: [], error: null });
+      }
+      return mockChain;
+    });
+
+    const result = await fetchGroupMembers("g1");
+    expect(result).toEqual([]);
+  });
+});
+
+describe("fetchGroupTournaments", () => {
+  it("returns tournaments for a group", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: [
+        {
+          tournament: {
+            id: "t1",
+            name: "Premier League",
+            short_name: "PL",
+            logo_url: null,
+          },
+        },
+      ],
+      error: null,
+    });
+
+    const result = await fetchGroupTournaments("g1");
+
+    expect(result).toEqual([
+      { id: "t1", name: "Premier League", short_name: "PL", logo_url: null },
+    ]);
+  });
+
+  it("returns empty array when no tournaments assigned", async () => {
+    mockChain.order.mockReturnValueOnce({ data: [], error: null });
+
+    const result = await fetchGroupTournaments("g1");
+    expect(result).toEqual([]);
+  });
+
+  it("throws on Supabase error", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: null,
+      error: new Error("DB error"),
+    });
+
+    await expect(fetchGroupTournaments("g1")).rejects.toThrow("DB error");
   });
 });
 
