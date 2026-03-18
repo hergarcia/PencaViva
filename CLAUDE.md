@@ -97,7 +97,9 @@ supabase/
 ├── config.toml         # Supabase CLI config (local dev, PG 15)
 ├── migrations/         # SQL migrations (00001-00006: schema, RLS, functions/triggers)
 └── __tests__/          # SQL integration tests (db-functions/, rls/, triggers/)
-# Planned: functions/   # Edge Functions (match-sync, calculate-scores, send-notification)
+├── functions/          # Edge Functions (Deno v2 runtime)
+│   └── match-sync/    # API-Football → matches table sync (daily/live/single modes)
+# Planned: functions/calculate-scores, send-notification
 ```
 
 **Path aliases** (configured in `tsconfig.json`, mirrored in Jest `moduleNameMapper`):
@@ -132,6 +134,26 @@ supabase/
 - **Profile completion**: `app/(auth)/complete-profile.tsx` — username form with debounced uniqueness validation, Google avatar display (letter fallback), optional favorite team. Uses `useDebounce` hook (500ms) and `profile-service.ts` for validation/queries. Race condition guard via `isDebounceSettled`. Navigates to tabs on save via `router.replace()`
 - **Config**: `configureGoogleSignIn()` called at module level in `app/_layout.tsx`. Requires `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` env vars
 - **Expo plugin**: `@react-native-google-signin/google-signin` in `app.config.ts` with dynamic `iosUrlScheme` (reversed iOS client ID)
+
+## Edge Functions
+
+- **Runtime**: Supabase Edge Functions run on Deno v2 (not Node.js). Use `npm:` specifiers for npm packages (e.g., `import { createClient } from "npm:@supabase/supabase-js@2"`) and `jsr:` for Deno standard library
+- **Auth pattern**: Edge Functions that modify data use `SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS). Validate the `Authorization` header matches the service role key to prevent unauthorized access
+- **Local dev**: `supabase functions serve match-sync` starts the function with hot reload. Test with `curl -X POST http://localhost:54321/functions/v1/match-sync -H "Authorization: Bearer <service_role_key>" -H "Content-Type: application/json" -d '{"mode":"daily"}'`
+- **Testing**: Mapper/pure-logic modules use Deno's built-in test runner (`deno test`). Integration tests hit local Supabase
+- **Secrets**: Store API keys via `supabase secrets set KEY=value`. Access in code via `Deno.env.get('KEY')`. Default secrets (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.) are auto-injected
+- **Cron**: `pg_cron` + `pg_net` extensions schedule periodic Edge Function calls. Jobs defined in SQL migrations. Only works on Supabase hosted — local dev uses manual curl
+- **Linting/TypeScript**: Edge Function files under `supabase/functions/` are excluded from the project's ESLint config (`.eslintrc.js` ignorePatterns) and TypeScript config (`tsconfig.json` exclude) because they use Deno module resolution (`npm:`, `jsr:`, `.ts` extensions)
+
+### match-sync Function
+
+First Edge Function in the project. Syncs match data from API-Football into the `matches` table.
+
+- **Modes**: `daily` (all active tournaments), `live` (in-progress matches), `single` (one fixture by ID)
+- **Tournament resolution**: Maps `api_league_id` (integer from API-Football) → `tournament_id` (UUID) via `tournaments` table
+- **UPSERT**: Uses `api_match_id` as conflict key for idempotent writes
+- **Trigger pipeline**: When a match transitions to `finished`, DB trigger `process_match_result()` → `calculate_prediction_points()` → `refresh_leaderboard_cache()`
+- **Files**: `supabase/functions/match-sync/{index,api-football,mapper,sync}.ts`
 
 ## Architecture Decisions
 
