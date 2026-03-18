@@ -200,7 +200,7 @@
 
 ### Milestone 3: Predictions (Week 4)
 
-- [ ] **F1-16** Match sync (Edge Function + API-Football)
+- [x] **F1-16** Match sync (Edge Function + API-Football)
   - Edge Function `match-sync`: 24h cron for fixtures, 1min for live
   - API-Football data mapping -> matches table
   - Depends: F0-07 (DB), API-Football API key

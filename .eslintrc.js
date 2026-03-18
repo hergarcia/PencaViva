@@ -11,5 +11,11 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     "import/no-unresolved": ["error", { ignore: ["^@expo/vector-icons$"] }],
   },
-  ignorePatterns: ["node_modules/", "dist/", ".expo/", "coverage/"],
+  ignorePatterns: [
+    "node_modules/",
+    "dist/",
+    ".expo/",
+    "coverage/",
+    "supabase/functions/",
+  ],
 };
