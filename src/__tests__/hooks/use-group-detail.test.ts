@@ -120,4 +120,31 @@ describe("useGroupDetail", () => {
     expect(result.current.members).toEqual([]);
     expect(result.current.tournaments).toEqual([]);
   });
+
+  it("refetch re-fetches all data", async () => {
+    useAuth.mockReturnValue({ user: { id: "u1" }, isInitialized: true });
+    fetchGroupById.mockResolvedValue(fakeGroup);
+    fetchGroupMembers.mockResolvedValue(fakeMembers);
+    fetchGroupTournaments.mockResolvedValue(fakeTournaments);
+
+    const { result } = renderHook(() => useGroupDetail("g1"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(fetchGroupById).toHaveBeenCalledTimes(1);
+
+    // Trigger refetch
+    const updatedTournaments = [
+      ...fakeTournaments,
+      { id: "t2", name: "La Liga", short_name: "LL", logo_url: null },
+    ];
+    fetchGroupTournaments.mockResolvedValue(updatedTournaments);
+
+    await result.current.refetch();
+
+    await waitFor(() =>
+      expect(result.current.tournaments).toEqual(updatedTournaments),
+    );
+    expect(fetchGroupById).toHaveBeenCalledTimes(2);
+  });
 });

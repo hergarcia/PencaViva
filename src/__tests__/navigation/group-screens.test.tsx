@@ -9,6 +9,10 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
 }));
 
+jest.mock("@react-navigation/native", () => ({
+  useFocusEffect: jest.fn(),
+}));
+
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),
 }));
@@ -30,6 +34,7 @@ jest.mock("@hooks/use-group-detail", () => ({
     tournaments: [],
     loading: true,
     error: null,
+    refetch: jest.fn(),
   }),
 }));
 
@@ -71,6 +76,7 @@ describe("Group nested screens", () => {
       tournaments: [],
       loading: false,
       error: null,
+      refetch: jest.fn(),
     });
     render(<GroupDetailScreen />);
     expect(screen.getByText("My Penca")).toBeTruthy();
@@ -102,6 +108,7 @@ describe("Invite code section", () => {
       tournaments: [],
       loading: false,
       error: null,
+      refetch: jest.fn(),
     });
   });
 
@@ -182,6 +189,7 @@ describe("Group detail tabs", () => {
       tournaments: [],
       loading: false,
       error: null,
+      refetch: jest.fn(),
     });
   });
 
@@ -238,10 +246,39 @@ describe("Group detail tabs", () => {
       ],
       loading: false,
       error: null,
+      refetch: jest.fn(),
     });
     render(<GroupDetailScreen />);
     fireEvent.press(screen.getByTestId("tab-info"));
     expect(screen.getByTestId("tournament-t1")).toBeTruthy();
     expect(screen.getByText("Premier League (PL)")).toBeTruthy();
+  });
+
+  it("shows Manage button for admin on Info tab", () => {
+    (useGroupDetail as jest.Mock).mockReturnValue({
+      group: { ...loadedGroup, role: "admin" },
+      members,
+      tournaments: [],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByTestId("tab-info"));
+    expect(screen.getByTestId("manage-tournaments-button")).toBeTruthy();
+  });
+
+  it("hides Manage button for non-admin on Info tab", () => {
+    (useGroupDetail as jest.Mock).mockReturnValue({
+      group: { ...loadedGroup, role: "member" },
+      members,
+      tournaments: [],
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByTestId("tab-info"));
+    expect(screen.queryByTestId("manage-tournaments-button")).toBeNull();
   });
 });

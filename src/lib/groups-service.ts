@@ -337,3 +337,52 @@ export async function fetchActiveTournaments(): Promise<Tournament[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+/**
+ * Update the tournaments assigned to a group by diffing current vs desired.
+ * Deletes removed tournaments and inserts new ones.
+ * RLS enforces admin-only access on group_tournaments INSERT/DELETE.
+ */
+export async function updateGroupTournaments(
+  groupId: string,
+  newTournamentIds: string[],
+): Promise<void> {
+  const current = await fetchGroupTournaments(groupId);
+  const currentIds = new Set(current.map((t) => t.id));
+  const newIds = new Set(newTournamentIds);
+
+  const toRemove = [...currentIds].filter((id) => !newIds.has(id));
+  const toAdd = [...newIds].filter((id) => !currentIds.has(id));
+
+  if (toRemove.length === 0 && toAdd.length === 0) return;
+
+  const operations: Promise<void>[] = [];
+
+  if (toRemove.length > 0) {
+    operations.push(
+      (async () => {
+        const { error } = await supabase
+          .from("group_tournaments")
+          .delete()
+          .eq("group_id", groupId)
+          .in("tournament_id", toRemove);
+        if (error) throw error;
+      })(),
+    );
+  }
+
+  if (toAdd.length > 0) {
+    operations.push(
+      (async () => {
+        const { error } = await supabase
+          .from("group_tournaments")
+          .insert(
+            toAdd.map((tid) => ({ group_id: groupId, tournament_id: tid })),
+          );
+        if (error) throw error;
+      })(),
+    );
+  }
+
+  await Promise.all(operations);
+}

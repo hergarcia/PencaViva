@@ -192,10 +192,11 @@
   - Effort: 4h
   - Notes: Tabbed layout (Members | Info). Service layer adds `fetchGroupMembers()` (group_members→profiles join, sorted by role then joined_at) and `fetchGroupTournaments()` (group_tournaments→tournaments join). `UserGroup` now includes `scoring_system`. `useGroupDetail` fetches all three in parallel via `Promise.all`. `MemberRow` component with letter avatar + role badge. Info tab: scoring 2×2 grid + tournaments list + invite/QR section (moved from root of screen). No DB migration needed (RLS from 00005 already allows member queries).
 
-- [ ] **F1-15** Assign tournaments to group
+- [x] **F1-15** Assign tournaments to group
   - Multi-select of available tournaments
   - Depends: F0-07 (DB with tournaments table)
   - Effort: 3h
+  - Notes: Dedicated `app/groups/manage-tournaments.tsx` screen (not inline edit). Admin-only "Manage" button on group detail Info tab. `updateGroupTournaments()` in groups-service uses diff-based approach (compute toAdd/toRemove, parallel INSERT/DELETE). RLS already enforces admin-only on group_tournaments. `useGroupDetail` hook gains `refetch()` function. Group detail uses `useFocusEffect` with `hasMountedRef` to auto-refresh when returning from manage screen. No migration needed. 7 screen tests + 6 service tests + 1 hook test + 2 detail screen tests.
 
 ### Milestone 3: Predictions (Week 4)
 
@@ -474,14 +475,14 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 12     | 12        | 0           | 0       |
-| Phase 1: MVP     | 28     | 9         | 0           | 19      |
+| Phase 1: MVP     | 28     | 10        | 0           | 18      |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **67** | **21**    | **0**       | **46**  |
+| **Total MVP**    | **67** | **22**    | **0**       | **45**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 31.3%**
+**Overall MVP progress: 32.8%**
 
 ---
 
@@ -508,9 +509,9 @@ F1-01 ✅ → F1-05 ✅ → F1-02 + F1-03 (parallel) → F1-04 → F1-06
 F1-07 → F1-08
 
 Phase 1 - Milestone 2:
-F1-09 → F1-10 → F1-11
-F1-12, F1-13 (parallel)
-F1-14 → F1-15
+F1-09 ✅ → F1-10 ✅ → F1-11 ✅
+F1-12 ✅, F1-13 ✅ (parallel)
+F1-14 ✅ → F1-15 ✅
 
 Phase 1 - Milestone 3:
 F1-16 → F1-17 → F1-18 → F1-19

@@ -140,7 +140,8 @@ supabase/
 - **No custom backend**: Supabase client SDK + RLS for data access; Edge Functions (Deno) only for server-side logic (cron syncs, score calculation, push notifications)
 - **Zustand (not Redux)**: Minimal global state (auth, active group); server state managed by React Query
 - **NativeWind v5**: Uses Tailwind CSS v4 (not v3). Metro config: `withNativewind(config)` with no second argument
-- **Navigation pattern**: The 5-tab bar is the app's home base. Tab root screens live in `app/(tabs)/<name>.tsx` (tab bar visible). All other screens (detail, action, form) live at root level in `app/<feature>/<name>.tsx` (no tab bar, back arrow returns to previous screen). Example: `app/groups/join.tsx`, `app/groups/create.tsx`, `app/groups/[id].tsx`, `app/match/[id].tsx`. This rule applies to all tabs and all future features.
+- **Navigation pattern**: The 5-tab bar is the app's home base. Tab root screens live in `app/(tabs)/<name>.tsx` (tab bar visible). All other screens (detail, action, form) live at root level in `app/<feature>/<name>.tsx` (no tab bar, back arrow returns to previous screen). Example: `app/groups/join.tsx`, `app/groups/create.tsx`, `app/groups/[id].tsx`, `app/groups/manage-tournaments.tsx`, `app/match/[id].tsx`. This rule applies to all tabs and all future features.
+- **Focus refetch pattern**: Group detail screen uses `useFocusEffect` from `@react-navigation/native` with a `hasMountedRef` guard to refetch data when returning from sub-screens (e.g., manage-tournaments). Skips the first render to avoid double-fetching.
 
 ## Database Schema
 
@@ -195,17 +196,18 @@ If a check fails, fix the issue (or run `npm run format` / `npm run lint:fix` fo
 
 ### Task Workflow
 
-1. Run `/planner` for the task (explore, plan, review before writing code)
+1. **Brainstorm & plan** using superpowers workflow (`brainstorming` → `writing-plans` → `executing-plans` skills). Explore, design, review before writing code
 2. Create branch `feature/F0-XX-description` from `develop`
 3. Mark task as `[~]` in `TAREAS.md`
-4. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text.
-5. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
-6. Each completed subtask or logical unit → commit with Conventional Commits
-7. **Pre-PR document updates** (BEFORE push + PR creation):
+4. **UI Design with Stitch** (for tasks with user-facing screens): Generate mobile mockups using the Stitch MCP tool in the `PencaViva` project. Include design tokens in prompts (dark bg `#0D0D0D`, surface `#1A1A2E`, primary `#00D4AA`, secondary `#7C5CFC`, accent `#FFB800`). Always use `MOBILE` device type. After generating, **always review the result** by fetching the screenshot and visually inspecting it. If anything needs improvement (spacing, removed elements, copy changes, alignment), iterate with `edit_screens` or `generate_variants` until the design is polished. Do not accept the first generation without review. This becomes the visual spec for implementation
+5. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text
+6. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
+7. Each completed subtask or logical unit → commit with Conventional Commits
+8. **Pre-PR document updates** (BEFORE push + PR creation):
    - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
    - Commit doc updates as part of the final commit or as a separate `docs:` commit
-8. Push and create PR to `develop`, wait for green CI
-9. Merge (squash) the PR
+9. Push and create PR to `develop`, wait for green CI
+10. Merge (squash) the PR
 
 ### Task tracking
 

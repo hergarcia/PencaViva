@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@hooks/use-auth";
 import {
   fetchGroupById,
@@ -17,6 +17,7 @@ type UseGroupDetailResult = {
   tournaments: GroupTournament[];
   loading: boolean;
   error: string | null;
+  refetch: () => Promise<void>;
 };
 
 /**
@@ -31,43 +32,55 @@ export function useGroupDetail(groupId: string): UseGroupDetailResult {
   const [tournaments, setTournaments] = useState<GroupTournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const cancelledRef = useRef(false);
 
-  useEffect(() => {
-    if (!isInitialized) return;
-
+  const loadData = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
     }
 
-    let cancelled = false;
     setLoading(true);
     setError(null);
 
-    Promise.all([
-      fetchGroupById(groupId),
-      fetchGroupMembers(groupId),
-      fetchGroupTournaments(groupId),
-    ])
-      .then(([g, m, t]) => {
-        if (!cancelled) {
-          setGroup(g);
-          setMembers(m);
-          setTournaments(t);
-          setLoading(false);
-        }
-      })
-      .catch((err: Error) => {
-        if (!cancelled) {
-          setError(err.message);
-          setLoading(false);
-        }
-      });
+    try {
+      const [g, m, t] = await Promise.all([
+        fetchGroupById(groupId),
+        fetchGroupMembers(groupId),
+        fetchGroupTournaments(groupId),
+      ]);
+      if (!cancelledRef.current) {
+        setGroup(g);
+        setMembers(m);
+        setTournaments(t);
+      }
+    } catch (err: unknown) {
+      if (!cancelledRef.current) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      }
+    } finally {
+      if (!cancelledRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [groupId, user]);
+
+  useEffect(() => {
+    cancelledRef.current = false;
+
+    if (!isInitialized) return;
+
+    loadData();
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
-  }, [groupId, user, isInitialized]);
+  }, [isInitialized, loadData]);
 
-  return { group, members, tournaments, loading, error };
+  const refetch = useCallback(async () => {
+    cancelledRef.current = false;
+    await loadData();
+  }, [loadData]);
+
+  return { group, members, tournaments, loading, error, refetch };
 }
