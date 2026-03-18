@@ -1,9 +1,10 @@
 -- Add unique constraint on (api_league_id, season) so match-sync can resolve
 -- API-Football league IDs to tournament UUIDs unambiguously, and so the seed
 -- INSERT is safely re-runnable.
+-- NULLs are distinct in PostgreSQL unique indexes, so tournaments without
+-- api_league_id won't conflict with each other.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tournaments_api_league_season
-  ON tournaments (api_league_id, season)
-  WHERE api_league_id IS NOT NULL;
+  ON tournaments (api_league_id, season);
 
 -- Seed initial tournaments with API-Football league IDs.
 INSERT INTO tournaments (name, short_name, sport, country, season, api_league_id, status, start_date, end_date)
