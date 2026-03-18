@@ -1,0 +1,144 @@
+<h2>Join Screen — Layout after deep link pre-fill</h2>
+<p class="subtitle">Code is pre-filled from the link. Lookup fires automatically. Which layout works best when showing the group preview (or an error)?</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D0D0D;border-radius:10px;padding:16px;font-family:sans-serif;color:#fff;max-width:300px;margin:auto">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1A1A2E;display:flex;align-items:center;justify-content:center;font-size:14px">←</div>
+          <span style="font-size:16px;font-weight:700">Join Group</span>
+        </div>
+        <!-- Code boxes -->
+        <p style="color:#888;font-size:10px;letter-spacing:1px;text-align:center;margin-bottom:8px">INVITE CODE</p>
+        <div style="display:flex;gap:4px;justify-content:center;margin-bottom:20px">
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">A</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">B</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">C</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">1</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">2</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">3</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">4</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">5</div>
+        </div>
+        <!-- Group preview card -->
+        <div style="background:#1A1A2E;border-radius:10px;padding:14px;border:1px solid #2a2a3e;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:40px;height:40px;border-radius:8px;background:#7C5CFC;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">U</div>
+            <div>
+              <div style="font-weight:700;font-size:14px">Uruguay Squad</div>
+              <div style="color:#888;font-size:11px">12 / 50 members</div>
+            </div>
+          </div>
+          <div style="color:#888;font-size:12px;margin-bottom:8px">Predictions for Copa America</div>
+          <div style="display:flex;gap:6px">
+            <span style="background:#0D0D0D;border-radius:4px;padding:3px 7px;font-size:10px;color:#888">Exact: 5pts</span>
+            <span style="background:#0D0D0D;border-radius:4px;padding:3px 7px;font-size:10px;color:#888">Result: 3pts</span>
+            <span style="background:#0D0D0D;border-radius:4px;padding:3px 7px;font-size:10px;color:#888">Diff: 1pt</span>
+          </div>
+        </div>
+        <!-- Join button -->
+        <div style="background:#00D4AA;border-radius:10px;padding:13px;text-align:center;font-weight:700;color:#000;font-size:14px">Join Group</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Current layout (fixed)</h3>
+      <p>Auto-lookup fires on pre-fill. Preview card appears below the code boxes (as today). Join button inside the preview section. Same structure, just lookup triggers automatically.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D0D0D;border-radius:10px;padding:16px;font-family:sans-serif;color:#fff;max-width:300px;margin:auto">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1A1A2E;display:flex;align-items:center;justify-content:center;font-size:14px">←</div>
+          <span style="font-size:16px;font-weight:700">Join Group</span>
+        </div>
+        <!-- Intro text -->
+        <p style="color:#888;font-size:12px;margin-bottom:16px">Enter the 8-character invite code shared by your group admin</p>
+        <!-- Code boxes -->
+        <p style="color:#888;font-size:10px;letter-spacing:1px;text-align:center;margin-bottom:8px">INVITE CODE</p>
+        <div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px">
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">A</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">B</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">C</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">1</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">2</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">3</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">4</div>
+          <div style="width:32px;height:40px;background:#1A1A2E;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">5</div>
+        </div>
+        <!-- Error state -->
+        <div style="color:#FF4444;font-size:12px;text-align:center;margin-bottom:14px">No group found with this code</div>
+        <!-- Empty state illustration -->
+        <div style="background:#1A1A2E;border-radius:10px;padding:20px;text-align:center;border:1px dashed #2a2a3e;margin-bottom:12px">
+          <div style="font-size:28px;margin-bottom:6px">🔍</div>
+          <div style="color:#888;font-size:12px">Ask your group admin for<br/>the correct invite code</div>
+        </div>
+        <!-- Paste hint -->
+        <div style="color:#888;font-size:11px;text-align:center">Tip: You can paste the full code at once</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Richer screen with error state</h3>
+      <p>Adds a subtitle explaining what the code is. Shows a contextual empty/error state with a hint. Error message visible below the boxes.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D0D0D;border-radius:10px;padding:16px;font-family:sans-serif;color:#fff;max-width:300px;margin:auto">
+        <!-- Header with pill -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1A1A2E;display:flex;align-items:center;justify-content:center;font-size:14px">←</div>
+          <span style="font-size:16px;font-weight:700">Join Group</span>
+          <span style="margin-left:auto;background:#00D4AA22;border-radius:20px;padding:3px 10px;font-size:11px;color:#00D4AA;border:1px solid #00D4AA44">Via link</span>
+        </div>
+        <!-- Code boxes with group color highlight -->
+        <p style="color:#888;font-size:10px;letter-spacing:1px;text-align:center;margin-bottom:8px">INVITE CODE</p>
+        <div style="display:flex;gap:4px;justify-content:center;margin-bottom:16px">
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">A</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">B</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">C</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">1</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">2</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">3</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">4</div>
+          <div style="width:32px;height:40px;background:#00D4AA11;border:2px solid #00D4AA;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#00D4AA">5</div>
+        </div>
+        <!-- Group preview (success state) -->
+        <div style="background:#1A1A2E;border-radius:10px;padding:14px;border:1px solid #00D4AA33;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="width:44px;height:44px;border-radius:10px;background:#7C5CFC;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">U</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:15px">Uruguay Squad</div>
+              <div style="color:#888;font-size:11px">12 / 50 members</div>
+            </div>
+            <div style="background:#00D4AA22;border-radius:6px;padding:4px 8px;font-size:10px;color:#00D4AA">Open</div>
+          </div>
+          <div style="color:#888;font-size:12px;margin-bottom:8px;line-height:1.4">Predictions for Copa America</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span style="background:#0D0D0D;border-radius:4px;padding:3px 7px;font-size:10px;color:#888">Exact: 5pts</span>
+            <span style="background:#0D0D0D;border-radius:4px;padding:3px 7px;font-size:10px;color:#888">Result: 3pts</span>
+            <span style="background:#0D0D0D;border-radius:4px;padding:3px 7px;font-size:10px;color:#888">Diff: 1pt</span>
+          </div>
+        </div>
+        <!-- Join button -->
+        <div style="background:#00D4AA;border-radius:10px;padding:14px;text-align:center;font-weight:700;color:#000;font-size:15px">Join Group</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — "Via link" badge + tinted boxes</h3>
+      <p>Shows a subtle "Via link" badge in the header when arriving from a deep link. Code boxes have a tinted background. Preview card has a green border to signal a found group. Polished success state.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">Click a card to select it, then tell me your thoughts in the terminal. All options include the auto-lookup fix (Bug 1).</p>
