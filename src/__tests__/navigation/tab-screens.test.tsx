@@ -2,15 +2,13 @@ import React from "react";
 import { render, screen } from "@testing-library/react-native";
 
 import HomeScreen from "../../../app/(tabs)/index";
-import PredictScreen from "../../../app/(tabs)/predict";
 import RankingScreen from "../../../app/(tabs)/ranking";
 
-// GroupsScreen removed — no longer a placeholder, has its own test suite
-// in src/__tests__/navigation/groups-screen.test.tsx
+// GroupsScreen removed — has its own test suite in groups-screen.test.tsx
+// PredictScreen removed — has its own test suite in predict-screen.test.tsx
 
 const screens = [
   { Component: HomeScreen, title: "Inicio" },
-  { Component: PredictScreen, title: "Predecir" },
   { Component: RankingScreen, title: "Ranking" },
 ];
 
