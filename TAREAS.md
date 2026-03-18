@@ -213,11 +213,12 @@
   - Depends: F1-16 (matches)
   - Effort: 6h
 
-- [ ] **F1-18** Prediction input (numeric stepper)
+- [x] **F1-18** Prediction input (numeric stepper)
   - Stepper (+/-) or numeric keyboard for home_score and away_score
   - Visual confirmation (animation + haptic)
   - Depends: F1-17 (predictions screen)
   - Effort: 4h
+  - Notes: Full match detail screen (`app/match/[id].tsx`) replaces placeholder. `prediction-service.ts` with `fetchMatchDetail()` (match + tournament join + existing prediction) and `savePrediction()` (UPSERT with `onConflict: "user_id,match_id,group_id"`). `useMatchDetail` hook with save action + optimistic prediction update. `ScoreStepper` component with Reanimated spring animation (scale bounce on score change) + expo-haptics (light impact on +/-). `SaveConfirmation` overlay with checkmark scale-in animation + auto-dismiss. Read-only mode for live/finished matches shows existing prediction or "No prediction submitted". 23 new tests (5 service, 5 hook, 6 component, 7 screen integration). Old placeholder test removed.
 
 - [ ] **F1-19** Save predictions (with time validation)
   - RLS blocks post-kickoff predictions (server-side)

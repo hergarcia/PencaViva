@@ -76,7 +76,7 @@ app/                    # Expo Router file-based routing
 │   ├── ranking.tsx     # Ranking tab
 │   ├── groups/         # Groups tab root (index only — join/create/detail moved to app/groups/)
 │   └── profile.tsx     # Profile tab
-├── match/[id].tsx      # Dynamic match detail
+├── match/[id].tsx      # Match detail with prediction steppers
 ├── groups/             # Group detail, create, join screens (no tab bar)
 └── _layout.tsx         # Root layout
 
@@ -86,9 +86,9 @@ src/
 ├── components/         # Feature-organized components
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
-│   └── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader
-├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches)
-├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, profile-service
+│   └── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail)
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, prediction-service, profile-service
 ├── stores/             # Zustand stores (auth-store, group-store)
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):
