@@ -23,14 +23,23 @@ src/lib/mock/
 
 ### Entry Point
 
-`src/lib/supabase.ts` conditionally exports the mock or real client:
+`src/lib/supabase.ts` conditionally exports the mock or real client. The mock flag check must happen **before** any env var validation or `createClient` call — the existing guard that throws on missing `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` and the `AppState.addEventListener` for auto-refresh must both be wrapped in the `else` branch so they only run when using the real client:
 
 ```ts
-export const supabase =
-  process.env.EXPO_PUBLIC_USE_MOCKS === "true"
-    ? createMockClient()
-    : createClient(url, key, config);
+const IS_MOCK = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
+
+let supabase: SupabaseClient;
+
+if (IS_MOCK) {
+  supabase = createMockClient();
+} else {
+  // existing env var validation, createClient, AppState listener
+}
+
+export { supabase };
 ```
+
+`createMockClient()` returns a value typed as `SupabaseClient` (via `as unknown as SupabaseClient` cast) so the conditional export type-checks and all service imports remain compatible.
 
 All services import `supabase` from this file and are unaware of the mock.
 
@@ -40,11 +49,17 @@ Implements the Supabase client's chaining API by operating on in-memory Maps:
 
 **Query builder chain:** `.from("table")` returns a builder supporting:
 
-- `.select(columns)` — with embedded joins (e.g., `groups(name, ...)`)
-- `.eq()`, `.neq()`, `.in()`, `.gt()`, `.gte()`, `.lt()`, `.lte()` — filters
+- `.select(columns)` — with embedded joins (e.g., `groups(name, ...)`) and embedded count aggregates (e.g., `group_members(count)` returns `[{ count: N }]` by counting matching rows)
+- `.eq()`, `.neq()`, `.in()`, `.not(column, operator, value)`, `.gt()`, `.gte()`, `.lt()`, `.lte()` — filters
 - `.limit()`, `.order()` — pagination/sorting
 - `.single()`, `.maybeSingle()` — row unwrapping
-- `.insert()`, `.upsert()`, `.update()`, `.delete()` — mutations on the store
+- `.insert()`, `.upsert(data, { onConflict })`, `.update()`, `.delete()` — mutations on the store
+
+**Mutation chaining:** Mutation methods (`.insert()`, `.upsert()`, `.update()`, `.delete()`) can chain `.select()` and `.single()`/`.maybeSingle()` to return affected rows from the store (e.g., `.upsert({...}).select("id").single()`).
+
+**Filter application on mutations:** `.delete()` and `.update()` apply all chained filters (`.eq()`, `.in()`, etc.) to determine which records to affect. Example: `.delete().eq("group_id", id).in("tournament_id", ids)`.
+
+**Upsert conflict resolution:** `.upsert(data, { onConflict: "col1,col2" })` parses the `onConflict` string to perform composite-key lookup. If a matching record exists, it updates; otherwise it inserts.
 
 **RPC dispatch:** `.rpc("fn_name", params)` switches on function name:
 
@@ -74,7 +89,8 @@ type MockStore = {
 
 - Reads filter/join over Map values converted to arrays
 - Writes mutate Maps in place — changes persist for the session, reset on app restart
-- Each record uses a UUID `id` as the Map key
+- Tables with a single `id` column use it as the Map key
+- Junction tables with composite keys (`group_members`, `group_tournaments`, `predictions`) use a concatenated key (e.g., `${user_id}:${group_id}`) as the Map key
 
 ### Fixtures
 
@@ -93,15 +109,24 @@ Realistic seed data representing a typical user scenario:
 
 `mock-auth.ts` implements the auth interface:
 
-| Method                                     | Behavior                                                                                     |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `signInWithIdToken()`                      | Sets mock session with fixture user, fires `onAuthStateChange` with `SIGNED_IN`              |
-| `signOut()`                                | Clears session, fires `onAuthStateChange` with `SIGNED_OUT`                                  |
-| `onAuthStateChange(callback)`              | Stores callback, fires on sign-in/sign-out. Returns subscription object with `unsubscribe()` |
-| `getUser()`                                | Returns `{ data: { user: mockUser }, error: null }`                                          |
-| `startAutoRefresh()` / `stopAutoRefresh()` | No-op                                                                                        |
+| Method                                     | Behavior                                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `signInWithIdToken()`                      | Sets mock session, fires `onAuthStateChange` with `SIGNED_IN`. Returns `{ data: { session, user }, error: null }` |
+| `signOut()`                                | Clears session, fires `onAuthStateChange` with `SIGNED_OUT`. Returns `{ error: null }`                            |
+| `onAuthStateChange(callback)`              | Stores callback, fires on sign-in/sign-out. Returns `{ data: { subscription: { unsubscribe() } } }`               |
+| `getUser()`                                | Returns `{ data: { user: mockUser }, error: null }`                                                               |
+| `getSession()`                             | Returns `{ data: { session: currentMockSession }, error: null }`                                                  |
+| `startAutoRefresh()` / `stopAutoRefresh()` | No-op                                                                                                             |
 
-Additionally, `src/lib/google-auth.ts` needs a mock path: when mocks are enabled, `signInWithGoogle()` returns a fake ID token and `signOutFromGoogle()` is a no-op.
+### Google Auth Mock
+
+`src/lib/google-auth.ts` needs a mock path. Both `configureGoogleSignIn()` and `signInWithGoogle()` must be no-ops in mock mode, since `configureGoogleSignIn()` is called at module level in `app/_layout.tsx` and would crash without the native Google SDK:
+
+- `configureGoogleSignIn()` — no-op (skips `GoogleSignin.configure()`)
+- `signInWithGoogle()` — returns a fake ID token string
+- `signOutFromGoogle()` — no-op
+
+Each function checks `EXPO_PUBLIC_USE_MOCKS` internally to decide whether to use the real SDK or the mock path.
 
 ### Mock Storage
 
