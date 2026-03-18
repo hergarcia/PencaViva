@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import QRCode from "react-native-qrcode-svg";
 import { Ionicons } from "@expo/vector-icons";
 import Clipboard from "@react-native-clipboard/clipboard";
@@ -26,8 +27,21 @@ export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { group, members, tournaments, loading, error } = useGroupDetail(id);
+  const { group, members, tournaments, loading, error, refetch } =
+    useGroupDetail(id);
   const [activeTab, setActiveTab] = useState<Tab>("members");
+  const hasMountedRef = useRef(false);
+
+  // Refetch data when returning from another screen (e.g. manage-tournaments)
+  useFocusEffect(
+    useCallback(() => {
+      if (hasMountedRef.current) {
+        refetch();
+      } else {
+        hasMountedRef.current = true;
+      }
+    }, [refetch]),
+  );
 
   const inviteUrl = group ? `${APP_BASE_URL}/join/${group.invite_code}` : "";
   const [copiedState, setCopiedState] = useState<"code" | "link" | null>(null);
@@ -258,16 +272,42 @@ export default function GroupDetailScreen() {
           </View>
 
           {/* Tournaments */}
-          <Text
+          <View
             style={{
-              color: colors.textPrimary,
-              fontWeight: "700",
-              fontSize: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
               marginBottom: 12,
             }}
           >
-            Tournaments
-          </Text>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontWeight: "700",
+                fontSize: 16,
+              }}
+            >
+              Tournaments
+            </Text>
+            {group.role === "admin" && (
+              <TouchableOpacity
+                testID="manage-tournaments-button"
+                onPress={() =>
+                  router.push(`/groups/manage-tournaments?groupId=${id}`)
+                }
+              >
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: 13,
+                    fontWeight: "600",
+                  }}
+                >
+                  Manage
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
           {tournaments.length === 0 ? (
             <Text
               style={{

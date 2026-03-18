@@ -4,6 +4,8 @@ mockChain.select = jest.fn(() => mockChain);
 mockChain.eq = jest.fn(() => mockChain);
 mockChain.order = jest.fn(() => mockChain);
 mockChain.insert = jest.fn(() => mockChain);
+mockChain.delete = jest.fn(() => mockChain);
+mockChain.in = jest.fn(() => mockChain);
 mockChain.single = jest.fn(() => mockChain);
 
 const mockRpc = jest.fn();
@@ -28,6 +30,7 @@ const {
   joinGroupByCode,
   fetchGroupMembers,
   fetchGroupTournaments,
+  updateGroupTournaments,
 } = require("@lib/groups-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -37,6 +40,8 @@ beforeEach(() => {
   mockChain.eq = jest.fn(() => mockChain);
   mockChain.order = jest.fn(() => mockChain);
   mockChain.insert = jest.fn(() => mockChain);
+  mockChain.delete = jest.fn(() => mockChain);
+  mockChain.in = jest.fn(() => mockChain);
   mockChain.single = jest.fn(() => mockChain);
 });
 
@@ -558,5 +563,150 @@ describe("joinGroupByCode", () => {
   it("throws when code is not 8 characters", async () => {
     await expect(joinGroupByCode("short")).rejects.toThrow();
     expect(mockRpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateGroupTournaments", () => {
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const { supabase } = require("@lib/supabase");
+  /* eslint-enable @typescript-eslint/no-require-imports */
+
+  beforeEach(() => {
+    // Reset from() to return different chains for different tables
+    (supabase.from as jest.Mock).mockImplementation(() => mockChain);
+  });
+
+  it("inserts new tournaments and deletes removed ones", async () => {
+    // Current tournaments: t1, t2. New desired: t2, t3.
+    // Should delete t1 and insert t3.
+    mockChain.order.mockReturnValueOnce({
+      data: [
+        {
+          tournament: {
+            id: "t1",
+            name: "T1",
+            short_name: null,
+            logo_url: null,
+          },
+        },
+        {
+          tournament: {
+            id: "t2",
+            name: "T2",
+            short_name: null,
+            logo_url: null,
+          },
+        },
+      ],
+      error: null,
+    });
+
+    // delete returns
+    mockChain.in.mockResolvedValueOnce({ error: null });
+    // insert returns
+    mockChain.insert.mockResolvedValueOnce({ error: null });
+
+    await updateGroupTournaments("g1", ["t2", "t3"]);
+
+    // Should have called from("group_tournaments") for fetching, deleting, and inserting
+    expect(supabase.from).toHaveBeenCalledWith("group_tournaments");
+  });
+
+  it("only inserts when no tournaments to remove", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: [],
+      error: null,
+    });
+
+    mockChain.insert.mockResolvedValueOnce({ error: null });
+
+    await updateGroupTournaments("g1", ["t1"]);
+
+    expect(mockChain.insert).toHaveBeenCalledWith([
+      { group_id: "g1", tournament_id: "t1" },
+    ]);
+    // delete should not be called (no removals)
+    expect(mockChain.delete).not.toHaveBeenCalled();
+  });
+
+  it("only deletes when removing all tournaments", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: [
+        {
+          tournament: {
+            id: "t1",
+            name: "T1",
+            short_name: null,
+            logo_url: null,
+          },
+        },
+      ],
+      error: null,
+    });
+
+    mockChain.in.mockResolvedValueOnce({ error: null });
+
+    await updateGroupTournaments("g1", []);
+
+    expect(mockChain.delete).toHaveBeenCalled();
+    expect(mockChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when there are no changes", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: [
+        {
+          tournament: {
+            id: "t1",
+            name: "T1",
+            short_name: null,
+            logo_url: null,
+          },
+        },
+      ],
+      error: null,
+    });
+
+    await updateGroupTournaments("g1", ["t1"]);
+
+    expect(mockChain.delete).not.toHaveBeenCalled();
+    expect(mockChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("throws when delete fails", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: [
+        {
+          tournament: {
+            id: "t1",
+            name: "T1",
+            short_name: null,
+            logo_url: null,
+          },
+        },
+      ],
+      error: null,
+    });
+
+    mockChain.in.mockResolvedValueOnce({ error: new Error("RLS violation") });
+
+    await expect(updateGroupTournaments("g1", [])).rejects.toThrow(
+      "RLS violation",
+    );
+  });
+
+  it("throws when insert fails", async () => {
+    mockChain.order.mockReturnValueOnce({
+      data: [],
+      error: null,
+    });
+
+    mockChain.insert.mockResolvedValueOnce({
+      error: new Error("Duplicate key"),
+    });
+
+    await expect(updateGroupTournaments("g1", ["t1"])).rejects.toThrow(
+      "Duplicate key",
+    );
   });
 });
