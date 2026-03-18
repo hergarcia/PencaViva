@@ -1,6 +1,7 @@
 import React from "react";
 import {
   render,
+  renderAsync,
   screen,
   fireEvent,
   waitFor,
@@ -80,6 +81,9 @@ const ProfileScreen = require("../../../app/(tabs)/profile").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 beforeEach(() => {
+  // Defensive: restore real timers in case a preceding test file in the same
+  // Jest worker left fake timers active (e.g. complete-profile-screen).
+  jest.useRealTimers();
   jest.clearAllMocks();
   mockSingle.mockResolvedValue({ data: mockProfileData, error: null });
   useAuth.mockReturnValue({
@@ -107,12 +111,20 @@ beforeEach(() => {
 // ── View mode ────────────────────────────────────────────────────────
 
 describe("ProfileScreen — view mode", () => {
+  it("shows loading indicator while fetching", () => {
+    mockSingle.mockReturnValue(new Promise(() => {}));
+    const { getByTestId } = render(<ProfileScreen />);
+    expect(getByTestId("loading-indicator")).toBeTruthy();
+  });
+
   it("renders display name and @username after loading", async () => {
-    render(<ProfileScreen />);
-    await waitFor(() => {
-      expect(screen.getByText("John Doe")).toBeTruthy();
-      expect(screen.getByText("@john_doe")).toBeTruthy();
-    });
+    // renderAsync uses await act() instead of void act(), so all async work
+    // (mount, effects, data-fetch) is drained before we assert. This prevents
+    // the first async test in a Jest worker from hanging under React 19
+    // concurrent mode when void act() in renderWithAct orphans scheduler init.
+    await renderAsync(<ProfileScreen />);
+    expect(screen.getByText("John Doe")).toBeTruthy();
+    expect(screen.getByText("@john_doe")).toBeTruthy();
   });
 
   it("renders bio and favorite team", async () => {

@@ -1,5 +1,10 @@
 import React from "react";
-import { render, waitFor, fireEvent } from "@testing-library/react-native";
+import {
+  render,
+  renderAsync,
+  waitFor,
+  fireEvent,
+} from "@testing-library/react-native";
 
 // ── Mocks ────────────────────────────────────────────────────────────
 
@@ -24,7 +29,10 @@ const GroupsScreen = require("../../../app/(tabs)/groups/index").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  // Defensive: restore real timers in case a preceding test file in the same
+  // Jest worker left fake timers active (e.g. complete-profile-screen).
+  jest.useRealTimers();
+  jest.resetAllMocks();
   useAuth.mockReturnValue({
     user: { id: "user-1" },
   });
@@ -52,12 +60,13 @@ describe("GroupsScreen", () => {
       },
     ]);
 
-    const { getByText, queryByTestId } = render(<GroupsScreen />);
+    // renderAsync uses await act() instead of void act(), so all async work
+    // (mount, effects, data-fetch) is drained before we assert. This prevents
+    // the first async test in a Jest worker from hanging under React 19
+    // concurrent mode when void act() in renderWithAct orphans scheduler init.
+    const { getByText, queryByTestId } = await renderAsync(<GroupsScreen />);
 
-    await waitFor(() => {
-      expect(queryByTestId("loading-indicator")).toBeNull();
-    });
-
+    expect(queryByTestId("loading-indicator")).toBeNull();
     expect(getByText("Test Group")).toBeTruthy();
   });
 

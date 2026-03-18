@@ -6,6 +6,9 @@ const rootDir = __dirname.replace(/\\/g, "/");
 
 /** @type {import('jest').Config} */
 module.exports = {
+  // Coverage instrumentation (Babel-Istanbul) adds event-loop overhead that
+  // can push React 19 concurrent-mode async tests past the default 5 s limit.
+  testTimeout: 15000,
   projects: [
     // ========================================
     // Project 1: Unit tests (existing config)
