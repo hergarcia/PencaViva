@@ -206,7 +206,7 @@
   - Depends: F0-07 (DB), API-Football API key
   - Effort: 8h
 
-- [ ] **F1-17** Predictions screen (match list)
+- [x] **F1-17** Predictions screen (match list)
   - Cards per match with logos, teams, time
   - Scroll by date/matchday
   - Status indicator (pending, submitted, closed)

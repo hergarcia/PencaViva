@@ -85,10 +85,11 @@ src/
 ├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
 ├── components/         # Feature-organized components
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
-│   └── groups/         # ScoringPresetCard, GroupCard
-├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail)
-├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, profile-service
-├── stores/             # Zustand stores (auth-store)
+│   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
+│   └── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches)
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, profile-service
+├── stores/             # Zustand stores (auth-store, group-store)
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):
 # └── utils/            # Scoring, dates, validation helpers
