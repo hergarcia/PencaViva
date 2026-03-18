@@ -12,4 +12,13 @@ module.exports = {
     "import/no-unresolved": ["error", { ignore: ["^@expo/vector-icons$"] }],
   },
   ignorePatterns: ["node_modules/", "dist/", ".expo/", "coverage/"],
+  overrides: [
+    {
+      // Deno Edge Functions use JSR/URL imports — skip Node resolver checks
+      files: ["supabase/functions/**/*.ts"],
+      rules: {
+        "import/no-unresolved": "off",
+      },
+    },
+  ],
 };
