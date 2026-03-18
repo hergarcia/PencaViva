@@ -50,6 +50,7 @@ module.exports = {
         "^react-native-svg$": "<rootDir>/src/__mocks__/react-native-svg.ts",
         "^@react-native-clipboard/clipboard$":
           "<rootDir>/src/__mocks__/@react-native-clipboard/clipboard.ts",
+        "^expo-haptics$": "<rootDir>/src/__mocks__/expo-haptics.ts",
       },
     },
     // ========================================

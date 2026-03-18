@@ -24,8 +24,9 @@ coverage/
 .vscode/
 .idea/
 
-# Claude Code local settings
-.claude/settings.local.json
+# Claude Code / Superpowers
+.claude/
+.superpowers/
 *.swp
 *.swo
 *~
