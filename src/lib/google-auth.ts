@@ -24,9 +24,14 @@ export type GoogleSignInResult =
   | { success: true; data: GoogleSignInSuccess }
   | { success: false; error: GoogleSignInError };
 
+// ── Mock flag ──────────────────────────────────────────────────────
+
+const IS_MOCK = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
+
 // ── Configuration ──────────────────────────────────────────────────
 
 export function configureGoogleSignIn(): void {
+  if (IS_MOCK) return;
   GoogleSignin.configure({
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
@@ -36,6 +41,9 @@ export function configureGoogleSignIn(): void {
 // ── Sign In ────────────────────────────────────────────────────────
 
 export async function signInWithGoogle(): Promise<GoogleSignInResult> {
+  if (IS_MOCK) {
+    return { success: true, data: { idToken: "mock-google-id-token" } };
+  }
   try {
     await GoogleSignin.hasPlayServices();
     const response = await GoogleSignin.signIn();
@@ -123,6 +131,7 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
 // ── Sign Out ───────────────────────────────────────────────────────
 
 export async function signOutFromGoogle(): Promise<void> {
+  if (IS_MOCK) return;
   try {
     await GoogleSignin.signOut();
   } catch {
