@@ -38,6 +38,12 @@ export const MOCK_PREDICTION_IDS = {
   pred4: "pr000004-0000-0000-0000-000000000004",
 } as const;
 
+export const MOCK_LEADERBOARD_IDS = {
+  entry1: "lb000001-0000-0000-0000-000000000001",
+  entry2: "lb000002-0000-0000-0000-000000000002",
+  entry3: "lb000003-0000-0000-0000-000000000003",
+} as const;
+
 // ── Date helpers ────────────────────────────────────────────────────
 
 function daysFromNow(days: number): string {
@@ -348,7 +354,7 @@ export const mockMatches = [
     tournament_id: MOCK_TOURNAMENT_ID,
     home_team_name: "Universitario",
     away_team_name: "Alianza Lima",
-    home_team_logo: "https://placehold.co/48x48?text=UNI",
+    home_team_logo: "https://placehold.co/48x48?text=UCR",
     away_team_logo: "https://placehold.co/48x48?text=ALI",
     home_score: 0,
     away_score: 0,
@@ -443,7 +449,7 @@ export const mockPredictions = [
 
 export const mockLeaderboardCache = [
   {
-    id: "lb000001-0000-0000-0000-000000000001",
+    id: MOCK_LEADERBOARD_IDS.entry1,
     group_id: MOCK_GROUP_IDS.owned,
     user_id: MOCK_USER_ID,
     points_total: 42,
@@ -454,7 +460,7 @@ export const mockLeaderboardCache = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: "lb000002-0000-0000-0000-000000000002",
+    id: MOCK_LEADERBOARD_IDS.entry2,
     group_id: MOCK_GROUP_IDS.owned,
     user_id: MOCK_MEMBER_IDS.alice,
     points_total: 38,
@@ -465,7 +471,7 @@ export const mockLeaderboardCache = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: "lb000003-0000-0000-0000-000000000003",
+    id: MOCK_LEADERBOARD_IDS.entry3,
     group_id: MOCK_GROUP_IDS.owned,
     user_id: MOCK_MEMBER_IDS.bob,
     points_total: 35,
