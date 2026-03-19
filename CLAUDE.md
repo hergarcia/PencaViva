@@ -37,6 +37,7 @@ The project has an initialized Expo skeleton with CI/CD infrastructure, a comple
 npm start                          # Expo dev server
 npm run android                    # Android emulator
 npm run ios                        # iOS simulator
+EXPO_PUBLIC_USE_MOCKS=true npm start  # Dev server with mock data (no Supabase required)
 
 # Quality
 npm run lint                       # ESLint
@@ -89,6 +90,14 @@ src/
 │   └── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation
 ├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail)
 ├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, prediction-service, profile-service
+│   ├── mock/              # Mock Supabase client (activated by EXPO_PUBLIC_USE_MOCKS=true)
+│   │   ├── index.ts       # Re-exports createMockClient
+│   │   ├── mock-client.ts # Mock SupabaseClient assembly + RPC handlers
+│   │   ├── mock-query-builder.ts  # Chaining query builder over in-memory Maps
+│   │   ├── mock-store.ts  # In-memory Maps for all 9 tables
+│   │   ├── mock-auth.ts   # Mock auth (session, signIn, signOut)
+│   │   ├── mock-storage.ts # Mock storage (upload no-op, placeholder URLs)
+│   │   └── fixtures.ts    # Seed data (profiles, groups, matches, predictions, etc.)
 ├── stores/             # Zustand stores (auth-store, group-store)
 └── types/              # Type declarations (expo-vector-icons.d.ts)
 # Planned (not yet created):
@@ -225,12 +234,13 @@ If a check fails, fix the issue (or run `npm run format` / `npm run lint:fix` fo
 4. **UI Design with Stitch** (for tasks with user-facing screens): Generate mobile mockups using the Stitch MCP tool in the `PencaViva` project. Include design tokens in prompts (dark bg `#0D0D0D`, surface `#1A1A2E`, primary `#00D4AA`, secondary `#7C5CFC`, accent `#FFB800`). Always use `MOBILE` device type. After generating, **always review the result** by fetching the screenshot and visually inspecting it. If anything needs improvement (spacing, removed elements, copy changes, alignment), iterate with `edit_screens` or `generate_variants` until the design is polished. Do not accept the first generation without review. This becomes the visual spec for implementation
 5. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text
 6. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
-7. Each completed subtask or logical unit → commit with Conventional Commits
-8. **Pre-PR document updates** (BEFORE push + PR creation):
+7. **Mock data verification**: If the task adds or modifies a service function or Supabase query, verify that the mock system handles the new operation. Add mock RPC handlers, fixtures, or query builder support as needed. Run the app with `EXPO_PUBLIC_USE_MOCKS=true` to confirm the flow works without Supabase
+8. Each completed subtask or logical unit → commit with Conventional Commits
+9. **Pre-PR document updates** (BEFORE push + PR creation):
    - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
    - Commit doc updates as part of the final commit or as a separate `docs:` commit
-9. Push and create PR to `develop`, wait for green CI
-10. Merge (squash) the PR
+10. Push and create PR to `develop`, wait for green CI
+11. Merge (squash) the PR
 
 ### Task tracking
 

@@ -85,6 +85,12 @@
   - Effort: 3h
   - Notes: Supabase CLI initialized (`supabase/config.toml`, PG 15). `supabase@2.76.15` as devDependency. CI job "Supabase Tests" uses `supabase/setup-cli@v1` + `supabase start` to run all 18 integration tests against local Docker DB. Convenience scripts: `supabase:start` (excludes unnecessary services), `supabase:stop`, `test:supabase:local`. No test code changes needed — existing `SUPABASE_DB_URL` env var works for both remote and local. `.supabase/` added to `.gitignore`. Backward compatible: remote DB still works, graceful skip when DB unavailable.
 
+- [x] **F0-13** Mock Supabase system for offline development
+  - Criteria: App runs with `EXPO_PUBLIC_USE_MOCKS=true` without network/Docker; all existing service functions work against mock data; 14 integration tests pass
+  - Depends: F0-02 (Supabase), F1-17 (predictions)
+  - Effort: 6h
+  - Notes: In-memory mock client implements Supabase PostgREST chaining API (`.from()`, `.select()`, `.rpc()`, `.auth`, `.storage`) over Maps seeded with fixtures. Recursive `parseSelectLevel()` handles nested joins. Composite keys for junction tables. RPC handlers for `create_group_for_user`, `lookup_group_by_invite_code`, `join_group_by_code`. Activated via `EXPO_PUBLIC_USE_MOCKS=true` in `.env`. Files: `src/lib/mock/{fixtures,mock-store,mock-query-builder,mock-auth,mock-storage,mock-client,index}.ts`. Workflow step 7 in CLAUDE.md requires mock verification for new service functions.
+
 ---
 
 ## Phase 1: MVP Core (Weeks 2-5)
