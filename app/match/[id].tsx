@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { colors } from "@lib/constants";
 import { useGroupStore } from "@stores/group-store";
 import { useMatchDetail } from "@hooks/use-match-detail";
+import { useCountdown } from "@hooks/use-countdown";
 import { ScoreStepper } from "@components/predictions/ScoreStepper";
 import { SaveConfirmation } from "@components/predictions/SaveConfirmation";
 
@@ -32,17 +33,36 @@ export default function MatchDetailScreen() {
     save,
     isSaving,
     saveError,
+    isLockedByServer,
   } = useMatchDetail(id, activeGroupId);
+
+  const { isExpired, formatted: countdownFormatted } = useCountdown(
+    match?.kickoff_time ?? null,
+  );
 
   const [homeScore, setHomeScore] = useState<number | null>(null);
   const [awayScore, setAwayScore] = useState<number | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+
+  // Show saveError for 3s then auto-clear (for read-only section after RLS transition)
+  useEffect(() => {
+    if (!saveError) {
+      setErrorBanner(null);
+      return;
+    }
+    setErrorBanner(saveError);
+    const timeoutId = setTimeout(() => setErrorBanner(null), 3000);
+    return () => clearTimeout(timeoutId);
+  }, [saveError]);
 
   // Derive displayed scores (stepper state or prediction fallback)
   const displayHome = homeScore ?? prediction?.home_score_pred ?? 0;
   const displayAway = awayScore ?? prediction?.away_score_pred ?? 0;
 
-  const isEditable = match?.status === "scheduled" && !!activeGroupId;
+  const isEditable =
+    match?.status === "scheduled" && !isExpired && !isLockedByServer;
+
   const isChanged =
     prediction != null
       ? displayHome !== prediction.home_score_pred ||
@@ -247,11 +267,25 @@ export default function MatchDetailScreen() {
                     color: colors.textPrimary,
                     fontSize: 18,
                     fontWeight: "700",
-                    marginBottom: 8,
+                    marginBottom: 4,
                   }}
                 >
                   Your Prediction
                 </Text>
+
+                {/* Countdown label */}
+                {countdownFormatted !== "" && (
+                  <Text
+                    style={{
+                      color: colors.accent,
+                      fontSize: 13,
+                      textAlign: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Locks in {countdownFormatted}
+                  </Text>
+                )}
 
                 <View
                   style={{
@@ -318,7 +352,7 @@ export default function MatchDetailScreen() {
                   </Text>
                 </TouchableOpacity>
 
-                {/* Save error */}
+                {/* Save error (editable branch) */}
                 {saveError && (
                   <Text
                     style={{
@@ -371,6 +405,20 @@ export default function MatchDetailScreen() {
                       No prediction submitted
                     </Text>
                   </>
+                )}
+
+                {/* Error banner — auto-clears after 3s (RLS transition) */}
+                {errorBanner && (
+                  <Text
+                    style={{
+                      color: "#FF4444",
+                      fontSize: 13,
+                      textAlign: "center",
+                      marginTop: 12,
+                    }}
+                  >
+                    {errorBanner}
+                  </Text>
                 )}
               </View>
             )}
