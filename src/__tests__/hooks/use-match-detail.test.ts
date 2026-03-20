@@ -39,7 +39,10 @@ describe("useMatchDetail", () => {
 
   it("loads match and prediction on mount", async () => {
     const pred = { id: "p1", home_score_pred: 2, away_score_pred: 1 };
-    mockFetchMatchDetail.mockResolvedValue({ match: mockMatch, prediction: pred });
+    mockFetchMatchDetail.mockResolvedValue({
+      match: mockMatch,
+      prediction: pred,
+    });
 
     const { result } = renderHook(() => useMatchDetail("m1", "g1"));
 
@@ -69,7 +72,10 @@ describe("useMatchDetail", () => {
 
   describe("save — optimistic update", () => {
     it("sets prediction optimistically before save resolves", async () => {
-      mockFetchMatchDetail.mockResolvedValue({ match: mockMatch, prediction: null });
+      mockFetchMatchDetail.mockResolvedValue({
+        match: mockMatch,
+        prediction: null,
+      });
       // Delayed save so we can inspect state mid-flight
       let resolveSave!: () => void;
       mockSavePrediction.mockReturnValue(
@@ -104,7 +110,10 @@ describe("useMatchDetail", () => {
     });
 
     it("returns true on successful save", async () => {
-      mockFetchMatchDetail.mockResolvedValueOnce({ match: mockMatch, prediction: null });
+      mockFetchMatchDetail.mockResolvedValueOnce({
+        match: mockMatch,
+        prediction: null,
+      });
       mockSavePrediction.mockResolvedValue(undefined);
       mockFetchMatchDetail.mockResolvedValue({
         match: mockMatch,
@@ -127,7 +136,10 @@ describe("useMatchDetail", () => {
   describe("save — rollback on failure", () => {
     it("rolls back prediction to previous value on generic error", async () => {
       const existingPred = { id: "p1", home_score_pred: 1, away_score_pred: 0 };
-      mockFetchMatchDetail.mockResolvedValue({ match: mockMatch, prediction: existingPred });
+      mockFetchMatchDetail.mockResolvedValue({
+        match: mockMatch,
+        prediction: existingPred,
+      });
       mockSavePrediction.mockRejectedValue(new Error("Network error"));
 
       const { result } = renderHook(() => useMatchDetail("m1", "g1"));
@@ -144,7 +156,10 @@ describe("useMatchDetail", () => {
 
     it("rolls back and sets isLockedByServer on RLS error", async () => {
       const existingPred = { id: "p1", home_score_pred: 1, away_score_pred: 0 };
-      mockFetchMatchDetail.mockResolvedValue({ match: mockMatch, prediction: existingPred });
+      mockFetchMatchDetail.mockResolvedValue({
+        match: mockMatch,
+        prediction: existingPred,
+      });
       mockSavePrediction.mockRejectedValue(
         new Error(
           'new row violates row-level security policy for table "predictions"',
@@ -168,7 +183,10 @@ describe("useMatchDetail", () => {
     });
 
     it("shows raw error message for non-RLS failures", async () => {
-      mockFetchMatchDetail.mockResolvedValue({ match: mockMatch, prediction: null });
+      mockFetchMatchDetail.mockResolvedValue({
+        match: mockMatch,
+        prediction: null,
+      });
       mockSavePrediction.mockRejectedValue(new Error("timeout"));
 
       const { result } = renderHook(() => useMatchDetail("m1", "g1"));
@@ -185,9 +203,17 @@ describe("useMatchDetail", () => {
 
   describe("isLockedByServer reset", () => {
     it("resets isLockedByServer to false at start of refetch", async () => {
-      mockFetchMatchDetail.mockResolvedValueOnce({ match: mockMatch, prediction: null });
-      mockSavePrediction.mockRejectedValue(new Error("row-level security policy"));
-      mockFetchMatchDetail.mockResolvedValue({ match: mockMatch, prediction: null });
+      mockFetchMatchDetail.mockResolvedValueOnce({
+        match: mockMatch,
+        prediction: null,
+      });
+      mockSavePrediction.mockRejectedValue(
+        new Error("row-level security policy"),
+      );
+      mockFetchMatchDetail.mockResolvedValue({
+        match: mockMatch,
+        prediction: null,
+      });
 
       const { result } = renderHook(() => useMatchDetail("m1", "g1"));
       await waitFor(() => expect(result.current.isLoading).toBe(false));

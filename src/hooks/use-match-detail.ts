@@ -81,7 +81,11 @@ export function useMatchDetail(
       const previousPrediction = prediction; // capture for rollback
 
       // Optimistic update — show result immediately before network call
-      setPrediction({ id: "optimistic", home_score_pred: home, away_score_pred: away });
+      setPrediction({
+        id: "optimistic",
+        home_score_pred: home,
+        away_score_pred: away,
+      });
       setIsSaving(true);
       setSaveError(null);
 
@@ -95,7 +99,9 @@ export function useMatchDetail(
         setPrediction(previousPrediction);
         const msg = err instanceof Error ? err.message : "Unknown error";
         if (isRLSError(msg)) {
-          setSaveError("Predictions are locked — the match has already started.");
+          setSaveError(
+            "Predictions are locked — the match has already started.",
+          );
           setIsLockedByServer(true);
           // Deferred background refetch to sync match status
           setTimeout(() => refetch(), 0);
