@@ -226,12 +226,13 @@
   - Effort: 4h
   - Notes: Full match detail screen (`app/match/[id].tsx`) replaces placeholder. `prediction-service.ts` with `fetchMatchDetail()` (match + tournament join + existing prediction) and `savePrediction()` (UPSERT with `onConflict: "user_id,match_id,group_id"`). `useMatchDetail` hook with save action + optimistic prediction update. `ScoreStepper` component with Reanimated spring animation (scale bounce on score change) + expo-haptics (light impact on +/-). `SaveConfirmation` overlay with checkmark scale-in animation + auto-dismiss. Read-only mode for live/finished matches shows existing prediction or "No prediction submitted". 23 new tests (5 service, 5 hook, 6 component, 7 screen integration). Old placeholder test removed.
 
-- [ ] **F1-19** Save predictions (with time validation)
+- [x] **F1-19** Save predictions (with time validation)
   - RLS blocks post-kickoff predictions (server-side)
   - UI disables inputs post-kickoff (client-side)
   - Optimistic UI with rollback on error
   - Depends: F0-07 (RLS policies)
   - Effort: 4h
+  - Notes: `use-countdown` hook (recompute-from-target strategy, no drift). `isLockedByServer` state in `useMatchDetail` (set on RLS error, reset on refetch). Optimistic save with rollback + deferred background refetch via `setTimeout(() => refetch(), 0)`. Countdown label in match detail (amber, "Locks in Xh Ym"). Error banner with 3s auto-clear. `isEditable = status === "scheduled" && !isExpired && !isLockedByServer`. 22 new tests (10 countdown, 9 hook, 13 screen integration — includes pre-existing `groups-screen` flaky test).
 
 - [ ] **F1-20** View others' predictions (post-kickoff)
   - Only visible after kickoff (RLS)

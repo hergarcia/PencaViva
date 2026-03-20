@@ -54,3 +54,4 @@ __snapshots__/
 
 # Git worktrees
 .worktrees/
+.worktrees/

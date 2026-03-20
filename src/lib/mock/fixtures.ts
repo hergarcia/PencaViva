@@ -23,6 +23,8 @@ export const MOCK_MATCH_IDS = {
   scheduled2: "mt000002-0000-0000-0000-000000000002",
   scheduled3: "mt000003-0000-0000-0000-000000000003",
   scheduled4: "mt000004-0000-0000-0000-000000000004",
+  // status="scheduled" but kickoff already passed — simulates DB sync lag
+  scheduledExpired: "mt000011-0000-0000-0000-000000000011",
   live1: "mt000005-0000-0000-0000-000000000005",
   live2: "mt000006-0000-0000-0000-000000000006",
   finished1: "mt000007-0000-0000-0000-000000000007",
@@ -393,6 +395,22 @@ export const mockMatches = [
     matchday: 4,
     venue: "Brigadier Lopez",
     api_match_id: 1010,
+  },
+  {
+    id: MOCK_MATCH_IDS.scheduledExpired,
+    tournament_id: MOCK_TOURNAMENT_ID,
+    home_team_name: "Tigres UANL",
+    away_team_name: "Club America",
+    home_team_logo: "https://placehold.co/48x48?text=TIG",
+    away_team_logo: "https://placehold.co/48x48?text=AME",
+    home_score: null,
+    away_score: null,
+    // Status still "scheduled" — DB sync lag hasn't updated it yet
+    status: "scheduled",
+    kickoff_time: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    matchday: 5,
+    venue: "Estadio Universitario",
+    api_match_id: 1011,
   },
 ];
 

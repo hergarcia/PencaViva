@@ -23,6 +23,12 @@ jest.mock("@hooks/use-match-detail", () => ({
   useMatchDetail: () => mockHookReturn,
 }));
 
+// Mock useCountdown hook
+const mockUseCountdown = jest.fn();
+jest.mock("@hooks/use-countdown", () => ({
+  useCountdown: (...args: unknown[]) => mockUseCountdown(...args),
+}));
+
 /* eslint-disable @typescript-eslint/no-require-imports */
 const MatchDetailScreen = require("../../../app/match/[id]").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
@@ -39,14 +45,22 @@ const mockMatch = {
   home_score: null,
   away_score: null,
   status: "scheduled",
-  kickoff_time: "2026-03-20T18:00:00Z",
+  kickoff_time: "2027-03-20T18:00:00Z",
   matchday: 12,
   venue: "Emirates Stadium",
+};
+
+const defaultCountdown = {
+  secondsRemaining: 7200,
+  isExpired: false,
+  formatted: "2h 0m",
 };
 
 describe("MatchDetailScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+    mockUseCountdown.mockReturnValue(defaultCountdown);
     mockHookReturn = {
       match: mockMatch,
       prediction: null,
@@ -56,7 +70,12 @@ describe("MatchDetailScreen", () => {
       save: mockSave,
       isSaving: false,
       saveError: null,
+      isLockedByServer: false,
     };
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it("shows loading state", () => {
@@ -75,7 +94,6 @@ describe("MatchDetailScreen", () => {
 
   it("renders match info and steppers for scheduled match", () => {
     const { getAllByText, getByText } = render(<MatchDetailScreen />);
-    // Arsenal appears twice: match info TeamRow + stepper
     expect(getAllByText("Arsenal").length).toBe(2);
     expect(getAllByText("Chelsea").length).toBe(2);
     expect(getByText("Premier League")).toBeTruthy();
@@ -116,5 +134,81 @@ describe("MatchDetailScreen", () => {
     const { getByTestId } = render(<MatchDetailScreen />);
     fireEvent.press(getByTestId("back-button"));
     expect(mockBack).toHaveBeenCalled();
+  });
+
+  describe("countdown display", () => {
+    it("shows countdown label when editable and time remaining", () => {
+      mockUseCountdown.mockReturnValue({
+        secondsRemaining: 7200,
+        isExpired: false,
+        formatted: "2h 0m",
+      });
+      const { getByText } = render(<MatchDetailScreen />);
+      expect(getByText("Locks in 2h 0m")).toBeTruthy();
+    });
+
+    it("does not show countdown label when formatted is empty", () => {
+      mockUseCountdown.mockReturnValue({
+        secondsRemaining: 0,
+        isExpired: true,
+        formatted: "",
+      });
+      const { queryByText } = render(<MatchDetailScreen />);
+      expect(queryByText(/Locks in/)).toBeNull();
+    });
+  });
+
+  describe("isEditable — time-based lock", () => {
+    it("locks form when isExpired is true even if status is scheduled", () => {
+      mockUseCountdown.mockReturnValue({
+        secondsRemaining: 0,
+        isExpired: true,
+        formatted: "",
+      });
+      const { queryByText } = render(<MatchDetailScreen />);
+      expect(queryByText("Save Prediction")).toBeNull();
+      expect(queryByText("Update Prediction")).toBeNull();
+    });
+
+    it("locks form when isLockedByServer is true", () => {
+      mockHookReturn = { ...mockHookReturn, isLockedByServer: true };
+      const { queryByText } = render(<MatchDetailScreen />);
+      expect(queryByText("Save Prediction")).toBeNull();
+    });
+  });
+
+  describe("RLS error auto-transition", () => {
+    it("shows error in read-only section when isLockedByServer is true", () => {
+      mockHookReturn = {
+        ...mockHookReturn,
+        isLockedByServer: true,
+        saveError: "Predictions are locked — the match has already started.",
+      };
+      const { getByText, queryByText } = render(<MatchDetailScreen />);
+      expect(queryByText("Save Prediction")).toBeNull();
+      expect(
+        getByText("Predictions are locked — the match has already started."),
+      ).toBeTruthy();
+    });
+
+    it("clears the error banner after 3 seconds", () => {
+      mockHookReturn = {
+        ...mockHookReturn,
+        isLockedByServer: true,
+        saveError: "Predictions are locked — the match has already started.",
+      };
+      const { queryByText } = render(<MatchDetailScreen />);
+      expect(
+        queryByText("Predictions are locked — the match has already started."),
+      ).toBeTruthy();
+
+      act(() => {
+        jest.advanceTimersByTime(3000);
+      });
+
+      expect(
+        queryByText("Predictions are locked — the match has already started."),
+      ).toBeNull();
+    });
   });
 });

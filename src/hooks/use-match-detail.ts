@@ -3,6 +3,10 @@ import { useAuth } from "@hooks/use-auth";
 import { fetchMatchDetail, savePrediction } from "@lib/prediction-service";
 import type { MatchDetail, ExistingPrediction } from "@lib/prediction-service";
 
+function isRLSError(message: string): boolean {
+  return message.toLowerCase().includes("row-level security");
+}
+
 type UseMatchDetailResult = {
   match: MatchDetail | null;
   prediction: ExistingPrediction | null;
@@ -12,6 +16,7 @@ type UseMatchDetailResult = {
   save: (home: number, away: number) => Promise<boolean>;
   isSaving: boolean;
   saveError: string | null;
+  isLockedByServer: boolean;
 };
 
 export function useMatchDetail(
@@ -25,6 +30,7 @@ export function useMatchDetail(
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isLockedByServer, setIsLockedByServer] = useState(false);
   const cancelledRef = useRef(false);
 
   const loadData = useCallback(async () => {
@@ -35,6 +41,7 @@ export function useMatchDetail(
 
     setIsLoading(true);
     setError(null);
+    setIsLockedByServer(false); // reset on every load/refetch
 
     try {
       const result = await fetchMatchDetail(matchId, groupId, user.id);
@@ -71,25 +78,40 @@ export function useMatchDetail(
     async (home: number, away: number): Promise<boolean> => {
       if (!user?.id || !matchId || !groupId) return false;
 
+      const previousPrediction = prediction; // capture for rollback
+
+      // Optimistic update — show result immediately before network call
+      setPrediction({
+        id: "optimistic",
+        home_score_pred: home,
+        away_score_pred: away,
+      });
       setIsSaving(true);
       setSaveError(null);
 
       try {
         await savePrediction(matchId, groupId, user.id, home, away);
-        setPrediction({
-          id: "optimistic",
-          home_score_pred: home,
-          away_score_pred: away,
-        });
+        // Deferred background refetch to replace fake optimistic ID with real DB row
+        setTimeout(() => refetch(), 0);
         return true;
       } catch (err: unknown) {
-        setSaveError(err instanceof Error ? err.message : "Unknown error");
+        // Rollback to previous state
+        setPrediction(previousPrediction);
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        if (isRLSError(msg)) {
+          setSaveError(
+            "Predictions are locked — the match has already started.",
+          );
+          setIsLockedByServer(true);
+        } else {
+          setSaveError(msg);
+        }
         return false;
       } finally {
         setIsSaving(false);
       }
     },
-    [matchId, groupId, user?.id],
+    [matchId, groupId, user?.id, prediction, refetch],
   );
 
   return {
@@ -101,5 +123,6 @@ export function useMatchDetail(
     save,
     isSaving,
     saveError,
+    isLockedByServer,
   };
 }
