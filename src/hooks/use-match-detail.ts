@@ -103,8 +103,6 @@ export function useMatchDetail(
             "Predictions are locked — the match has already started.",
           );
           setIsLockedByServer(true);
-          // Deferred background refetch to sync match status
-          setTimeout(() => refetch(), 0);
         } else {
           setSaveError(msg);
         }
