@@ -7,3 +7,4 @@ android/
 coverage/
 *.tsbuildinfo
 CHANGELOG.md
+.agents/

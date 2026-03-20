@@ -24,9 +24,10 @@ coverage/
 .vscode/
 .idea/
 
-# Claude Code / Superpowers
+# Claude Code / Superpowers / Stitch
 .claude/
 .superpowers/
+.agents/
 *.swp
 *.swo
 *~
