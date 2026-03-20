@@ -118,3 +118,81 @@ export async function savePrediction(
 
   if (error) throw new Error(error.message);
 }
+
+// ── Types for group predictions ──────────────────────────────────────
+
+export interface GroupPrediction {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  homeScorePred: number | null;
+  awayScorePred: number | null;
+  points: number | null;
+}
+
+// ── Fetch all group members' predictions for a match ─────────────────
+
+export async function fetchGroupPredictions(
+  matchId: string,
+  groupId: string,
+): Promise<GroupPrediction[]> {
+  // 1. Fetch predictions for this match+group (RLS reveals after kickoff)
+  const { data: predData, error: predError } = await supabase
+    .from("predictions")
+    .select(
+      "user_id, home_score_pred, away_score_pred, points, profile:profiles!user_id ( display_name, avatar_url )",
+    )
+    .eq("match_id", matchId)
+    .eq("group_id", groupId);
+
+  if (predError) throw new Error(predError.message);
+
+  // 2. Fetch active group members
+  const { data: memberData, error: memberError } = await supabase
+    .from("group_members")
+    .select("user_id, profile:profiles!user_id ( display_name, avatar_url )")
+    .eq("group_id", groupId)
+    .eq("is_active", true);
+
+  if (memberError) throw new Error(memberError.message);
+
+  // 3. Build prediction map by user_id
+  const predMap = new Map<string, Record<string, unknown>>();
+  for (const row of predData as Record<string, unknown>[]) {
+    predMap.set(row.user_id as string, row);
+  }
+
+  // 4. Merge: every member gets a GroupPrediction entry
+  return (memberData as Record<string, unknown>[]).map((member) => {
+    const userId = member.user_id as string;
+    const profile = member.profile as {
+      display_name: string;
+      avatar_url: string | null;
+    };
+    const pred = predMap.get(userId);
+
+    if (pred) {
+      const predProfile = pred.profile as {
+        display_name: string;
+        avatar_url: string | null;
+      };
+      return {
+        userId,
+        displayName: predProfile.display_name,
+        avatarUrl: predProfile.avatar_url,
+        homeScorePred: pred.home_score_pred as number,
+        awayScorePred: pred.away_score_pred as number,
+        points: pred.points as number | null,
+      };
+    }
+
+    return {
+      userId,
+      displayName: profile.display_name,
+      avatarUrl: profile.avatar_url,
+      homeScorePred: null,
+      awayScorePred: null,
+      points: null,
+    };
+  });
+}

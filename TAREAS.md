@@ -234,20 +234,20 @@
   - Effort: 4h
   - Notes: `use-countdown` hook (recompute-from-target strategy, no drift). `isLockedByServer` state in `useMatchDetail` (set on RLS error, reset on refetch). Optimistic save with rollback + deferred background refetch via `setTimeout(() => refetch(), 0)`. Countdown label in match detail (amber, "Locks in Xh Ym"). Error banner with 3s auto-clear. `isEditable = status === "scheduled" && !isExpired && !isLockedByServer`. 22 new tests (10 countdown, 9 hook, 13 screen integration — includes pre-existing `groups-screen` flaky test).
 
-- [ ] **F1-20** View others' predictions (post-kickoff)
+- [x] **F1-20** View others' predictions (post-kickoff)
   - Only visible after kickoff (RLS)
   - Group predictions view per match
   - Depends: F0-07 (RLS policies)
   - Effort: 3h
 
-- [ ] **F1-21** Points calculation (DB function)
+- [x] **F1-21** Points calculation (DB function)
   - `calculate_prediction_points()` function in PostgreSQL
   - Scoring: exact (5pts), correct result (3pts), goal diff (1pt bonus)
   - Configurable per group via JSONB
   - Depends: F0-07 (DB)
   - Effort: 4h
 
-- [ ] **F1-22** Leaderboard update trigger
+- [x] **F1-22** Leaderboard update trigger
   - `process_match_result()` trigger on match status change to 'finished'
   - Updates predictions.points + refreshes leaderboard_cache
   - Depends: F1-21 (points calculation)

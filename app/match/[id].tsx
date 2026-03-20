@@ -18,11 +18,16 @@ import { useMatchDetail } from "@hooks/use-match-detail";
 import { useCountdown } from "@hooks/use-countdown";
 import { ScoreStepper } from "@components/predictions/ScoreStepper";
 import { SaveConfirmation } from "@components/predictions/SaveConfirmation";
+import { GroupPredictions } from "@components/predictions/GroupPredictions";
+import { useAuth } from "@hooks/use-auth";
+import { useGroupDetail } from "@hooks/use-group-detail";
 
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const activeGroupId = useGroupStore((s) => s.activeGroupId);
+  const { user } = useAuth();
+  const { group } = useGroupDetail(activeGroupId ?? "");
 
   const {
     match,
@@ -423,6 +428,19 @@ export default function MatchDetailScreen() {
               </View>
             )}
           </View>
+        )}
+
+        {/* Group predictions (visible after kickoff) */}
+        {activeGroupId && user?.id && group && (
+          <GroupPredictions
+            matchId={id ?? ""}
+            groupId={activeGroupId}
+            matchStatus={match.status}
+            homeScore={match.home_score}
+            awayScore={match.away_score}
+            currentUserId={user.id}
+            scoringSystem={group.scoring_system}
+          />
         )}
       </ScrollView>
 
