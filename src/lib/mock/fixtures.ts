@@ -38,6 +38,12 @@ export const MOCK_PREDICTION_IDS = {
   pred2: "pr000002-0000-0000-0000-000000000002",
   pred3: "pr000003-0000-0000-0000-000000000003",
   pred4: "pr000004-0000-0000-0000-000000000004",
+  // Group predictions — other members on live1 and finished1
+  pred5_alice_live1: "pr000005-0000-0000-0000-000000000005",
+  pred6_bob_live1: "pr000006-0000-0000-0000-000000000006",
+  pred7_alice_fin1: "pr000007-0000-0000-0000-000000000007",
+  pred8_bob_fin1: "pr000008-0000-0000-0000-000000000008",
+  pred9_carol_fin1: "pr000009-0000-0000-0000-000000000009",
 } as const;
 
 export const MOCK_LEADERBOARD_IDS = {
@@ -424,7 +430,7 @@ export const mockPredictions = [
     group_id: MOCK_GROUP_IDS.owned,
     home_score_pred: 2,
     away_score_pred: 1,
-    points_earned: 3,
+    points: 3,
     created_at: daysAgo(3),
     updated_at: daysAgo(3),
   },
@@ -435,7 +441,7 @@ export const mockPredictions = [
     group_id: MOCK_GROUP_IDS.owned,
     home_score_pred: 0,
     away_score_pred: 0,
-    points_earned: 5,
+    points: 5,
     created_at: daysAgo(4),
     updated_at: daysAgo(4),
   },
@@ -446,7 +452,7 @@ export const mockPredictions = [
     group_id: MOCK_GROUP_IDS.owned,
     home_score_pred: 2,
     away_score_pred: 0,
-    points_earned: null,
+    points: null,
     created_at: daysAgo(1),
     updated_at: daysAgo(1),
   },
@@ -457,9 +463,72 @@ export const mockPredictions = [
     group_id: MOCK_GROUP_IDS.owned,
     home_score_pred: 1,
     away_score_pred: 0,
-    points_earned: null,
+    points: null,
     created_at: daysAgo(1),
     updated_at: daysAgo(1),
+  },
+  // ── Group predictions for live1 and finished1 ──────────────
+  // live1 score: 1-0 (Santos vs Sao Paulo)
+  // Alice: exact (1-0)
+  {
+    id: MOCK_PREDICTION_IDS.pred5_alice_live1,
+    user_id: MOCK_MEMBER_IDS.alice,
+    match_id: MOCK_MATCH_IDS.live1,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 1,
+    away_score_pred: 0,
+    points: null,
+    created_at: daysAgo(1),
+    updated_at: daysAgo(1),
+  },
+  // Bob: wrong (0-2)
+  {
+    id: MOCK_PREDICTION_IDS.pred6_bob_live1,
+    user_id: MOCK_MEMBER_IDS.bob,
+    match_id: MOCK_MATCH_IDS.live1,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 0,
+    away_score_pred: 2,
+    points: null,
+    created_at: daysAgo(1),
+    updated_at: daysAgo(1),
+  },
+  // finished1 score: 3-1 (Cerro Porteno vs Olimpia)
+  // Alice: exact (3-1) → 5 pts
+  {
+    id: MOCK_PREDICTION_IDS.pred7_alice_fin1,
+    user_id: MOCK_MEMBER_IDS.alice,
+    match_id: MOCK_MATCH_IDS.finished1,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 3,
+    away_score_pred: 1,
+    points: 5,
+    created_at: daysAgo(3),
+    updated_at: daysAgo(3),
+  },
+  // Bob: correct result (2-0) → 3 pts
+  {
+    id: MOCK_PREDICTION_IDS.pred8_bob_fin1,
+    user_id: MOCK_MEMBER_IDS.bob,
+    match_id: MOCK_MATCH_IDS.finished1,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 2,
+    away_score_pred: 0,
+    points: 3,
+    created_at: daysAgo(3),
+    updated_at: daysAgo(3),
+  },
+  // Carol: wrong (0-1) → 0 pts
+  {
+    id: MOCK_PREDICTION_IDS.pred9_carol_fin1,
+    user_id: MOCK_MEMBER_IDS.carol,
+    match_id: MOCK_MATCH_IDS.finished1,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 0,
+    away_score_pred: 1,
+    points: 0,
+    created_at: daysAgo(3),
+    updated_at: daysAgo(3),
   },
 ];
 

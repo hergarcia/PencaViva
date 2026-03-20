@@ -17,6 +17,7 @@ module.exports = {
       displayName: "unit",
       preset: "jest-expo",
       testMatch: [`${rootDir}/src/**/*.test.{ts,tsx}`],
+      modulePathIgnorePatterns: ["<rootDir>/.worktrees/"],
       collectCoverageFrom: [
         "src/**/*.{ts,tsx}",
         "!src/**/*.d.ts",
