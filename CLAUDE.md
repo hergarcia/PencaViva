@@ -88,7 +88,7 @@ src/
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
 │   └── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation
-├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail)
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown)
 ├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, prediction-service, profile-service
 │   ├── mock/              # Mock Supabase client (activated by EXPO_PUBLIC_USE_MOCKS=true)
 │   │   ├── index.ts       # Re-exports createMockClient
