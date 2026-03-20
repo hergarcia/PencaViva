@@ -29,6 +29,17 @@ jest.mock("@hooks/use-countdown", () => ({
   useCountdown: (...args: unknown[]) => mockUseCountdown(...args),
 }));
 
+// Mock hooks and component added in F1-20
+jest.mock("@hooks/use-auth", () => ({
+  useAuth: () => ({ user: { id: "u1" }, isInitialized: true }),
+}));
+jest.mock("@hooks/use-group-detail", () => ({
+  useGroupDetail: () => ({ group: null }),
+}));
+jest.mock("@components/predictions/GroupPredictions", () => ({
+  GroupPredictions: () => null,
+}));
+
 /* eslint-disable @typescript-eslint/no-require-imports */
 const MatchDetailScreen = require("../../../app/match/[id]").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
