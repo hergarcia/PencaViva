@@ -213,34 +213,32 @@ Scoring system (configurable per group via JSONB):
 - **Commits**: Conventional Commits enforced by commitlint + Husky pre-commit hooks
 - **Versioning**: semantic-release on `main` only (no pre-releases on develop)
 
-### Pre-commit CI Checks
-
-Before every commit, run the same checks as the GitHub Actions CI pipeline locally. If any check fails, fix the issue before committing. All commits must pass:
-
-```bash
-npm run format:check    # Prettier formatting
-npm run lint            # ESLint
-npm run typecheck       # TypeScript compiler (tsc --noEmit)
-npm run test:ci         # Unit tests with coverage
-```
-
-If a check fails, fix the issue (or run `npm run format` / `npm run lint:fix` for auto-fixable problems) and re-run before committing.
-
 ### Task Workflow
 
-1. **Brainstorm & plan** using superpowers workflow (`brainstorming` → `writing-plans` → `executing-plans` skills). Explore, design, review before writing code
-2. Create branch `feature/F0-XX-description` from `develop`
-3. Mark task as `[~]` in `TAREAS.md`
-4. **UI Design with Stitch** (for tasks with user-facing screens): Generate mobile mockups using the Stitch MCP tool in the `PencaViva` project. Include design tokens in prompts (dark bg `#0D0D0D`, surface `#1A1A2E`, primary `#00D4AA`, secondary `#7C5CFC`, accent `#FFB800`). Always use `MOBILE` device type. After generating, **always review the result** by fetching the screenshot and visually inspecting it. If anything needs improvement (spacing, removed elements, copy changes, alignment), iterate with `edit_screens` or `generate_variants` until the design is polished. Do not accept the first generation without review. This becomes the visual spec for implementation
-5. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text
-6. Develop with TDD (`/tdd` skill — RED-GREEN-REFACTOR in vertical slices)
-7. **Mock data verification**: If the task adds or modifies a service function or Supabase query, verify that the mock system handles the new operation. Add mock RPC handlers, fixtures, or query builder support as needed. Run the app with `EXPO_PUBLIC_USE_MOCKS=true` to confirm the flow works without Supabase
-8. Each completed subtask or logical unit → commit with Conventional Commits
-9. **Pre-PR document updates** (BEFORE push + PR creation):
-   - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
-   - Commit doc updates as part of the final commit or as a separate `docs:` commit
-10. Push and create PR to `develop`, wait for green CI
-11. Merge (squash) the PR
+1. **Brainstorm & plan**: Use the `superpowers:brainstorming` skill (with `/model opus` — Claude Opus) to explore intent, requirements, and design. Then use the native `/plan` command (also with `/model opus`) to produce and refine the implementation plan. Switch back to the default model (Sonnet) for execution via the native `/plan` execute flow
+2. **Check dependencies**: Verify that all task dependencies listed in `TAREAS.md` are completed (`[x]`) before starting. Do not proceed if any dependency is incomplete
+3. Create branch `feature/F0-XX-description` from `develop`
+4. Mark task as `[~]` in `TAREAS.md`
+5. **UI Design with Stitch** — **MANDATORY for any task with user-facing screens. This step MUST NEVER be skipped.** Generate mobile mockups using the Stitch MCP tool in the `PencaViva` project (project ID: `13390158725206896883`). Include design tokens in prompts (dark bg `#0D0D0D`, surface `#1A1A2E`, primary `#00D4AA`, secondary `#7C5CFC`, accent `#FFB800`). Always use `MOBILE` device type. After generating, **always review the result** by fetching the screenshot and visually inspecting it. If anything needs improvement (spacing, removed elements, copy changes, alignment), iterate with `edit_screens` or `generate_variants` until the design is polished. Do not accept the first generation without review. This becomes the visual spec for implementation
+6. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text
+7. Develop with TDD (`superpowers:test-driven-development` skill — RED-GREEN-REFACTOR in vertical slices)
+8. **Mock data verification**: If the task adds or modifies a service function or Supabase query, verify that the mock system handles the new operation. Add mock RPC handlers, fixtures, or query builder support as needed
+9. **Manual app verification**: Run `EXPO_PUBLIC_USE_MOCKS=true npm start` and visually confirm all new/modified flows work end-to-end in the mock environment before proceeding
+10. Each completed subtask or logical unit → commit with Conventional Commits. Before each commit, run the pre-commit CI checks:
+    ```bash
+    npm run format:check
+    npm run lint
+    npm run typecheck
+    npm run test:ci
+    ```
+    Fix any failures before committing (use `npm run format` / `npm run lint:fix` for auto-fixable issues)
+11. **Pre-PR document updates** (BEFORE push + PR creation):
+    - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
+    - Commit doc updates as part of the final commit or as a separate `docs:` commit
+12. **Verification pass**: Run the `superpowers:verification-before-completion` skill to confirm all work is correct and complete before declaring the task done
+13. **Code quality pass**: Run the `simplify` skill on all changed code to review for reuse, quality, and efficiency. Then run the `superpowers:requesting-code-review` skill on the full changeset to verify correctness and adherence to the plan
+14. Push and create PR to `develop`, wait for green CI
+15. Merge (squash) the PR
 
 ### Task tracking
 
