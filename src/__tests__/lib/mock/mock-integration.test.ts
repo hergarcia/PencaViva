@@ -16,6 +16,7 @@ import type {
 } from "@lib/groups-service";
 import type { MatchWithPrediction } from "@lib/matches-service";
 import type { MatchDetail, ExistingPrediction } from "@lib/prediction-service";
+import type { LeaderboardEntry } from "@lib/leaderboard-service";
 import {
   MOCK_USER_ID,
   MOCK_GROUP_IDS,
@@ -61,6 +62,7 @@ let checkUsernameAvailable: (
   currentUserId: string,
 ) => Promise<boolean>;
 let checkProfileComplete: (userId: string) => Promise<boolean>;
+let fetchGroupLeaderboard: (groupId: string) => Promise<LeaderboardEntry[]>;
 
 beforeAll(() => {
   // Set mock mode BEFORE requiring any module that imports supabase.ts
@@ -90,6 +92,10 @@ beforeAll(() => {
     const pfs = require("@lib/profile-service");
     checkUsernameAvailable = pfs.checkUsernameAvailable;
     checkProfileComplete = pfs.checkProfileComplete;
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const ls = require("@lib/leaderboard-service");
+    fetchGroupLeaderboard = ls.fetchGroupLeaderboard;
   });
 });
 
@@ -191,6 +197,38 @@ describe("Mock integration: profile-service", () => {
   it("checkProfileComplete returns true for customized profile", async () => {
     const complete = await checkProfileComplete(MOCK_USER_ID);
     expect(complete).toBe(true);
+  });
+});
+
+describe("Mock integration: leaderboard-service", () => {
+  it("fetchGroupLeaderboard returns entries sorted by position", async () => {
+    const entries = await fetchGroupLeaderboard(MOCK_GROUP_IDS.owned);
+    expect(entries.length).toBeGreaterThanOrEqual(3);
+    expect(entries[0].position).toBe(1);
+    expect(entries[1].position).toBe(2);
+    expect(entries[2].position).toBe(3);
+  });
+
+  it("fetchGroupLeaderboard entries have profile data", async () => {
+    const entries = await fetchGroupLeaderboard(MOCK_GROUP_IDS.owned);
+    expect(entries[0]).toHaveProperty("display_name");
+    expect(entries[0]).toHaveProperty("username");
+    expect(entries[0]).toHaveProperty("total_points");
+    expect(entries[0]).toHaveProperty("matches_played");
+    expect(entries[0]).toHaveProperty("exact_scores");
+    expect(entries[0]).toHaveProperty("correct_results");
+  });
+
+  it("fetchGroupLeaderboard top entry is current mock user", async () => {
+    const entries = await fetchGroupLeaderboard(MOCK_GROUP_IDS.owned);
+    expect(entries[0].user_id).toBe(MOCK_USER_ID);
+    expect(entries[0].total_points).toBe(42);
+  });
+
+  it("fetchGroupLeaderboard returns empty for group with no leaderboard", async () => {
+    // MOCK_GROUP_IDS.member has no leaderboard entries
+    const entries = await fetchGroupLeaderboard(MOCK_GROUP_IDS.member);
+    expect(entries).toHaveLength(0);
   });
 });
 
