@@ -116,8 +116,9 @@ export function LeaderboardRow({
           style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}
           numberOfLines={1}
         >
-          {entry.matches_played} matches · {entry.exact_scores} exact ·{" "}
-          {entry.correct_results} correct
+          {entry.exact_scores > 0 || entry.correct_results > 0
+            ? `${entry.matches_played} matches · ${entry.exact_scores} exact · ${entry.correct_results} correct`
+            : `${entry.matches_played} matches played`}
         </Text>
       </View>
 

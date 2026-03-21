@@ -165,6 +165,14 @@ export default function RankingScreen() {
   const [activeFilter, setActiveFilter] =
     useState<LeaderboardFilter>("overall");
 
+  // Track visibility of current user's row for sticky footer
+  const [myRowVisible, setMyRowVisible] = useState(true);
+
+  const handleFilterSelect = useCallback((f: LeaderboardFilter) => {
+    setActiveFilter(f);
+    setMyRowVisible(true); // reset sticky footer state on filter change
+  }, []);
+
   const {
     entries,
     isLoading: leaderboardLoading,
@@ -174,9 +182,6 @@ export default function RankingScreen() {
   } = useGroupLeaderboard(activeGroupId, activeFilter);
 
   const isLoading = groupsLoading || leaderboardLoading;
-
-  // Track visibility of current user's row for sticky footer
-  const [myRowVisible, setMyRowVisible] = useState(true);
   const myEntry = entries.find((e) => e.user_id === user?.id) ?? null;
 
   const onViewableItemsChanged = useCallback(
@@ -334,7 +339,7 @@ export default function RankingScreen() {
       </View>
 
       {/* Filter tabs */}
-      <FilterTabs activeFilter={activeFilter} onSelect={setActiveFilter} />
+      <FilterTabs activeFilter={activeFilter} onSelect={handleFilterSelect} />
 
       {/* Loading */}
       {isLoading ? (

@@ -117,13 +117,14 @@ describe("fetchGroupLeaderboard", () => {
 describe("fetchGroupLeaderboardByDateRange", () => {
   const from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  it("queries matches with kickoff_time filter", async () => {
+  it("queries finished matches with kickoff_time filter", async () => {
     // Step 1: matches query returns empty → no predictions needed
     mockChain.lte.mockResolvedValueOnce({ data: [], error: null });
 
     const entries = await fetchGroupLeaderboardByDateRange("g1", from);
 
     expect(mockFrom).toHaveBeenCalledWith("matches");
+    expect(mockChain.eq).toHaveBeenCalledWith("status", "finished");
     expect(mockChain.gte).toHaveBeenCalledWith("kickoff_time", from);
     expect(entries).toEqual([]);
   });

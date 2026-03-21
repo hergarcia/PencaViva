@@ -88,10 +88,11 @@ export async function fetchGroupLeaderboardByDateRange(
 ): Promise<LeaderboardEntry[]> {
   const now = new Date().toISOString();
 
-  // Step 1: Get match IDs with kickoff within the date range
+  // Step 1: Get finished match IDs with kickoff within the date range
   const { data: matches, error: matchError } = await supabase
     .from("matches")
     .select("id")
+    .eq("status", "finished")
     .gte("kickoff_time", from)
     .lte("kickoff_time", now);
 
