@@ -1,6 +1,9 @@
 // ── Mock Supabase with per-query chainable builders ─────────────────
 // Each from() call gets its own fresh chain so multi-query functions
 // don't share mockReturnValueOnce state across chains.
+/* eslint-enable @typescript-eslint/no-require-imports */
+
+import type { MatchWithPrediction } from "@lib/matches-service";
 function createChain() {
   const chain: Record<string, jest.Mock> = {};
   chain.select = jest.fn(() => chain);
@@ -30,9 +33,6 @@ jest.mock("@lib/supabase", () => ({
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { fetchGroupMatches } = require("@lib/matches-service");
-/* eslint-enable @typescript-eslint/no-require-imports */
-
-import type { MatchWithPrediction } from "@lib/matches-service";
 
 beforeEach(() => {
   jest.clearAllMocks();

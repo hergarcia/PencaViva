@@ -1,4 +1,7 @@
 // ── Mock Supabase with per-query chainable builders ─────────────────
+/* eslint-enable @typescript-eslint/no-require-imports */
+
+import type { GroupPrediction } from "@lib/prediction-service";
 function createChain(
   resolvedData: unknown = [],
   resolvedError: unknown = null,
@@ -30,9 +33,6 @@ jest.mock("@lib/supabase", () => ({
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { fetchGroupPredictions } = require("@lib/prediction-service");
-/* eslint-enable @typescript-eslint/no-require-imports */
-
-import type { GroupPrediction } from "@lib/prediction-service";
 
 beforeEach(() => {
   jest.clearAllMocks();
