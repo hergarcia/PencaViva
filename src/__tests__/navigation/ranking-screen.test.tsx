@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 
 import RankingScreen from "../../../app/(tabs)/ranking";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
@@ -65,6 +65,14 @@ const mockEntries: LeaderboardEntry[] = [
   },
 ];
 
+const defaultLeaderboard = {
+  entries: [],
+  isLoading: false,
+  error: null,
+  refetch: jest.fn(),
+  positionChanges: {},
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
@@ -78,12 +86,7 @@ describe("RankingScreen", () => {
       setActiveGroupId: jest.fn(),
       isLoading: false,
     });
-    mockUseGroupLeaderboard.mockReturnValue({
-      entries: [],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
+    mockUseGroupLeaderboard.mockReturnValue(defaultLeaderboard);
 
     const { getByText } = render(<RankingScreen />);
     expect(getByText("No groups yet")).toBeTruthy();
@@ -100,12 +103,7 @@ describe("RankingScreen", () => {
       setActiveGroupId: jest.fn(),
       isLoading: true,
     });
-    mockUseGroupLeaderboard.mockReturnValue({
-      entries: [],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
+    mockUseGroupLeaderboard.mockReturnValue(defaultLeaderboard);
 
     const { queryByText } = render(<RankingScreen />);
     expect(queryByText("No rankings yet")).toBeNull();
@@ -121,10 +119,8 @@ describe("RankingScreen", () => {
       isLoading: false,
     });
     mockUseGroupLeaderboard.mockReturnValue({
-      entries: [],
-      isLoading: false,
+      ...defaultLeaderboard,
       error: "Network error",
-      refetch: jest.fn(),
     });
 
     const { getByText } = render(<RankingScreen />);
@@ -140,12 +136,7 @@ describe("RankingScreen", () => {
       setActiveGroupId: jest.fn(),
       isLoading: false,
     });
-    mockUseGroupLeaderboard.mockReturnValue({
-      entries: [],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
+    mockUseGroupLeaderboard.mockReturnValue(defaultLeaderboard);
 
     const { getByText } = render(<RankingScreen />);
     expect(getByText("No rankings yet")).toBeTruthy();
@@ -163,10 +154,8 @@ describe("RankingScreen", () => {
       isLoading: false,
     });
     mockUseGroupLeaderboard.mockReturnValue({
+      ...defaultLeaderboard,
       entries: mockEntries,
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
     });
 
     const { getByText } = render(<RankingScreen />);
@@ -184,14 +173,64 @@ describe("RankingScreen", () => {
       setActiveGroupId: jest.fn(),
       isLoading: false,
     });
-    mockUseGroupLeaderboard.mockReturnValue({
-      entries: [],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
+    mockUseGroupLeaderboard.mockReturnValue(defaultLeaderboard);
 
     const { getByText } = render(<RankingScreen />);
     expect(getByText("Ranking")).toBeTruthy();
+  });
+
+  it("shows filter tabs", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue(defaultLeaderboard);
+
+    const { getByTestId, getByText } = render(<RankingScreen />);
+    expect(getByTestId("filter-tabs")).toBeTruthy();
+    expect(getByText("All Time")).toBeTruthy();
+    expect(getByText("This Week")).toBeTruthy();
+    expect(getByText("Last 30 Days")).toBeTruthy();
+  });
+
+  it("filter tabs are selectable", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue(defaultLeaderboard);
+
+    const { getByTestId } = render(<RankingScreen />);
+    // "This Week" tab is touchable
+    const weekTab = getByTestId("filter-tab-week");
+    expect(weekTab).toBeTruthy();
+    fireEvent.press(weekTab);
+    // After pressing, the hook would be called with 'week' filter
+    // (in tests we mock the hook so we just verify the tab exists and is pressable)
+  });
+
+  it("shows position change indicator for entries with position changes", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue({
+      ...defaultLeaderboard,
+      entries: mockEntries,
+      positionChanges: { "user-1": 1, "user-2": -1 },
+    });
+
+    const { getByTestId } = render(<RankingScreen />);
+    expect(getByTestId("position-change-up")).toBeTruthy();
+    expect(getByTestId("position-change-down")).toBeTruthy();
   });
 });

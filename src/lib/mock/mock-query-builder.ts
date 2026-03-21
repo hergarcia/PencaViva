@@ -174,6 +174,8 @@ export class MockQueryBuilder {
           return (row[col] as number) <= (val as number);
         case "lt":
           return (row[col] as number) >= (val as number);
+        case "is":
+          return row[col] !== val; // NOT IS NULL → not null
         default:
           return true;
       }

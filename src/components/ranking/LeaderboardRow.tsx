@@ -28,9 +28,14 @@ function avatarColor(userId: string): string {
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
   isCurrentUser: boolean;
+  positionChange?: number; // positive = moved up, negative = moved down
 }
 
-export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
+export function LeaderboardRow({
+  entry,
+  isCurrentUser,
+  positionChange,
+}: LeaderboardRowProps) {
   const medal = MEDAL[entry.position];
   const letter = entry.display_name.charAt(0).toUpperCase();
   const accentColor = avatarColor(entry.user_id);
@@ -115,6 +120,27 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
           {entry.correct_results} correct
         </Text>
       </View>
+
+      {/* Position change indicator */}
+      {positionChange !== undefined && positionChange !== 0 && (
+        <View style={{ alignItems: "center", marginRight: 6 }}>
+          {positionChange > 0 ? (
+            <Text
+              testID="position-change-up"
+              style={{ color: "#00C48C", fontSize: 11, fontWeight: "700" }}
+            >
+              ▲{positionChange}
+            </Text>
+          ) : (
+            <Text
+              testID="position-change-down"
+              style={{ color: "#FF4D6A", fontSize: 11, fontWeight: "700" }}
+            >
+              ▼{Math.abs(positionChange)}
+            </Text>
+          )}
+        </View>
+      )}
 
       {/* Points */}
       <Text

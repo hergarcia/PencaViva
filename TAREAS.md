@@ -269,17 +269,19 @@
   - Effort: 4h
   - Notes: Added Supabase Realtime channel subscription to `useGroupLeaderboard` hook. Subscribes to `postgres_changes` on `leaderboard_cache` filtered by `group_id=eq.<groupId>` — auto-refetches on any INSERT/UPDATE/DELETE event. Channel cleaned up on unmount/groupId change. No subscription when `groupId` is null. Mock client updated with no-op `channel()` and `removeChannel()` for offline dev. 9 new tests covering subscription setup, realtime trigger refetch, cleanup, and resubscription on groupId change.
 
-- [ ] **F1-25** Filters (Overall / By Date / Last N)
+- [x] **F1-25** Filters (Overall / By Date / Last N)
   - Tab bar: Overall | By Date | Trend
   - Different queries for each view
   - Depends: F1-23 (ranking)
   - Effort: 4h
+  - Notes: Three filter tabs in ranking screen: "All Time" (leaderboard_cache), "This Week" (7-day range), "Last 30 Days" (30-day range). `fetchGroupLeaderboardByDateRange` two-step approach: query matches by kickoff_time → query predictions for those match IDs → aggregate by user_id client-side → assign positions. `LeaderboardFilter` type exported. `fetchGroupLeaderboardFiltered` dispatches to the correct function. Realtime subscription only active for 'overall' filter. 22 new tests.
 
-- [ ] **F1-26** Highlight my position
+- [x] **F1-26** Highlight my position
   - Highlight current user's row
   - Position change indicator (green/red arrow)
   - Depends: F1-23 (ranking)
   - Effort: 2h
+  - Notes: `useGroupLeaderboard` now tracks previous positions via `prevPositionsRef` and returns `positionChanges: Record<string, number>` (positive = moved up, negative = moved down). Position history reset on groupId or filter change. `LeaderboardRow` accepts optional `positionChange?: number` — shows green ▲N or red ▼N indicators. Ranking screen passes positionChanges from hook to each row. Current user row highlight (left border) was already implemented in F1-23.
 
 - [ ] **F1-27** Position change animations
   - Slide up/down with green/red glow
@@ -484,14 +486,14 @@
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 13     | 13        | 0           | 0       |
-| Phase 1: MVP     | 29     | 24        | 0           | 5       |
+| Phase 1: MVP     | 29     | 26        | 0           | 3       |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **69** | **37**    | **0**       | **32**  |
+| **Total MVP**    | **69** | **39**    | **0**       | **30**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 53.6%**
+**Overall MVP progress: 56.5%**
 
 ---
 

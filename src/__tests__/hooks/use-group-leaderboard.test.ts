@@ -1,11 +1,11 @@
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 
-const mockFetchGroupLeaderboard = jest.fn();
+const mockFetchGroupLeaderboardFiltered = jest.fn();
 jest.mock("@lib/leaderboard-service", () => ({
-  fetchGroupLeaderboard: (...args: unknown[]) =>
-    mockFetchGroupLeaderboard(...args),
+  fetchGroupLeaderboardFiltered: (...args: unknown[]) =>
+    mockFetchGroupLeaderboardFiltered(...args),
 }));
 
 jest.mock("@hooks/use-auth", () => ({
@@ -51,21 +51,20 @@ const { useGroupLeaderboard } = require("@hooks/use-group-leaderboard");
 
 // ── Fixtures ──────────────────────────────────────────────────────────
 
-const makeEntries = () => [
-  {
-    id: "lb1",
+const makeEntries = (positions?: number[]) =>
+  (positions ?? [1]).map((pos) => ({
+    id: `lb${pos}`,
     group_id: "g1",
-    user_id: "u1",
-    total_points: 42,
-    position: 1,
+    user_id: `u${pos}`,
+    total_points: 100 - pos * 10,
+    position: pos,
     matches_played: 10,
     exact_scores: 3,
     correct_results: 7,
-    display_name: "Alice",
-    username: "alice",
+    display_name: `User ${pos}`,
+    username: `user${pos}`,
     avatar_url: null,
-  },
-];
+  }));
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -93,14 +92,14 @@ beforeEach(() => {
 
 describe("useGroupLeaderboard", () => {
   it("fetches leaderboard on mount", async () => {
-    mockFetchGroupLeaderboard.mockResolvedValue(makeEntries());
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue(makeEntries());
 
     const { result } = renderHook(() => useGroupLeaderboard("g1"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.entries).toHaveLength(1);
-    expect(result.current.entries[0].display_name).toBe("Alice");
+    expect(result.current.entries[0].display_name).toBe("User 1");
   });
 
   it("returns empty entries when groupId is null", async () => {
@@ -109,11 +108,11 @@ describe("useGroupLeaderboard", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.entries).toEqual([]);
-    expect(mockFetchGroupLeaderboard).not.toHaveBeenCalled();
+    expect(mockFetchGroupLeaderboardFiltered).not.toHaveBeenCalled();
   });
 
   it("sets error on fetch failure", async () => {
-    mockFetchGroupLeaderboard.mockRejectedValue(new Error("DB error"));
+    mockFetchGroupLeaderboardFiltered.mockRejectedValue(new Error("DB error"));
 
     const { result } = renderHook(() => useGroupLeaderboard("g1"));
 
@@ -123,8 +122,34 @@ describe("useGroupLeaderboard", () => {
     expect(result.current.entries).toEqual([]);
   });
 
-  it("sets up a realtime channel subscription for the group", async () => {
-    mockFetchGroupLeaderboard.mockResolvedValue([]);
+  it("passes filter to fetchGroupLeaderboardFiltered", async () => {
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
+
+    renderHook(() => useGroupLeaderboard("g1", "week"));
+
+    await waitFor(() =>
+      expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalledWith(
+        "g1",
+        "week",
+      ),
+    );
+  });
+
+  it("defaults to overall filter", async () => {
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
+
+    renderHook(() => useGroupLeaderboard("g1"));
+
+    await waitFor(() =>
+      expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalledWith(
+        "g1",
+        "overall",
+      ),
+    );
+  });
+
+  it("sets up a realtime channel subscription for the group (overall filter)", async () => {
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
 
     renderHook(() => useGroupLeaderboard("g1"));
 
@@ -152,13 +177,25 @@ describe("useGroupLeaderboard", () => {
     expect(mockChannel).not.toHaveBeenCalled();
   });
 
+  it("does not set up realtime subscription for non-overall filters", async () => {
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
+
+    renderHook(() => useGroupLeaderboard("g1", "week"));
+
+    await waitFor(() =>
+      expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalled(),
+    );
+
+    expect(mockChannel).not.toHaveBeenCalled();
+  });
+
   it("refetches when a realtime event is received", async () => {
-    mockFetchGroupLeaderboard.mockResolvedValue(makeEntries());
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue(makeEntries());
 
     renderHook(() => useGroupLeaderboard("g1"));
 
     await waitFor(() =>
-      expect(mockFetchGroupLeaderboard).toHaveBeenCalledTimes(1),
+      expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalledTimes(1),
     );
     expect(capturedChannelCallback).not.toBeNull();
 
@@ -166,12 +203,12 @@ describe("useGroupLeaderboard", () => {
     capturedChannelCallback!({ eventType: "UPDATE", new: {}, old: {} });
 
     await waitFor(() =>
-      expect(mockFetchGroupLeaderboard).toHaveBeenCalledTimes(2),
+      expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalledTimes(2),
     );
   });
 
   it("cleans up the channel on unmount", async () => {
-    mockFetchGroupLeaderboard.mockResolvedValue([]);
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
 
     const { unmount } = renderHook(() => useGroupLeaderboard("g1"));
 
@@ -183,7 +220,7 @@ describe("useGroupLeaderboard", () => {
   });
 
   it("resubscribes when groupId changes", async () => {
-    mockFetchGroupLeaderboard.mockResolvedValue([]);
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
 
     const { rerender } = renderHook(
       ({ groupId }: { groupId: string }) => useGroupLeaderboard(groupId),
@@ -199,15 +236,85 @@ describe("useGroupLeaderboard", () => {
   });
 
   it("refetch function works manually", async () => {
-    mockFetchGroupLeaderboard.mockResolvedValue(makeEntries());
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue(makeEntries());
 
     const { result } = renderHook(() => useGroupLeaderboard("g1"));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(mockFetchGroupLeaderboard).toHaveBeenCalledTimes(1);
+    expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalledTimes(1);
 
     await result.current.refetch();
 
-    expect(mockFetchGroupLeaderboard).toHaveBeenCalledTimes(2);
+    expect(mockFetchGroupLeaderboardFiltered).toHaveBeenCalledTimes(2);
+  });
+
+  it("positionChanges is empty on first load", async () => {
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue(makeEntries([1, 2, 3]));
+
+    const { result } = renderHook(() => useGroupLeaderboard("g1"));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.positionChanges).toEqual({});
+  });
+
+  it("computes positionChanges after a second fetch", async () => {
+    // First load: u1 at position 1, u2 at position 2
+    mockFetchGroupLeaderboardFiltered.mockResolvedValueOnce([
+      { ...makeEntries([1])[0], user_id: "u1" },
+      { ...makeEntries([2])[0], user_id: "u2" },
+    ]);
+
+    const { result } = renderHook(() => useGroupLeaderboard("g1"));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.positionChanges).toEqual({});
+
+    // Second load: u1 drops to position 2, u2 rises to position 1
+    mockFetchGroupLeaderboardFiltered.mockResolvedValueOnce([
+      { ...makeEntries([1])[0], user_id: "u2", position: 1 },
+      { ...makeEntries([2])[0], user_id: "u1", position: 2 },
+    ]);
+
+    await act(async () => {
+      await result.current.refetch();
+    });
+
+    // u1 was at 1, now at 2: change = 1 - 2 = -1 (moved down)
+    expect(result.current.positionChanges["u1"]).toBe(-1);
+    // u2 was at 2, now at 1: change = 2 - 1 = +1 (moved up)
+    expect(result.current.positionChanges["u2"]).toBe(1);
+  });
+
+  it("resets positionChanges when groupId changes", async () => {
+    // First load: establish positions
+    mockFetchGroupLeaderboardFiltered.mockResolvedValueOnce([
+      { ...makeEntries([1])[0], user_id: "u1" },
+    ]);
+
+    const { result, rerender } = renderHook(
+      ({ groupId }: { groupId: string }) => useGroupLeaderboard(groupId),
+      { initialProps: { groupId: "g1" } },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Second load: simulate refetch with position change
+    mockFetchGroupLeaderboardFiltered.mockResolvedValueOnce([
+      { ...makeEntries([2])[0], user_id: "u1", position: 2 },
+    ]);
+    await act(async () => {
+      await result.current.refetch();
+    });
+
+    // Positions changes computed
+    expect(result.current.positionChanges["u1"]).toBe(-1);
+
+    // Now switch group — should reset position changes
+    mockFetchGroupLeaderboardFiltered.mockResolvedValue([]);
+    rerender({ groupId: "g2" });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.positionChanges).toEqual({});
   });
 });

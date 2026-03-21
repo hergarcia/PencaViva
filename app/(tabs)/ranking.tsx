@@ -17,7 +17,66 @@ import { useActiveGroup } from "@hooks/use-active-group";
 import { useGroupLeaderboard } from "@hooks/use-group-leaderboard";
 import { LeaderboardRow } from "@components/ranking/LeaderboardRow";
 import { GroupSelector } from "@components/predictions/GroupSelector";
-import type { LeaderboardEntry } from "@lib/leaderboard-service";
+import type {
+  LeaderboardEntry,
+  LeaderboardFilter,
+} from "@lib/leaderboard-service";
+
+// ── Filter tabs ────────────────────────────────────────────────────
+
+const FILTERS: { key: LeaderboardFilter; label: string }[] = [
+  { key: "overall", label: "All Time" },
+  { key: "week", label: "This Week" },
+  { key: "month", label: "Last 30 Days" },
+];
+
+interface FilterTabsProps {
+  activeFilter: LeaderboardFilter;
+  onSelect: (filter: LeaderboardFilter) => void;
+}
+
+function FilterTabs({ activeFilter, onSelect }: FilterTabsProps) {
+  return (
+    <View
+      testID="filter-tabs"
+      style={{
+        flexDirection: "row",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        gap: 8,
+      }}
+    >
+      {FILTERS.map(({ key, label }) => {
+        const isActive = key === activeFilter;
+        return (
+          <TouchableOpacity
+            key={key}
+            testID={`filter-tab-${key}`}
+            onPress={() => onSelect(key)}
+            style={{
+              paddingHorizontal: 14,
+              paddingVertical: 6,
+              borderRadius: 20,
+              backgroundColor: isActive ? colors.primary : colors.surface,
+              borderWidth: 1,
+              borderColor: isActive ? colors.primary : colors.surfaceBorder,
+            }}
+          >
+            <Text
+              style={{
+                color: isActive ? colors.background : colors.textSecondary,
+                fontSize: 12,
+                fontWeight: isActive ? "700" : "400",
+              }}
+            >
+              {label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
 // ── Sticky footer: shows current user position when scrolled out of view ──
 
@@ -102,12 +161,17 @@ export default function RankingScreen() {
     setActiveGroupId,
     isLoading: groupsLoading,
   } = useActiveGroup();
+
+  const [activeFilter, setActiveFilter] =
+    useState<LeaderboardFilter>("overall");
+
   const {
     entries,
     isLoading: leaderboardLoading,
     error,
     refetch,
-  } = useGroupLeaderboard(activeGroupId);
+    positionChanges,
+  } = useGroupLeaderboard(activeGroupId, activeFilter);
 
   const isLoading = groupsLoading || leaderboardLoading;
 
@@ -130,9 +194,13 @@ export default function RankingScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: LeaderboardEntry }) => (
-      <LeaderboardRow entry={item} isCurrentUser={item.user_id === user?.id} />
+      <LeaderboardRow
+        entry={item}
+        isCurrentUser={item.user_id === user?.id}
+        positionChange={positionChanges[item.user_id]}
+      />
     ),
-    [user?.id],
+    [user?.id, positionChanges],
   );
 
   const keyExtractor = useCallback((item: LeaderboardEntry) => item.id, []);
@@ -264,6 +332,9 @@ export default function RankingScreen() {
           </Text>
         )}
       </View>
+
+      {/* Filter tabs */}
+      <FilterTabs activeFilter={activeFilter} onSelect={setActiveFilter} />
 
       {/* Loading */}
       {isLoading ? (
