@@ -262,11 +262,12 @@
   - Depends: F1-22 (leaderboard cache)
   - Effort: 6h
 
-- [ ] **F1-24** Realtime leaderboard subscription
+- [x] **F1-24** Realtime leaderboard subscription
   - Supabase Realtime: `postgres_changes` on leaderboard_cache
   - Update UI in real-time when results are processed
   - Depends: Supabase Realtime configured
   - Effort: 4h
+  - Notes: Added Supabase Realtime channel subscription to `useGroupLeaderboard` hook. Subscribes to `postgres_changes` on `leaderboard_cache` filtered by `group_id=eq.<groupId>` — auto-refetches on any INSERT/UPDATE/DELETE event. Channel cleaned up on unmount/groupId change. No subscription when `groupId` is null. Mock client updated with no-op `channel()` and `removeChannel()` for offline dev. 9 new tests covering subscription setup, realtime trigger refetch, cleanup, and resubscription on groupId change.
 
 - [ ] **F1-25** Filters (Overall / By Date / Last N)
   - Tab bar: Overall | By Date | Trend
@@ -482,15 +483,15 @@
 
 | Phase            | Tasks  | Completed | In Progress | Pending |
 | ---------------- | ------ | --------- | ----------- | ------- |
-| Phase 0: Setup   | 12     | 12        | 0           | 0       |
-| Phase 1: MVP     | 28     | 10        | 0           | 18      |
+| Phase 0: Setup   | 13     | 13        | 0           | 0       |
+| Phase 1: MVP     | 29     | 24        | 0           | 5       |
 | Phase 2: Polish  | 12     | 0         | 0           | 12      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **67** | **22**    | **0**       | **45**  |
+| **Total MVP**    | **69** | **37**    | **0**       | **32**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 32.8%**
+**Overall MVP progress: 53.6%**
 
 ---
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@hooks/use-auth";
+import { supabase } from "@lib/supabase";
 import { fetchGroupLeaderboard } from "@lib/leaderboard-service";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
 
@@ -45,6 +46,7 @@ export function useGroupLeaderboard(
     }
   }, [groupId]);
 
+  // Initial fetch + re-fetch on groupId change
   useEffect(() => {
     cancelledRef.current = false;
 
@@ -56,6 +58,31 @@ export function useGroupLeaderboard(
       cancelledRef.current = true;
     };
   }, [isInitialized, loadLeaderboard]);
+
+  // Realtime subscription: auto-refresh when leaderboard_cache changes
+  useEffect(() => {
+    if (!groupId || !isInitialized) return;
+
+    const channel = supabase
+      .channel(`leaderboard:${groupId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "leaderboard_cache",
+          filter: `group_id=eq.${groupId}`,
+        },
+        () => {
+          loadLeaderboard();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [groupId, isInitialized, loadLeaderboard]);
 
   const refetch = useCallback(async () => {
     cancelledRef.current = false;
