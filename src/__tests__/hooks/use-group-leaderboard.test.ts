@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 
@@ -209,5 +209,144 @@ describe("useGroupLeaderboard", () => {
     await result.current.refetch();
 
     expect(mockFetchGroupLeaderboard).toHaveBeenCalledTimes(2);
+  });
+
+  it("positionChanges is empty on first load", async () => {
+    mockFetchGroupLeaderboard.mockResolvedValue(makeEntries());
+
+    const { result } = renderHook(() => useGroupLeaderboard("g1"));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.positionChanges).toEqual({});
+  });
+
+  it("computes positionChanges after a second fetch (realtime update)", async () => {
+    // First load: u1 at position 1, u2 at position 2
+    mockFetchGroupLeaderboard.mockResolvedValueOnce([
+      {
+        id: "lb1",
+        group_id: "g1",
+        user_id: "u1",
+        total_points: 42,
+        position: 1,
+        matches_played: 10,
+        exact_scores: 3,
+        correct_results: 7,
+        display_name: "Alice",
+        username: "alice",
+        avatar_url: null,
+      },
+      {
+        id: "lb2",
+        group_id: "g1",
+        user_id: "u2",
+        total_points: 38,
+        position: 2,
+        matches_played: 8,
+        exact_scores: 2,
+        correct_results: 5,
+        display_name: "Bob",
+        username: "bob",
+        avatar_url: null,
+      },
+    ]);
+
+    const { result } = renderHook(() => useGroupLeaderboard("g1"));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.positionChanges).toEqual({});
+
+    // Second load: positions swapped (u2 rises to 1, u1 drops to 2)
+    mockFetchGroupLeaderboard.mockResolvedValueOnce([
+      {
+        id: "lb2",
+        group_id: "g1",
+        user_id: "u2",
+        total_points: 45,
+        position: 1,
+        matches_played: 9,
+        exact_scores: 3,
+        correct_results: 5,
+        display_name: "Bob",
+        username: "bob",
+        avatar_url: null,
+      },
+      {
+        id: "lb1",
+        group_id: "g1",
+        user_id: "u1",
+        total_points: 42,
+        position: 2,
+        matches_played: 10,
+        exact_scores: 3,
+        correct_results: 7,
+        display_name: "Alice",
+        username: "alice",
+        avatar_url: null,
+      },
+    ]);
+
+    await act(async () => {
+      await result.current.refetch();
+    });
+
+    // u1 was at 1, now at 2: change = 1 - 2 = -1 (moved down)
+    expect(result.current.positionChanges["u1"]).toBe(-1);
+    // u2 was at 2, now at 1: change = 2 - 1 = +1 (moved up)
+    expect(result.current.positionChanges["u2"]).toBe(1);
+  });
+
+  it("resets positionChanges when groupId changes", async () => {
+    mockFetchGroupLeaderboard.mockResolvedValueOnce([
+      {
+        id: "lb1",
+        group_id: "g1",
+        user_id: "u1",
+        total_points: 42,
+        position: 1,
+        matches_played: 10,
+        exact_scores: 3,
+        correct_results: 7,
+        display_name: "Alice",
+        username: "alice",
+        avatar_url: null,
+      },
+    ]);
+
+    const { result, rerender } = renderHook(
+      ({ groupId }: { groupId: string }) => useGroupLeaderboard(groupId),
+      { initialProps: { groupId: "g1" } },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Second refetch with position change
+    mockFetchGroupLeaderboard.mockResolvedValueOnce([
+      {
+        id: "lb1",
+        group_id: "g1",
+        user_id: "u1",
+        total_points: 42,
+        position: 2,
+        matches_played: 10,
+        exact_scores: 3,
+        correct_results: 7,
+        display_name: "Alice",
+        username: "alice",
+        avatar_url: null,
+      },
+    ]);
+    await act(async () => {
+      await result.current.refetch();
+    });
+    expect(result.current.positionChanges["u1"]).toBe(-1);
+
+    // Switch to different group → positionChanges should reset
+    mockFetchGroupLeaderboard.mockResolvedValue([]);
+    rerender({ groupId: "g2" });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.positionChanges).toEqual({});
   });
 });

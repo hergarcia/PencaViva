@@ -1,5 +1,12 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withDelay,
+} from "react-native-reanimated";
 import { colors } from "@lib/constants";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
 
@@ -25,15 +32,47 @@ function avatarColor(userId: string): string {
   return AVATAR_COLORS[idx];
 }
 
+// Glow color per direction
+const GLOW_COLOR_UP = "0, 196, 140"; // green
+const GLOW_COLOR_DOWN = "255, 77, 106"; // red
+
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
   isCurrentUser: boolean;
+  positionChange?: number; // positive = moved up, negative = moved down
 }
 
-export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
+export function LeaderboardRow({
+  entry,
+  isCurrentUser,
+  positionChange,
+}: LeaderboardRowProps) {
   const medal = MEDAL[entry.position];
   const letter = entry.display_name.charAt(0).toUpperCase();
   const accentColor = avatarColor(entry.user_id);
+
+  // Glow animation: triggered when positionChange is set
+  const glowOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (positionChange === undefined || positionChange === 0) return;
+    // Flash: appear quickly (200ms), hold for 500ms, then fade out (800ms)
+    glowOpacity.value = withSequence(
+      withTiming(1, { duration: 200 }),
+      withDelay(500, withTiming(0, { duration: 800 })),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positionChange]);
+
+  const glowStyle = useAnimatedStyle(() => ({
+    backgroundColor:
+      positionChange && positionChange !== 0
+        ? `rgba(${positionChange > 0 ? GLOW_COLOR_UP : GLOW_COLOR_DOWN}, ${glowOpacity.value * 0.25})`
+        : "transparent",
+  }));
+
+  const hasPositionChange =
+    positionChange !== undefined && positionChange !== 0;
 
   return (
     <View
@@ -48,8 +87,20 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
         borderLeftColor: colors.primary,
         borderBottomWidth: 1,
         borderBottomColor: colors.surfaceBorder,
+        overflow: "hidden",
       }}
     >
+      {/* Animated glow overlay (absolute, behind content) */}
+      {hasPositionChange && (
+        <Animated.View
+          testID={
+            positionChange > 0 ? "position-glow-up" : "position-glow-down"
+          }
+          style={[StyleSheet.absoluteFillObject, glowStyle]}
+          pointerEvents="none"
+        />
+      )}
+
       {/* Position */}
       <View style={{ width: 36, alignItems: "center" }}>
         {medal ? (
@@ -111,8 +162,9 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
           style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}
           numberOfLines={1}
         >
-          {entry.matches_played} matches · {entry.exact_scores} exact ·{" "}
-          {entry.correct_results} correct
+          {entry.exact_scores > 0 || entry.correct_results > 0
+            ? `${entry.matches_played} matches · ${entry.exact_scores} exact · ${entry.correct_results} correct`
+            : `${entry.matches_played} matches played`}
         </Text>
       </View>
 

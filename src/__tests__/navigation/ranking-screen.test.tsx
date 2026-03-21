@@ -167,6 +167,7 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { getByText } = render(<RankingScreen />);

@@ -281,7 +281,7 @@
   - Depends: F1-23 (ranking)
   - Effort: 2h
 
-- [ ] **F1-27** Position change animations
+- [x] **F1-27** Position change animations
   - Slide up/down with green/red glow
   - React Native Reanimated for 60fps animations
   - Depends: F1-24 (realtime), Reanimated

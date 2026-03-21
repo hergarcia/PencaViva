@@ -107,6 +107,7 @@ export default function RankingScreen() {
     isLoading: leaderboardLoading,
     error,
     refetch,
+    positionChanges,
   } = useGroupLeaderboard(activeGroupId);
 
   const isLoading = groupsLoading || leaderboardLoading;
@@ -130,9 +131,13 @@ export default function RankingScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: LeaderboardEntry }) => (
-      <LeaderboardRow entry={item} isCurrentUser={item.user_id === user?.id} />
+      <LeaderboardRow
+        entry={item}
+        isCurrentUser={item.user_id === user?.id}
+        positionChange={positionChanges[item.user_id]}
+      />
     ),
-    [user?.id],
+    [user?.id, positionChanges],
   );
 
   const keyExtractor = useCallback((item: LeaderboardEntry) => item.id, []);
