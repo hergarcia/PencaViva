@@ -50,6 +50,8 @@ export const MOCK_LEADERBOARD_IDS = {
   entry1: "lb000001-0000-0000-0000-000000000001",
   entry2: "lb000002-0000-0000-0000-000000000002",
   entry3: "lb000003-0000-0000-0000-000000000003",
+  entry4: "lb000004-0000-0000-0000-000000000004",
+  entry5: "lb000005-0000-0000-0000-000000000005",
 } as const;
 
 // ── Date helpers ────────────────────────────────────────────────────
@@ -533,15 +535,17 @@ export const mockPredictions = [
 ];
 
 // ── Leaderboard Cache ───────────────────────────────────────────────
+// Field names match the DB schema: total_points, position, matches_played
 
 export const mockLeaderboardCache = [
   {
     id: MOCK_LEADERBOARD_IDS.entry1,
     group_id: MOCK_GROUP_IDS.owned,
+    tournament_id: null,
     user_id: MOCK_USER_ID,
-    points_total: 42,
-    rank: 1,
-    predictions_count: 15,
+    total_points: 42,
+    position: 1,
+    matches_played: 15,
     exact_scores: 3,
     correct_results: 8,
     updated_at: new Date().toISOString(),
@@ -549,10 +553,11 @@ export const mockLeaderboardCache = [
   {
     id: MOCK_LEADERBOARD_IDS.entry2,
     group_id: MOCK_GROUP_IDS.owned,
+    tournament_id: null,
     user_id: MOCK_MEMBER_IDS.alice,
-    points_total: 38,
-    rank: 2,
-    predictions_count: 14,
+    total_points: 38,
+    position: 2,
+    matches_played: 14,
     exact_scores: 2,
     correct_results: 9,
     updated_at: new Date().toISOString(),
@@ -560,12 +565,37 @@ export const mockLeaderboardCache = [
   {
     id: MOCK_LEADERBOARD_IDS.entry3,
     group_id: MOCK_GROUP_IDS.owned,
+    tournament_id: null,
     user_id: MOCK_MEMBER_IDS.bob,
-    points_total: 35,
-    rank: 3,
-    predictions_count: 13,
+    total_points: 35,
+    position: 3,
+    matches_played: 13,
     exact_scores: 2,
     correct_results: 7,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: MOCK_LEADERBOARD_IDS.entry4,
+    group_id: MOCK_GROUP_IDS.owned,
+    tournament_id: null,
+    user_id: MOCK_MEMBER_IDS.carol,
+    total_points: 29,
+    position: 4,
+    matches_played: 10,
+    exact_scores: 1,
+    correct_results: 5,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: MOCK_LEADERBOARD_IDS.entry5,
+    group_id: MOCK_GROUP_IDS.owned,
+    tournament_id: null,
+    user_id: MOCK_MEMBER_IDS.dave,
+    total_points: 22,
+    position: 5,
+    matches_played: 8,
+    exact_scores: 0,
+    correct_results: 4,
     updated_at: new Date().toISOString(),
   },
 ];

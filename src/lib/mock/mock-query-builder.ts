@@ -158,6 +158,11 @@ export class MockQueryBuilder {
     return this;
   }
 
+  is(col: string, val: null | boolean): this {
+    this.filters.push((row) => row[col] === val);
+    return this;
+  }
+
   not(col: string, op: string, val: unknown): this {
     this.filters.push((row) => {
       switch (op) {

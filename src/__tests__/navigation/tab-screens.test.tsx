@@ -2,15 +2,12 @@ import React from "react";
 import { render, screen } from "@testing-library/react-native";
 
 import HomeScreen from "../../../app/(tabs)/index";
-import RankingScreen from "../../../app/(tabs)/ranking";
 
 // GroupsScreen removed — has its own test suite in groups-screen.test.tsx
 // PredictScreen removed — has its own test suite in predict-screen.test.tsx
+// RankingScreen removed — has its own test suite in ranking-screen.test.tsx
 
-const screens = [
-  { Component: HomeScreen, title: "Inicio" },
-  { Component: RankingScreen, title: "Ranking" },
-];
+const screens = [{ Component: HomeScreen, title: "Inicio" }];
 
 describe("Tab placeholder screens", () => {
   screens.forEach(({ Component, title }) => {

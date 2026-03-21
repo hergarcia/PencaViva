@@ -255,7 +255,7 @@
 
 ### Milestone 4: Leaderboard (Week 5)
 
-- [ ] **F1-23** Ranking screen (sorted list)
+- [x] **F1-23** Ranking screen (sorted list)
   - Top 3 highlighted (gold, silver, bronze)
   - My position sticky if outside viewport
   - Stats per player (matches, exact scores, correct results)

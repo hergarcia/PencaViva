@@ -87,9 +87,10 @@ src/
 ├── components/         # Feature-organized components
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
-│   └── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation, GroupPredictions, PredictionRow
-├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions)
-├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils
+│   ├── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation, GroupPredictions, PredictionRow
+│   └── ranking/        # LeaderboardRow
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard)
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils, leaderboard-service
 │   ├── mock/              # Mock Supabase client (activated by EXPO_PUBLIC_USE_MOCKS=true)
 │   │   ├── index.ts       # Re-exports createMockClient
 │   │   ├── mock-client.ts # Mock SupabaseClient assembly + RPC handlers
