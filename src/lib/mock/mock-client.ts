@@ -143,6 +143,19 @@ export function createMockClient(): SupabaseClient {
       return Promise.resolve(handler(params ?? {}));
     },
 
+    // Realtime: no-op channel for mock environment
+    channel(_name: string) {
+      const ch = {
+        on: () => ch,
+        subscribe: () => ch,
+      };
+      return ch;
+    },
+
+    removeChannel(_channel: unknown) {
+      // no-op in mock
+    },
+
     auth,
     storage,
   };
