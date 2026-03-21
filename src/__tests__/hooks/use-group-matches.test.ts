@@ -1,5 +1,8 @@
 import { renderHook, waitFor } from "@testing-library/react-native";
 
+import { useGroupMatches } from "@hooks/use-group-matches";
+import type { MatchWithPrediction } from "@lib/matches-service";
+
 // Mock matches-service
 const mockFetchGroupMatches = jest.fn();
 jest.mock("@lib/matches-service", () => ({
@@ -10,9 +13,6 @@ jest.mock("@lib/matches-service", () => ({
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),
 }));
-
-import { useGroupMatches } from "@hooks/use-group-matches";
-import type { MatchWithPrediction } from "@lib/matches-service";
 
 beforeEach(() => {
   jest.clearAllMocks();

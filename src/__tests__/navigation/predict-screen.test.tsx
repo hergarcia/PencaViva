@@ -1,6 +1,8 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
+import PredictScreen from "../../../app/(tabs)/predict";
+
 // Mock use-auth
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),
@@ -17,8 +19,6 @@ const mockUseGroupMatches = jest.fn();
 jest.mock("@hooks/use-group-matches", () => ({
   useGroupMatches: () => mockUseGroupMatches(),
 }));
-
-import PredictScreen from "../../../app/(tabs)/predict";
 
 beforeEach(() => {
   jest.clearAllMocks();
