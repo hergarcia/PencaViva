@@ -811,6 +811,14 @@ CREATE TRIGGER on_match_result_update
 └─────────────────────────────────────────────────┘
 ```
 
+**MVP implementation notes (F1-25/26/27):**
+
+- **General** → implemented as "All Time" (reads from `leaderboard_cache`)
+- **Últimos N partidos** → implemented as "This Week" (7-day rolling) and "Last 30 Days" (30-day rolling), using date-range prediction queries with client-side aggregation
+- **Por fecha** (specific matchday) → deferred, requires matchday data modeling
+- **Cabeza a cabeza** (head-to-head) → deferred to a future task
+- Position change indicators (▲/▼ text + Reanimated glow flash) show when positions change between leaderboard refreshes
+
 **Actualización en tiempo real:**
 
 - Se usa **Supabase Realtime** suscrito a cambios en `leaderboard_cache`
