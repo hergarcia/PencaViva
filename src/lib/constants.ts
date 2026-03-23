@@ -12,6 +12,10 @@ export const colors = {
   surfaceBorder: "#2A2A3E",
   textPrimary: "#FFFFFF",
   textSecondary: "#A0A0B8",
+  success: "#00C48C",
+  successRgb: "0, 196, 140", // for rgba() templates in animations
+  danger: "#FF4D6A",
+  dangerRgb: "255, 77, 106", // for rgba() templates in animations
 } as const;
 
 export const APP_BASE_URL = "https://pencaviva.app";

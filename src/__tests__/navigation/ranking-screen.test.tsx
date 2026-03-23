@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 
 import RankingScreen from "../../../app/(tabs)/ranking";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
@@ -16,7 +16,7 @@ jest.mock("@hooks/use-active-group", () => ({
 
 const mockUseGroupLeaderboard = jest.fn();
 jest.mock("@hooks/use-group-leaderboard", () => ({
-  useGroupLeaderboard: () => mockUseGroupLeaderboard(),
+  useGroupLeaderboard: (...args: unknown[]) => mockUseGroupLeaderboard(...args),
 }));
 
 const mockGroup = {
@@ -83,6 +83,7 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { getByText } = render(<RankingScreen />);
@@ -105,6 +106,7 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { queryByText } = render(<RankingScreen />);
@@ -125,6 +127,7 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: "Network error",
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { getByText } = render(<RankingScreen />);
@@ -145,6 +148,7 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { getByText } = render(<RankingScreen />);
@@ -167,6 +171,7 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { getByText } = render(<RankingScreen />);
@@ -189,9 +194,104 @@ describe("RankingScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+      positionChanges: {},
     });
 
     const { getByText } = render(<RankingScreen />);
     expect(getByText("Ranking")).toBeTruthy();
+  });
+
+  it("renders filter tabs", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue({
+      entries: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      positionChanges: {},
+    });
+
+    const { getByTestId } = render(<RankingScreen />);
+    expect(getByTestId("filter-tabs")).toBeTruthy();
+    expect(getByTestId("filter-tab-overall")).toBeTruthy();
+    expect(getByTestId("filter-tab-week")).toBeTruthy();
+    expect(getByTestId("filter-tab-month")).toBeTruthy();
+  });
+
+  it("passes selected filter to useGroupLeaderboard", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue({
+      entries: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      positionChanges: {},
+    });
+
+    const { getByTestId } = render(<RankingScreen />);
+    fireEvent.press(getByTestId("filter-tab-week"));
+
+    expect(mockUseGroupLeaderboard).toHaveBeenCalledWith("g1", "week");
+  });
+
+  it("shows filter-aware empty state for week filter", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue({
+      entries: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      positionChanges: {},
+    });
+
+    const { getByTestId, getByText } = render(<RankingScreen />);
+    fireEvent.press(getByTestId("filter-tab-week"));
+
+    expect(getByText("No results this period")).toBeTruthy();
+    expect(
+      getByText("No matches were completed in this time range"),
+    ).toBeTruthy();
+    expect(getByTestId("filter-tabs")).toBeTruthy();
+  });
+
+  it("shows default empty state for overall filter", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue({
+      entries: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      positionChanges: {},
+    });
+
+    const { getByText } = render(<RankingScreen />);
+    expect(getByText("No rankings yet")).toBeTruthy();
+    expect(
+      getByText("Rankings appear after the first match is scored"),
+    ).toBeTruthy();
   });
 });

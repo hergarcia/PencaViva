@@ -1,5 +1,12 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withDelay,
+} from "react-native-reanimated";
 import { colors } from "@lib/constants";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
 
@@ -20,7 +27,6 @@ const AVATAR_COLORS = [
 ];
 
 function avatarColor(userId: string): string {
-  // Stable color derived from last char of user ID
   const idx = userId.charCodeAt(userId.length - 1) % AVATAR_COLORS.length;
   return AVATAR_COLORS[idx];
 }
@@ -28,12 +34,38 @@ function avatarColor(userId: string): string {
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
   isCurrentUser: boolean;
+  positionChange?: number;
 }
 
-export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
+export function LeaderboardRow({
+  entry,
+  isCurrentUser,
+  positionChange,
+}: LeaderboardRowProps) {
   const medal = MEDAL[entry.position];
   const letter = entry.display_name.charAt(0).toUpperCase();
   const accentColor = avatarColor(entry.user_id);
+
+  // Glow animation: P0-2 fix — store direction in shared value, always render overlay
+  const glowDirection = useSharedValue(0);
+  const glowOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (!positionChange || positionChange === 0) return;
+    glowDirection.value = positionChange > 0 ? 1 : -1;
+    glowOpacity.value = withSequence(
+      withTiming(1, { duration: 200 }),
+      withDelay(500, withTiming(0, { duration: 800 })),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values are stable refs
+  }, [positionChange]);
+
+  const glowStyle = useAnimatedStyle(() => ({
+    backgroundColor:
+      glowDirection.value !== 0
+        ? `rgba(${glowDirection.value > 0 ? colors.successRgb : colors.dangerRgb}, ${glowOpacity.value * 0.25})`
+        : "transparent",
+  }));
 
   return (
     <View
@@ -48,8 +80,29 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
         borderLeftColor: colors.primary,
         borderBottomWidth: 1,
         borderBottomColor: colors.surfaceBorder,
+        overflow: "hidden",
       }}
     >
+      {/* Animated glow overlay (always mounted for animation continuity) */}
+      <Animated.View
+        testID="position-glow-overlay"
+        style={[StyleSheet.absoluteFillObject, glowStyle]}
+        pointerEvents="none"
+      />
+      {/* Directional testID markers for test assertions */}
+      {positionChange !== undefined && positionChange > 0 && (
+        <View
+          testID="position-glow-up"
+          style={{ position: "absolute", width: 0, height: 0 }}
+        />
+      )}
+      {positionChange !== undefined && positionChange < 0 && (
+        <View
+          testID="position-glow-down"
+          style={{ position: "absolute", width: 0, height: 0 }}
+        />
+      )}
+
       {/* Position */}
       <View style={{ width: 36, alignItems: "center" }}>
         {medal ? (
@@ -111,10 +164,31 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
           style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}
           numberOfLines={1}
         >
-          {entry.matches_played} matches · {entry.exact_scores} exact ·{" "}
-          {entry.correct_results} correct
+          {entry.exact_scores > 0 || entry.correct_results > 0
+            ? `${entry.matches_played} matches · ${entry.exact_scores} exact · ${entry.correct_results} correct`
+            : `${entry.matches_played} matches played`}
         </Text>
       </View>
+
+      {/* Position change indicator */}
+      {positionChange !== undefined && positionChange !== 0 && (
+        <View style={{ alignItems: "center", marginRight: 6 }}>
+          <Text
+            testID={
+              positionChange > 0 ? "position-change-up" : "position-change-down"
+            }
+            style={{
+              color: positionChange > 0 ? colors.success : colors.danger,
+              fontSize: 11,
+              fontWeight: "700",
+            }}
+          >
+            {positionChange > 0
+              ? `▲${positionChange}`
+              : `▼${Math.abs(positionChange)}`}
+          </Text>
+        </View>
+      )}
 
       {/* Points */}
       <Text

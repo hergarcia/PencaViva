@@ -269,23 +269,26 @@
   - Effort: 4h
   - Notes: Added Supabase Realtime channel subscription to `useGroupLeaderboard` hook. Subscribes to `postgres_changes` on `leaderboard_cache` filtered by `group_id=eq.<groupId>` — auto-refetches on any INSERT/UPDATE/DELETE event. Channel cleaned up on unmount/groupId change. No subscription when `groupId` is null. Mock client updated with no-op `channel()` and `removeChannel()` for offline dev. 9 new tests covering subscription setup, realtime trigger refetch, cleanup, and resubscription on groupId change.
 
-- [ ] **F1-25** Filters (Overall / By Date / Last N)
+- [x] **F1-25** Filters (Overall / By Date / Last N)
   - Tab bar: Overall | By Date | Trend
   - Different queries for each view
   - Depends: F1-23 (ranking)
   - Effort: 4h
+  - Notes: Implemented as FilterTabs (All Time / This Week / Last 30 Days). `LeaderboardFilter` type, `fetchGroupLeaderboardByDateRange` (two-step: matches → predictions → client-side aggregation), `fetchGroupLeaderboardFiltered` dispatcher. Filter-aware empty states. Combined with F1-26/27 in single branch.
 
-- [ ] **F1-26** Highlight my position
+- [x] **F1-26** Highlight my position
   - Highlight current user's row
   - Position change indicator (green/red arrow)
   - Depends: F1-23 (ranking)
   - Effort: 2h
+  - Notes: Position change text indicators (▲N/▼N) with `colors.success`/`colors.danger`. `positionChanges` tracked in `useGroupLeaderboard` hook via `prevPositionsRef`. Combined with F1-25/27.
 
-- [ ] **F1-27** Position change animations
+- [x] **F1-27** Position change animations
   - Slide up/down with green/red glow
   - React Native Reanimated for 60fps animations
   - Depends: F1-24 (realtime), Reanimated
   - Effort: 3h
+  - Notes: Reanimated glow flash animation on position changes. P0-2 fix: glow overlay always mounted, direction stored in `useSharedValue` to prevent animation cutoff. Combined with F1-25/26.
 
 - [ ] **F1-28** Detailed player stats
   - Detail screen: prediction history, correct picks, streaks
