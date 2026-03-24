@@ -44,6 +44,13 @@ export const MOCK_PREDICTION_IDS = {
   pred7_alice_fin1: "pr000007-0000-0000-0000-000000000007",
   pred8_bob_fin1: "pr000008-0000-0000-0000-000000000008",
   pred9_carol_fin1: "pr000009-0000-0000-0000-000000000009",
+  pred10_alice_fin2: "pr000010-0000-0000-0000-000000000010",
+  pred11_alice_fin3: "pr000011-0000-0000-0000-000000000011",
+  pred12_bob_fin2: "pr000012-0000-0000-0000-000000000012",
+  pred13_bob_fin3: "pr000013-0000-0000-0000-000000000013",
+  pred14_carol_fin2: "pr000014-0000-0000-0000-000000000014",
+  pred15_carol_fin3: "pr000015-0000-0000-0000-000000000015",
+  pred16_user_fin3: "pr000016-0000-0000-0000-000000000016",
 } as const;
 
 export const MOCK_LEADERBOARD_IDS = {
@@ -531,6 +538,91 @@ export const mockPredictions = [
     points: 0,
     created_at: daysAgo(3),
     updated_at: daysAgo(3),
+  },
+  // finished2: Universitario 0-0 Alianza Lima
+  // Alice: wrong (1-0) → 0 pts
+  {
+    id: MOCK_PREDICTION_IDS.pred10_alice_fin2,
+    user_id: MOCK_MEMBER_IDS.alice,
+    match_id: MOCK_MATCH_IDS.finished2,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 1,
+    away_score_pred: 0,
+    points: 0,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
+  },
+  // Alice: correct result (0-1 away win) → 3 pts (Emelec 1-2 Barcelona SC)
+  {
+    id: MOCK_PREDICTION_IDS.pred11_alice_fin3,
+    user_id: MOCK_MEMBER_IDS.alice,
+    match_id: MOCK_MATCH_IDS.finished3,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 0,
+    away_score_pred: 1,
+    points: 3,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
+  },
+  // Bob: exact (0-0) → 5 pts
+  {
+    id: MOCK_PREDICTION_IDS.pred12_bob_fin2,
+    user_id: MOCK_MEMBER_IDS.bob,
+    match_id: MOCK_MATCH_IDS.finished2,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 0,
+    away_score_pred: 0,
+    points: 5,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
+  },
+  // Bob: wrong (2-0) → 0 pts (Emelec 1-2 Barcelona SC)
+  {
+    id: MOCK_PREDICTION_IDS.pred13_bob_fin3,
+    user_id: MOCK_MEMBER_IDS.bob,
+    match_id: MOCK_MATCH_IDS.finished3,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 2,
+    away_score_pred: 0,
+    points: 0,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
+  },
+  // Carol: exact (0-0) → 5 pts
+  {
+    id: MOCK_PREDICTION_IDS.pred14_carol_fin2,
+    user_id: MOCK_MEMBER_IDS.carol,
+    match_id: MOCK_MATCH_IDS.finished2,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 0,
+    away_score_pred: 0,
+    points: 5,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
+  },
+  // Carol: correct result + goal diff (0-1) → 4 pts (Emelec 1-2 Barcelona SC)
+  {
+    id: MOCK_PREDICTION_IDS.pred15_carol_fin3,
+    user_id: MOCK_MEMBER_IDS.carol,
+    match_id: MOCK_MATCH_IDS.finished3,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 0,
+    away_score_pred: 1,
+    points: 4,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
+  },
+  // User: wrong (2-0) → 0 pts (Emelec 1-2 Barcelona SC)
+  {
+    id: MOCK_PREDICTION_IDS.pred16_user_fin3,
+    user_id: MOCK_USER_ID,
+    match_id: MOCK_MATCH_IDS.finished3,
+    group_id: MOCK_GROUP_IDS.owned,
+    home_score_pred: 2,
+    away_score_pred: 0,
+    points: 0,
+    created_at: daysAgo(4),
+    updated_at: daysAgo(4),
   },
 ];
 

@@ -203,9 +203,26 @@ export default function RankingScreen() {
         entry={item}
         isCurrentUser={item.user_id === user?.id}
         positionChange={positionChanges[item.user_id]}
+        onPress={() =>
+          router.push({
+            pathname: "/player-stats/[userId]",
+            params: {
+              userId: item.user_id,
+              groupId: activeGroupId ?? "",
+              displayName: item.display_name,
+              username: item.username,
+              avatarUrl: item.avatar_url ?? "",
+              position: String(item.position),
+              totalPoints: String(item.total_points),
+              exactScores: String(item.exact_scores),
+              correctResults: String(item.correct_results),
+              matchesPlayed: String(item.matches_played),
+            },
+          })
+        }
       />
     ),
-    [user?.id, positionChanges],
+    [user?.id, positionChanges, activeGroupId, router],
   );
 
   const keyExtractor = useCallback((item: LeaderboardEntry) => item.id, []);

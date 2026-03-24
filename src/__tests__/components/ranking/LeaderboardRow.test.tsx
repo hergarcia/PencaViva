@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react-native";
+import { render, screen, fireEvent } from "@testing-library/react-native";
 import { LeaderboardRow } from "@components/ranking/LeaderboardRow";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
 
@@ -170,6 +170,25 @@ describe("LeaderboardRow", () => {
     );
     expect(getByTestId("position-change-down")).toBeTruthy();
     expect(getByText("▼1")).toBeTruthy();
+  });
+
+  it("calls onPress when row is tapped", () => {
+    const onPress = jest.fn();
+    render(
+      <LeaderboardRow
+        entry={baseEntry}
+        isCurrentUser={false}
+        onPress={onPress}
+      />,
+    );
+    fireEvent.press(screen.getByTestId(`leaderboard-row-${baseEntry.user_id}`));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not crash when onPress is not provided", () => {
+    render(<LeaderboardRow entry={baseEntry} isCurrentUser={false} />);
+    fireEvent.press(screen.getByTestId(`leaderboard-row-${baseEntry.user_id}`));
+    // no crash = pass
   });
 
   it("glow overlay remains mounted when positionChange becomes undefined (P0-2)", () => {

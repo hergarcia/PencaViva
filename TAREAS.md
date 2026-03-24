@@ -290,10 +290,11 @@
   - Effort: 3h
   - Notes: Reanimated glow flash animation on position changes. P0-2 fix: glow overlay always mounted, direction stored in `useSharedValue` to prevent animation cutoff. Combined with F1-25/26.
 
-- [ ] **F1-28** Detailed player stats
+- [x] **F1-28** Detailed player stats
   - Detail screen: prediction history, correct picks, streaks
   - Depends: F1-23 (ranking)
   - Effort: 4h
+  - Notes: Player stats screen at app/player-stats/[userId].tsx (root-level, no tab bar). Components: PlayerStatsHeader, StatsGrid, StreakDisplay, PredictionHistoryRow. Hook: usePlayerStats (fetches predictions with nested match/tournament joins, client-side sort by kickoff_time DESC, computes streaks). Service: player-stats-service.ts (PlayerPredictionRecord types, computeStreaks pure function, fetchPlayerGroupStats with explicit FK hint matches!match_id). Navigation: LeaderboardRow onPress → router.push with route params. SectionList grouped by date with date-fns + @date-fns/tz. 42 tests (service: 10, hook: 7, components: 18, screen: 7). Stitch design: "Player Stats - Refined" in PencaViva project.
 
 ---
 

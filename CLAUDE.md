@@ -79,6 +79,7 @@ app/                    # Expo Router file-based routing
 │   └── profile.tsx     # Profile tab
 ├── match/[id].tsx      # Match detail with prediction steppers
 ├── groups/             # Group detail, create, join screens (no tab bar)
+├── player-stats/[userId].tsx  # Player stats detail (no tab bar, from ranking)
 └── _layout.tsx         # Root layout
 
 src/
@@ -88,9 +89,9 @@ src/
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
 │   ├── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation, GroupPredictions, PredictionRow
-│   └── ranking/        # LeaderboardRow (with Reanimated glow + position indicators)
-├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard(groupId, filter?))
-├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL + success/danger colors), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils, leaderboard-service (LeaderboardFilter, fetchGroupLeaderboardByDateRange, fetchGroupLeaderboardFiltered)
+│   └── ranking/        # LeaderboardRow (with Reanimated glow + position indicators), PlayerStatsHeader, StatsGrid, StreakDisplay, PredictionHistoryRow
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard(groupId, filter?), usePlayerStats(userId, groupId))
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL + success/danger colors), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils, leaderboard-service (LeaderboardFilter, fetchGroupLeaderboardByDateRange, fetchGroupLeaderboardFiltered), player-stats-service (PlayerPredictionRecord, computeStreaks, fetchPlayerGroupStats)
 │   ├── mock/              # Mock Supabase client (activated by EXPO_PUBLIC_USE_MOCKS=true)
 │   │   ├── index.ts       # Re-exports createMockClient
 │   │   ├── mock-client.ts # Mock SupabaseClient assembly + RPC handlers
@@ -224,9 +225,10 @@ Scoring system (configurable per group via JSONB):
    - **Skill pipeline**: Use `/stitch-design` as the unified entry point. It orchestrates: `/enhance-prompt` (adds UI/UX keywords, atmosphere, and design system context to your prompt) → Stitch MCP generation → `/design-md` (syncs design system into `.stitch/DESIGN.md`)
    - **Stitch project**: All mockups go in the `PencaViva` Stitch project (project ID: `13390158725206896883`). Always use `MOBILE` device type
    - **Prompt enhancement**: Before generating any screen, run `/enhance-prompt` to transform vague UI ideas into polished, Stitch-optimized prompts. Never send raw/vague prompts directly to Stitch
-   - **Review loop**: After generating, **always** fetch the screenshot and visually inspect. Iterate with `edit_screens` or `generate_variants` until the design is polished. Do not accept the first generation without review
+   - **Autonomous iteration**: After generating, **always** fetch the screenshot and visually inspect. Iterate with `edit_screens` or `generate_variants` until the design is polished. Do not accept the first generation without review. **This is an autonomous process** — do not ask the user for feedback on each iteration. Use your own judgment to evaluate quality and iterate until the design meets the app's design standards (dark theme, color palette, spacing, hierarchy). Only present the final result to the user for approval
+   - **Not the visual companion**: Stitch MCP design is separate from the brainstorming skill's "visual companion" (HTML browser). Declining the visual companion during brainstorming does NOT mean skipping Stitch. Stitch is mandatory for UI tasks regardless of visual companion preference
    - **Design system sync**: After finalizing screens, run `/design-md` to keep `.stitch/DESIGN.md` up to date with the latest design tokens, patterns, and component inventory
-   - **Implementation**: Use `/react-components` to convert finalized Stitch designs into modular React components with AST-based validation, ensuring fidelity between design and code
+   - **Implementation from Stitch**: The finalized Stitch design is the **source of truth** for the UI. Implementation must faithfully reproduce the approved mockup — layout, spacing, colors, typography hierarchy, and component structure. Use `/react-components` to convert Stitch designs into modular React components with AST-based validation when applicable. The design is NOT decorative — it drives the code
    - **Scope**: New screens, screen redesigns, new components, layout changes, empty/error/loading states. Code must match the approved Stitch mockup
 6. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text
 7. Develop with TDD (`superpowers:test-driven-development` skill — RED-GREEN-REFACTOR in vertical slices)
