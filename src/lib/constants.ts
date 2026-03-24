@@ -16,6 +16,15 @@ export const colors = {
   successRgb: "0, 196, 140", // for rgba() templates in animations
   danger: "#FF4D6A",
   dangerRgb: "255, 77, 106", // for rgba() templates in animations
+  // Prediction result colors
+  exact: "#FFB800",
+  wrong: "#6B6B80",
+  // Match status
+  live: "#FF4444",
+  // Card tokens
+  cardRadius: 16,
+  cardPadding: 16,
+  cardBorderWidth: 1,
 } as const;
 
 export const APP_BASE_URL = "https://pencaviva.app";
