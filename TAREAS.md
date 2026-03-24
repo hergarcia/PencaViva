@@ -341,6 +341,13 @@
 
 ### UX Polish
 
+- [x] **UI Polish Pass 1** — Color/token consistency, EmptyState component extraction, match detail prediction states redesign
+  - Standardized all hardcoded colors to design tokens from constants
+  - Extracted shared EmptyState component used across predict, ranking, groups screens
+  - Redesigned match detail with status-driven prediction cards: editable (green indicator), live (red indicator + live point tracking), finished (result-colored indicator + badge + comparison columns), no-prediction (lock + 0 pts)
+  - Added result styling helper (getResultStyle) and scoring-utils integration
+  - Established styling rules: NativeWind for layout, inline for colors, never mix on same property
+
 - [ ] **F2-07** Pull to refresh on all screens
   - Effort: 2h
 
