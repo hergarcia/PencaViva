@@ -265,7 +265,7 @@ export default function JoinGroupScreen() {
           <Text
             testID="error-message"
             style={{
-              color: "#FF4444",
+              color: colors.danger,
               fontSize: 14,
               textAlign: "center",
               marginTop: 12,

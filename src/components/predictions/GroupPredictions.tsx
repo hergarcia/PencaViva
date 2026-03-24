@@ -68,7 +68,7 @@ export function GroupPredictions({
   if (error) {
     return (
       <View style={{ marginTop: 28, alignItems: "center" }}>
-        <Text style={{ color: "#FF4444", fontSize: 13 }}>{error}</Text>
+        <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text>
       </View>
     );
   }

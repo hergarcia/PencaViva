@@ -185,7 +185,7 @@ export default function MatchDetailScreen() {
           {isLive && (
             <View
               style={{
-                backgroundColor: "#FF4444",
+                backgroundColor: colors.live,
                 paddingHorizontal: 6,
                 paddingVertical: 2,
                 borderRadius: 4,
@@ -361,7 +361,7 @@ export default function MatchDetailScreen() {
                 {saveError && (
                   <Text
                     style={{
-                      color: "#FF4444",
+                      color: colors.danger,
                       fontSize: 13,
                       textAlign: "center",
                       marginTop: 8,
@@ -416,7 +416,7 @@ export default function MatchDetailScreen() {
                 {errorBanner && (
                   <Text
                     style={{
-                      color: "#FF4444",
+                      color: colors.danger,
                       fontSize: 13,
                       textAlign: "center",
                       marginTop: 12,

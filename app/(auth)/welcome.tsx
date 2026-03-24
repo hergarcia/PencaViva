@@ -14,6 +14,7 @@ import { ONBOARDING_PAGES, ONBOARDING_STORAGE_KEY } from "@lib/onboarding";
 import { setStorageItem } from "@lib/storage";
 import OnboardingPageView from "@components/onboarding/OnboardingPageView";
 import PageIndicator from "@components/onboarding/PageIndicator";
+import { colors } from "@lib/constants";
 
 function WelcomeScreen() {
   const router = useRouter();
@@ -48,7 +49,7 @@ function WelcomeScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#0D0D0D" }}
+      style={{ flex: 1, backgroundColor: colors.background }}
       testID="welcome-screen"
     >
       {/* Skip button */}
@@ -89,10 +90,14 @@ function WelcomeScreen() {
 
         <Pressable
           onPress={handleNext}
-          className="mt-6 items-center rounded-xl bg-[#00D4AA] py-4"
+          className="mt-6 items-center rounded-xl py-4"
+          style={{ backgroundColor: colors.primary }}
           testID="next-button"
         >
-          <Text className="text-base font-bold text-[#0D0D0D]">
+          <Text
+            className="text-base font-bold"
+            style={{ color: colors.background }}
+          >
             {isLastPage ? "Get Started" : "Next"}
           </Text>
         </Pressable>

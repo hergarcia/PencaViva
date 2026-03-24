@@ -95,7 +95,7 @@ export function MatchCard({ match, onPress }: MatchCardProps) {
         {isLive && (
           <View
             style={{
-              backgroundColor: "#FF4444",
+              backgroundColor: colors.live,
               paddingHorizontal: 6,
               paddingVertical: 2,
               borderRadius: 4,

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { EmptyState } from "@components/common/EmptyState";
 import { useAuth } from "@hooks/use-auth";
 import { fetchUserGroups } from "@lib/groups-service";
 import { colors } from "@lib/constants";
@@ -162,91 +163,26 @@ export default function GroupsScreen() {
             My Groups
           </Text>
         </View>
-        <View
-          testID="empty-state"
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="people-outline"
-            size={64}
-            color={colors.textSecondary}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 20,
-              fontWeight: "bold",
-              marginTop: 16,
-            }}
-          >
-            No groups yet
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              textAlign: "center",
-              marginTop: 8,
-              lineHeight: 20,
-            }}
-          >
-            Create a group to start predicting with friends, or join one with an
-            invite code.
-          </Text>
-
-          <TouchableOpacity
-            testID="create-group-button"
-            onPress={handleCreateGroup}
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: 12,
-              paddingVertical: 14,
-              paddingHorizontal: 32,
-              marginTop: 24,
-              width: "100%",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: colors.background,
-                fontWeight: "bold",
-                fontSize: 16,
-              }}
-            >
-              Create Group
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            testID="join-group-button"
-            onPress={handleJoinGroup}
-            style={{
-              borderColor: colors.surfaceBorder,
-              borderWidth: 1,
-              borderRadius: 12,
-              paddingVertical: 14,
-              paddingHorizontal: 32,
-              marginTop: 12,
-              width: "100%",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: colors.textPrimary,
-                fontWeight: "bold",
-                fontSize: 16,
-              }}
-            >
-              Join Group
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon="people-outline"
+          iconSize={64}
+          title="No groups yet"
+          description="Create a group to start predicting with friends, or join one with an invite code."
+          actions={[
+            {
+              label: "Create Group",
+              onPress: () => router.push("/groups/create"),
+              variant: "primary",
+              testID: "create-group-button",
+            },
+            {
+              label: "Join Group",
+              onPress: () => router.push("/groups/join"),
+              variant: "outline",
+              testID: "join-group-button",
+            },
+          ]}
+        />
       </SafeAreaView>
     );
   }

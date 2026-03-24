@@ -7,6 +7,7 @@ type EmptyStateAction = {
   label: string;
   onPress: () => void;
   variant: "primary" | "outline";
+  testID?: string;
 };
 
 type EmptyStateProps = {
@@ -70,6 +71,7 @@ export function EmptyState({
           {actions.map((action) => (
             <TouchableOpacity
               key={action.label}
+              testID={action.testID}
               onPress={action.onPress}
               style={
                 action.variant === "primary"
