@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -35,12 +35,14 @@ interface LeaderboardRowProps {
   entry: LeaderboardEntry;
   isCurrentUser: boolean;
   positionChange?: number;
+  onPress?: () => void;
 }
 
 export function LeaderboardRow({
   entry,
   isCurrentUser,
   positionChange,
+  onPress,
 }: LeaderboardRowProps) {
   const medal = MEDAL[entry.position];
   const letter = entry.display_name.charAt(0).toUpperCase();
@@ -68,8 +70,9 @@ export function LeaderboardRow({
   }));
 
   return (
-    <View
+    <Pressable
       testID={`leaderboard-row-${entry.user_id}`}
+      onPress={onPress}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -211,6 +214,6 @@ export function LeaderboardRow({
           pts
         </Text>
       </Text>
-    </View>
+    </Pressable>
   );
 }
