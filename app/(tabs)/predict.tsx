@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@lib/constants";
+import { EmptyState } from "@components/common/EmptyState";
 import { useActiveGroup } from "@hooks/use-active-group";
 import { useGroupMatches } from "@hooks/use-group-matches";
 import { MatchCard } from "@components/predictions/MatchCard";
@@ -74,73 +75,23 @@ export default function PredictScreen() {
             Predict
           </Text>
         </View>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="people-outline"
-            size={48}
-            color={colors.textSecondary}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: "600",
-              marginTop: 16,
-              textAlign: "center",
-            }}
-          >
-            No groups yet
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              marginTop: 8,
-              textAlign: "center",
-            }}
-          >
-            Join or create a group to start predicting
-          </Text>
-          <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
-            <TouchableOpacity
-              testID="join-group-cta"
-              onPress={() => router.push("/groups/join")}
-              style={{
-                backgroundColor: colors.surface,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 20,
-                borderWidth: 1,
-                borderColor: colors.surfaceBorder,
-              }}
-            >
-              <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>
-                Join
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID="create-group-cta"
-              onPress={() => router.push("/groups/create")}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 20,
-              }}
-            >
-              <Text style={{ color: colors.background, fontWeight: "600" }}>
-                Create
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <EmptyState
+          icon="people-outline"
+          title="No groups yet"
+          description="Join or create a group to start predicting"
+          actions={[
+            {
+              label: "Join Group",
+              onPress: () => router.push("/groups/join"),
+              variant: "outline",
+            },
+            {
+              label: "Create Group",
+              onPress: () => router.push("/groups/create"),
+              variant: "primary",
+            },
+          ]}
+        />
       </SafeAreaView>
     );
   }
@@ -247,41 +198,11 @@ export default function PredictScreen() {
         </View>
       ) : sections.length === 0 ? (
         /* Empty matches state */
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="football-outline"
-            size={48}
-            color={colors.textSecondary}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: "600",
-              marginTop: 16,
-              textAlign: "center",
-            }}
-          >
-            No upcoming matches
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              marginTop: 8,
-              textAlign: "center",
-            }}
-          >
-            Check back later for new fixtures
-          </Text>
-        </View>
+        <EmptyState
+          icon="football-outline"
+          title="No upcoming matches"
+          description="Check back later for new fixtures"
+        />
       ) : (
         /* Match list */
         <SectionList

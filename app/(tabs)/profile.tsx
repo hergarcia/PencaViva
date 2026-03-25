@@ -544,12 +544,12 @@ export default function ProfileScreen() {
                   alignItems: "center",
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: "#EF4444",
+                  borderColor: colors.danger,
                 }}
                 onPress={handleSignOut}
                 testID="sign-out-button"
               >
-                <Text style={{ color: "#EF4444", fontWeight: "bold" }}>
+                <Text style={{ color: colors.danger, fontWeight: "bold" }}>
                   {copy.signOut}
                 </Text>
               </TouchableOpacity>

@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@lib/constants";
+import { EmptyState } from "@components/common/EmptyState";
 import { useAuth } from "@hooks/use-auth";
 import { useActiveGroup } from "@hooks/use-active-group";
 import { useGroupLeaderboard } from "@hooks/use-group-leaderboard";
@@ -198,31 +199,57 @@ export default function RankingScreen() {
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
   const renderItem = useCallback(
-    ({ item }: { item: LeaderboardEntry }) => (
-      <LeaderboardRow
-        entry={item}
-        isCurrentUser={item.user_id === user?.id}
-        positionChange={positionChanges[item.user_id]}
-        onPress={() =>
-          router.push({
-            pathname: "/player-stats/[userId]",
-            params: {
-              userId: item.user_id,
-              groupId: activeGroupId ?? "",
-              displayName: item.display_name,
-              username: item.username,
-              avatarUrl: item.avatar_url ?? "",
-              position: String(item.position),
-              totalPoints: String(item.total_points),
-              exactScores: String(item.exact_scores),
-              correctResults: String(item.correct_results),
-              matchesPlayed: String(item.matches_played),
-            },
-          })
-        }
-      />
+    ({ item, index }: { item: LeaderboardEntry; index: number }) => (
+      <>
+        {/* "COMPETITORS" divider between position 3 and 4 */}
+        {index > 0 &&
+          entries[index - 1]?.position <= 3 &&
+          item.position > 3 && (
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingTop: 20,
+                paddingBottom: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 11,
+                  fontWeight: "700",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                COMPETITORS
+              </Text>
+            </View>
+          )}
+        <LeaderboardRow
+          entry={item}
+          isCurrentUser={item.user_id === user?.id}
+          positionChange={positionChanges[item.user_id]}
+          onPress={() =>
+            router.push({
+              pathname: "/player-stats/[userId]",
+              params: {
+                userId: item.user_id,
+                groupId: activeGroupId ?? "",
+                displayName: item.display_name,
+                username: item.username,
+                avatarUrl: item.avatar_url ?? "",
+                position: String(item.position),
+                totalPoints: String(item.total_points),
+                exactScores: String(item.exact_scores),
+                correctResults: String(item.correct_results),
+                matchesPlayed: String(item.matches_played),
+              },
+            })
+          }
+        />
+      </>
     ),
-    [user?.id, positionChanges, activeGroupId, router],
+    [user?.id, positionChanges, activeGroupId, router, entries],
   );
 
   const keyExtractor = useCallback((item: LeaderboardEntry) => item.id, []);
@@ -243,73 +270,23 @@ export default function RankingScreen() {
             Ranking
           </Text>
         </View>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="trophy-outline"
-            size={48}
-            color={colors.textSecondary}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: "600",
-              marginTop: 16,
-              textAlign: "center",
-            }}
-          >
-            No groups yet
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              marginTop: 8,
-              textAlign: "center",
-            }}
-          >
-            Join or create a group to see the leaderboard
-          </Text>
-          <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
-            <TouchableOpacity
-              testID="join-group-cta"
-              onPress={() => router.push("/groups/join")}
-              style={{
-                backgroundColor: colors.surface,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 20,
-                borderWidth: 1,
-                borderColor: colors.surfaceBorder,
-              }}
-            >
-              <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>
-                Join
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID="create-group-cta"
-              onPress={() => router.push("/groups/create")}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 20,
-              }}
-            >
-              <Text style={{ color: colors.background, fontWeight: "600" }}>
-                Create
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <EmptyState
+          icon="trophy-outline"
+          title="No groups yet"
+          description="Join or create a group to see the leaderboard"
+          actions={[
+            {
+              label: "Join Group",
+              onPress: () => router.push("/groups/join"),
+              variant: "outline",
+            },
+            {
+              label: "Create Group",
+              onPress: () => router.push("/groups/create"),
+              variant: "primary",
+            },
+          ]}
+        />
       </SafeAreaView>
     );
   }
@@ -419,47 +396,21 @@ export default function RankingScreen() {
         </View>
       ) : entries.length === 0 ? (
         /* Empty leaderboard state */
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name={
-              activeFilter === "overall" ? "podium-outline" : "calendar-outline"
-            }
-            size={48}
-            color={colors.textSecondary}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: "600",
-              marginTop: 16,
-              textAlign: "center",
-            }}
-          >
-            {activeFilter === "overall"
+        <EmptyState
+          icon={
+            activeFilter === "overall" ? "podium-outline" : "calendar-outline"
+          }
+          title={
+            activeFilter === "overall"
               ? "No rankings yet"
-              : "No results this period"}
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              marginTop: 8,
-              textAlign: "center",
-            }}
-          >
-            {activeFilter === "overall"
+              : "No results this period"
+          }
+          description={
+            activeFilter === "overall"
               ? "Rankings appear after the first match is scored"
-              : "No matches were completed in this time range"}
-          </Text>
-        </View>
+              : "No matches were completed in this time range"
+          }
+        />
       ) : (
         /* Leaderboard list */
         <>

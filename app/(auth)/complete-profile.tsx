@@ -131,9 +131,9 @@ export default function CompleteProfileScreen() {
 
   const usernameStatusColor = useMemo(() => {
     if (!username || isCheckingAvailability) return colors.textSecondary;
-    if (localValidation && !localValidation.isValid) return "#EF4444";
+    if (localValidation && !localValidation.isValid) return colors.danger;
     if (isAvailable === true && isDebounceSettled) return colors.primary;
-    if (isAvailable === false) return "#EF4444";
+    if (isAvailable === false) return colors.danger;
     return colors.textSecondary;
   }, [
     username,
@@ -231,10 +231,20 @@ export default function CompleteProfileScreen() {
           {error && (
             <Pressable
               onPress={() => setError(null)}
-              className="mb-6 rounded-xl border border-red-500/50 bg-red-900/30 px-4 py-3"
+              className="mb-6 rounded-xl px-4 py-3"
+              style={{
+                borderWidth: 1,
+                borderColor: colors.danger + "80",
+                backgroundColor: colors.danger + "1A",
+              }}
               testID="error-banner"
             >
-              <Text className="text-center text-sm text-red-400">{error}</Text>
+              <Text
+                className="text-center text-sm"
+                style={{ color: colors.danger }}
+              >
+                {error}
+              </Text>
               <Text
                 style={{ color: colors.primary }}
                 className="mt-2 text-center text-sm"

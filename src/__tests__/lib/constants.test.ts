@@ -10,4 +10,19 @@ describe("colors", () => {
     expect(colors.successRgb).toBe("0, 196, 140");
     expect(colors.dangerRgb).toBe("255, 77, 106");
   });
+
+  it("exports prediction result colors", () => {
+    expect(colors.exact).toBe("#FFB800");
+    expect(colors.wrong).toBe("#6B6B80");
+  });
+
+  it("exports match status colors", () => {
+    expect(colors.live).toBe("#FF4444");
+  });
+
+  it("exports card tokens", () => {
+    expect(colors.cardRadius).toBe(16);
+    expect(colors.cardPadding).toBe(16);
+    expect(colors.cardBorderWidth).toBe(1);
+  });
 });

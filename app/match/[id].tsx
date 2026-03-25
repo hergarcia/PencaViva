@@ -13,6 +13,11 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { format } from "date-fns";
 import { colors } from "@lib/constants";
+import {
+  getPredictionStatus,
+  calculatePotentialPoints,
+} from "@lib/scoring-utils";
+import type { PredictionStatus } from "@lib/scoring-utils";
 import { useGroupStore } from "@stores/group-store";
 import { useMatchDetail } from "@hooks/use-match-detail";
 import { useCountdown } from "@hooks/use-countdown";
@@ -21,6 +26,31 @@ import { SaveConfirmation } from "@components/predictions/SaveConfirmation";
 import { GroupPredictions } from "@components/predictions/GroupPredictions";
 import { useAuth } from "@hooks/use-auth";
 import { useGroupDetail } from "@hooks/use-group-detail";
+
+function getResultStyle(status: PredictionStatus) {
+  switch (status) {
+    case "exact":
+      return {
+        color: colors.exact,
+        label: "Exact Score!",
+        bg: colors.exact + "26",
+      };
+    case "correct_result_and_diff":
+      return {
+        color: colors.success,
+        label: "Correct Result",
+        bg: colors.success + "26",
+      };
+    case "correct_result":
+      return {
+        color: colors.success,
+        label: "Correct Result",
+        bg: colors.success + "26",
+      };
+    case "wrong":
+      return { color: colors.wrong, label: "Wrong", bg: colors.wrong + "26" };
+  }
+}
 
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -165,28 +195,30 @@ export default function MatchDetailScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <Header
         onBack={() => router.back()}
-        title={match.tournament_short_name ?? "Match Detail"}
+        title={match.tournament_short_name ?? match.tournament_name}
       />
 
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
       >
-        {/* Tournament */}
+        {/* Tournament + Status row */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            marginTop: 8,
+            justifyContent: "center",
+            marginTop: 4,
           }}
         >
           <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
             {match.tournament_name}
+            {match.matchday != null ? ` · Matchday ${match.matchday}` : ""}
           </Text>
           {isLive && (
             <View
               style={{
-                backgroundColor: "#FF4444",
-                paddingHorizontal: 6,
+                backgroundColor: colors.live,
+                paddingHorizontal: 8,
                 paddingVertical: 2,
                 borderRadius: 4,
                 marginLeft: 8,
@@ -199,107 +231,230 @@ export default function MatchDetailScreen() {
           )}
         </View>
 
-        {/* Matchday */}
-        {match.matchday != null && (
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 12,
-              marginTop: 4,
-            }}
+        {/* ── Score Hero (live/finished) ── */}
+        {showScores && (
+          <View
+            style={{ alignItems: "center", marginTop: 24, marginBottom: 8 }}
           >
-            Matchday {match.matchday}
-          </Text>
-        )}
+            {/* Finished badge */}
+            {isFinished && (
+              <View
+                style={{
+                  backgroundColor: colors.surfaceBorder + "80",
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  marginBottom: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: "700",
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                  }}
+                >
+                  FINISHED
+                </Text>
+              </View>
+            )}
 
-        {/* Teams + Scores */}
-        <View
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            padding: 20,
-            marginTop: 16,
-            alignItems: "center",
-          }}
-        >
-          <TeamRow
-            name={match.home_team_name}
-            logo={match.home_team_logo}
-            score={showScores ? match.home_score : null}
-          />
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              fontWeight: "600",
-              marginVertical: 8,
-            }}
-          >
-            {showScores ? "" : "vs"}
-          </Text>
-          <TeamRow
-            name={match.away_team_name}
-            logo={match.away_team_logo}
-            score={showScores ? match.away_score : null}
-          />
-        </View>
-
-        {/* Time + Venue */}
-        <View style={{ marginTop: 12, alignItems: "center" }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-            {kickoffFormatted}
-          </Text>
-          {match.venue && (
-            <Text
+            {/* Teams + Scores row */}
+            <View
+              testID="score-hero"
               style={{
-                color: colors.textSecondary,
-                fontSize: 12,
-                marginTop: 2,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                paddingHorizontal: 8,
               }}
             >
-              {match.venue}
-            </Text>
-          )}
-        </View>
-
-        {/* Prediction section */}
-        {activeGroupId && (
-          <View style={{ marginTop: 28 }}>
-            {isEditable ? (
-              <>
+              {/* Home team */}
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <TeamLogo
+                  logo={match.home_team_logo}
+                  name={match.home_team_name}
+                  size={56}
+                />
                 <Text
                   style={{
                     color: colors.textPrimary,
-                    fontSize: 18,
+                    fontSize: 13,
+                    fontWeight: "600",
+                    marginTop: 10,
+                    textAlign: "center",
+                  }}
+                  numberOfLines={2}
+                >
+                  {match.home_team_name}
+                </Text>
+              </View>
+
+              {/* Scores */}
+              <View
+                style={{
+                  alignItems: "center",
+                  paddingHorizontal: 4,
+                  minWidth: 100,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "baseline",
+                    gap: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 40,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {match.home_score ?? 0}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      fontSize: 22,
+                      fontWeight: "500",
+                    }}
+                  >
+                    -
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 40,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {match.away_score ?? 0}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Away team */}
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <TeamLogo
+                  logo={match.away_team_logo}
+                  name={match.away_team_name}
+                  size={56}
+                />
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: "600",
+                    marginTop: 10,
+                    textAlign: "center",
+                  }}
+                  numberOfLines={2}
+                >
+                  {match.away_team_name}
+                </Text>
+              </View>
+            </View>
+
+            {/* Date + Venue (below hero) */}
+            <View style={{ alignItems: "center", marginTop: 16 }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+                {kickoffFormatted}
+              </Text>
+              {match.venue && (
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    marginTop: 2,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {match.venue}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* ── Prediction Section ── */}
+        {activeGroupId && (
+          <View style={{ marginTop: showScores ? 20 : 24 }}>
+            {isEditable ? (
+              <>
+                {/* "Your Prediction" heading — centered */}
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 20,
                     fontWeight: "700",
-                    marginBottom: 4,
+                    textAlign: "center",
+                    marginBottom: 8,
                   }}
                 >
                   Your Prediction
                 </Text>
 
-                {/* Countdown label */}
+                {/* Countdown pill */}
                 {countdownFormatted !== "" && (
-                  <Text
+                  <View
                     style={{
-                      color: colors.accent,
-                      fontSize: 13,
-                      textAlign: "center",
-                      marginBottom: 8,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                      gap: 6,
                     }}
                   >
-                    Locks in {countdownFormatted}
-                  </Text>
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: colors.accent,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        color: colors.accent,
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
+                    >
+                      Locks in {countdownFormatted}
+                    </Text>
+                  </View>
                 )}
 
+                {/* Stepper card with green indicator */}
                 <View
                   style={{
                     backgroundColor: colors.surface,
-                    borderRadius: 16,
+                    borderRadius: colors.cardRadius,
                     paddingHorizontal: 16,
                     paddingVertical: 4,
+                    overflow: "hidden",
+                    position: "relative",
                   }}
                 >
+                  <View
+                    testID="prediction-card-indicator"
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 3,
+                      backgroundColor: colors.primary,
+                      borderTopLeftRadius: colors.cardRadius,
+                      borderBottomLeftRadius: colors.cardRadius,
+                    }}
+                  />
                   <ScoreStepper
                     teamName={match.home_team_name}
                     teamLogo={match.home_team_logo}
@@ -361,7 +516,7 @@ export default function MatchDetailScreen() {
                 {saveError && (
                   <Text
                     style={{
-                      color: "#FF4444",
+                      color: colors.danger,
                       fontSize: 13,
                       textAlign: "center",
                       marginTop: 8,
@@ -370,53 +525,416 @@ export default function MatchDetailScreen() {
                     {saveError}
                   </Text>
                 )}
-              </>
-            ) : (
-              /* Read-only prediction display */
-              <View style={{ alignItems: "center", marginTop: 8 }}>
-                {prediction ? (
-                  <>
+
+                {/* Group predictions locked message */}
+                <View style={{ marginTop: 28 }}>
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      fontSize: 11,
+                      fontWeight: "700",
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                      marginBottom: 12,
+                    }}
+                  >
+                    GROUP PREDICTIONS
+                  </Text>
+                  <View
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: colors.cardRadius,
+                      padding: 24,
+                      alignItems: "center",
+                    }}
+                  >
                     <Ionicons
-                      name="checkmark-circle"
-                      size={24}
-                      color={colors.primary}
-                    />
-                    <Text
-                      style={{
-                        color: colors.primary,
-                        fontSize: 16,
-                        fontWeight: "600",
-                        marginTop: 8,
-                      }}
-                    >
-                      Your prediction: {prediction.home_score_pred} –{" "}
-                      {prediction.away_score_pred}
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Ionicons
-                      name="lock-closed"
-                      size={24}
+                      name="lock-closed-outline"
+                      size={20}
                       color={colors.textSecondary}
                     />
                     <Text
                       style={{
                         color: colors.textSecondary,
-                        fontSize: 14,
+                        fontSize: 13,
                         marginTop: 8,
+                      }}
+                    >
+                      Predictions will appear after kickoff
+                    </Text>
+                  </View>
+                </View>
+              </>
+            ) : (
+              <>
+                {/* ── Live state — with prediction ── */}
+                {isLive && prediction && (
+                  <View
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: colors.cardRadius,
+                      padding: colors.cardPadding,
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <View
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 3,
+                        backgroundColor: colors.live,
+                        borderTopLeftRadius: colors.cardRadius,
+                        borderBottomLeftRadius: colors.cardRadius,
+                      }}
+                    />
+                    {/* Header: YOUR PREDICTION + LIVE */}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 16,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: colors.textSecondary,
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          letterSpacing: 1,
+                          fontWeight: "700",
+                        }}
+                      >
+                        YOUR PREDICTION
+                      </Text>
+                      <View
+                        testID="live-indicator"
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: 3,
+                            backgroundColor: colors.live,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            color: colors.live,
+                            fontSize: 11,
+                            fontWeight: "700",
+                          }}
+                        >
+                          LIVE
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Score comparison columns */}
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text
+                          style={{
+                            color: colors.textSecondary,
+                            fontSize: 11,
+                            marginBottom: 6,
+                          }}
+                        >
+                          Prediction
+                        </Text>
+                        <Text
+                          style={{
+                            color: colors.textPrimary,
+                            fontSize: 28,
+                            fontWeight: "700",
+                          }}
+                        >
+                          {prediction.home_score_pred} -{" "}
+                          {prediction.away_score_pred}
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          width: 1,
+                          height: 44,
+                          backgroundColor: colors.surfaceBorder,
+                        }}
+                      />
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text
+                          style={{
+                            color: colors.textSecondary,
+                            fontSize: 11,
+                            marginBottom: 6,
+                          }}
+                        >
+                          Current Score
+                        </Text>
+                        <Text
+                          style={{
+                            color: colors.textPrimary,
+                            fontSize: 28,
+                            fontWeight: "700",
+                          }}
+                        >
+                          {match.home_score} - {match.away_score}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Live status pill */}
+                    {match.home_score != null &&
+                      match.away_score != null &&
+                      (() => {
+                        const status = getPredictionStatus(
+                          prediction.home_score_pred,
+                          prediction.away_score_pred,
+                          match.home_score!,
+                          match.away_score!,
+                        );
+                        const style = getResultStyle(status);
+                        const points = group
+                          ? calculatePotentialPoints(
+                              prediction.home_score_pred,
+                              prediction.away_score_pred,
+                              match.home_score!,
+                              match.away_score!,
+                              group.scoring_system,
+                            )
+                          : 0;
+                        return (
+                          <View
+                            testID="result-badge"
+                            style={{
+                              backgroundColor: style.bg,
+                              borderRadius: 20,
+                              paddingVertical: 10,
+                              paddingHorizontal: 16,
+                              alignItems: "center",
+                              marginTop: 16,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: style.color,
+                                fontSize: 14,
+                                fontWeight: "700",
+                              }}
+                            >
+                              {style.label} +{points} pts
+                            </Text>
+                          </View>
+                        );
+                      })()}
+                  </View>
+                )}
+
+                {/* ── Finished state — with prediction ── */}
+                {isFinished && prediction && (
+                  <View
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: colors.cardRadius,
+                      padding: colors.cardPadding,
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    {match.home_score != null &&
+                      match.away_score != null &&
+                      (() => {
+                        const status = getPredictionStatus(
+                          prediction.home_score_pred,
+                          prediction.away_score_pred,
+                          match.home_score!,
+                          match.away_score!,
+                        );
+                        const style = getResultStyle(status);
+                        const points = prediction.points ?? 0;
+                        return (
+                          <>
+                            {/* Left indicator */}
+                            <View
+                              style={{
+                                position: "absolute",
+                                left: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: 3,
+                                backgroundColor: style.color,
+                                borderTopLeftRadius: colors.cardRadius,
+                                borderBottomLeftRadius: colors.cardRadius,
+                              }}
+                            />
+
+                            {/* Result badge pill */}
+                            <View
+                              testID="result-badge"
+                              style={{
+                                backgroundColor: style.bg,
+                                borderRadius: 12,
+                                paddingVertical: 10,
+                                alignItems: "center",
+                                marginBottom: 16,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  color: style.color,
+                                  fontSize: 15,
+                                  fontWeight: "700",
+                                }}
+                              >
+                                {style.label}
+                              </Text>
+                            </View>
+
+                            {/* Score comparison columns */}
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                              }}
+                            >
+                              <View style={{ flex: 1, alignItems: "center" }}>
+                                <Text
+                                  style={{
+                                    color: colors.textSecondary,
+                                    fontSize: 11,
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.5,
+                                    marginBottom: 6,
+                                  }}
+                                >
+                                  Your Prediction
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: colors.textPrimary,
+                                    fontSize: 28,
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  {prediction.home_score_pred} -{" "}
+                                  {prediction.away_score_pred}
+                                </Text>
+                              </View>
+                              <View
+                                style={{
+                                  width: 1,
+                                  height: 44,
+                                  backgroundColor: colors.surfaceBorder,
+                                }}
+                              />
+                              <View style={{ flex: 1, alignItems: "center" }}>
+                                <Text
+                                  style={{
+                                    color: colors.textSecondary,
+                                    fontSize: 11,
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.5,
+                                    marginBottom: 6,
+                                  }}
+                                >
+                                  Final Score
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: colors.textPrimary,
+                                    fontSize: 28,
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  {match.home_score} - {match.away_score}
+                                </Text>
+                              </View>
+                            </View>
+
+                            {/* Points display */}
+                            <Text
+                              style={{
+                                color: style.color,
+                                fontSize: 28,
+                                fontWeight: "700",
+                                textAlign: "center",
+                                marginTop: 16,
+                              }}
+                            >
+                              +{points} pts
+                            </Text>
+                          </>
+                        );
+                      })()}
+                  </View>
+                )}
+
+                {/* ── No prediction (live or finished) ── */}
+                {(isLive || isFinished) && !prediction && (
+                  <View
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: colors.cardRadius,
+                      padding: 24,
+                      overflow: "hidden",
+                      position: "relative",
+                      alignItems: "center",
+                    }}
+                  >
+                    <View
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 3,
+                        backgroundColor: isLive ? colors.live : colors.wrong,
+                        borderTopLeftRadius: colors.cardRadius,
+                        borderBottomLeftRadius: colors.cardRadius,
+                      }}
+                    />
+                    <Ionicons
+                      name="lock-closed"
+                      size={28}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        fontSize: 15,
+                        marginTop: 10,
+                        fontWeight: "500",
                       }}
                     >
                       No prediction submitted
                     </Text>
-                  </>
+                    <Text
+                      style={{
+                        color: colors.wrong,
+                        fontSize: 18,
+                        fontWeight: "700",
+                        marginTop: 6,
+                      }}
+                    >
+                      0 pts
+                    </Text>
+                  </View>
                 )}
 
                 {/* Error banner — auto-clears after 3s (RLS transition) */}
                 {errorBanner && (
                   <Text
                     style={{
-                      color: "#FF4444",
+                      color: colors.danger,
                       fontSize: 13,
                       textAlign: "center",
                       marginTop: 12,
@@ -425,13 +943,13 @@ export default function MatchDetailScreen() {
                     {errorBanner}
                   </Text>
                 )}
-              </View>
+              </>
             )}
           </View>
         )}
 
         {/* Group predictions (visible after kickoff) */}
-        {activeGroupId && user?.id && group && (
+        {activeGroupId && user?.id && group && !isEditable && (
           <GroupPredictions
             matchId={id ?? ""}
             groupId={activeGroupId}
@@ -483,7 +1001,9 @@ function Header({
           fontSize: 18,
           fontWeight: "600",
           marginLeft: 12,
+          flex: 1,
         }}
+        numberOfLines={1}
       >
         {title}
       </Text>
@@ -491,67 +1011,43 @@ function Header({
   );
 }
 
-function TeamRow({
-  name,
+function TeamLogo({
   logo,
-  score,
+  name,
+  size = 56,
 }: {
-  name: string;
   logo: string | null;
-  score: number | null;
+  name: string;
+  size?: number;
 }) {
+  if (logo) {
+    return (
+      <Image
+        source={{ uri: logo }}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+      />
+    );
+  }
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
-      {logo ? (
-        <Image
-          source={{ uri: logo }}
-          style={{ width: 32, height: 32, borderRadius: 16 }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: colors.surfaceBorder,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {name[0]?.toUpperCase() ?? "?"}
-          </Text>
-        </View>
-      )}
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: colors.surfaceBorder,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Text
         style={{
           color: colors.textPrimary,
-          fontSize: 16,
-          fontWeight: "600",
-          marginLeft: 12,
-          flex: 1,
+          fontSize: size * 0.36,
+          fontWeight: "700",
         }}
-        numberOfLines={1}
       >
-        {name}
+        {name[0]?.toUpperCase() ?? "?"}
       </Text>
-      {score != null && (
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 22,
-            fontWeight: "700",
-          }}
-        >
-          {score}
-        </Text>
-      )}
     </View>
   );
 }

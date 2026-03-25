@@ -35,8 +35,20 @@ export default function LoginScreen() {
 
         {/* Error Message */}
         {error && (
-          <View className="mb-6 w-full rounded-xl border border-red-500/50 bg-red-900/30 px-4 py-3">
-            <Text className="text-center text-sm text-red-400">{error}</Text>
+          <View
+            className="mb-6 w-full rounded-xl px-4 py-3"
+            style={{
+              borderWidth: 1,
+              borderColor: colors.danger + "80",
+              backgroundColor: colors.danger + "1A",
+            }}
+          >
+            <Text
+              className="text-center text-sm"
+              style={{ color: colors.danger }}
+            >
+              {error}
+            </Text>
             <Pressable onPress={clearError} className="mt-2">
               <Text
                 style={{ color: colors.primary }}

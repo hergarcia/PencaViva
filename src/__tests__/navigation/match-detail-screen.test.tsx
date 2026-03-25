@@ -33,8 +33,9 @@ jest.mock("@hooks/use-countdown", () => ({
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "u1" }, isInitialized: true }),
 }));
+let mockGroup: Record<string, unknown> | null = null;
 jest.mock("@hooks/use-group-detail", () => ({
-  useGroupDetail: () => ({ group: null }),
+  useGroupDetail: () => ({ group: mockGroup }),
 }));
 jest.mock("@components/predictions/GroupPredictions", () => ({
   GroupPredictions: () => null,
@@ -67,6 +68,13 @@ const defaultCountdown = {
   formatted: "2h 0m",
 };
 
+const mockScoringSystem = {
+  exact_score: 5,
+  correct_result: 3,
+  correct_goal_diff: 1,
+  wrong: 0,
+};
+
 describe("MatchDetailScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -87,6 +95,7 @@ describe("MatchDetailScreen", () => {
 
   afterEach(() => {
     jest.useRealTimers();
+    mockGroup = null;
   });
 
   it("shows loading state", () => {
@@ -104,10 +113,10 @@ describe("MatchDetailScreen", () => {
   });
 
   it("renders match info and steppers for scheduled match", () => {
-    const { getAllByText, getByText } = render(<MatchDetailScreen />);
-    expect(getAllByText("Arsenal").length).toBe(2);
-    expect(getAllByText("Chelsea").length).toBe(2);
-    expect(getByText("Premier League")).toBeTruthy();
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("Arsenal")).toBeTruthy();
+    expect(getByText("Chelsea")).toBeTruthy();
+    expect(getByText(/Premier League/)).toBeTruthy();
     expect(getByText("Your Prediction")).toBeTruthy();
   });
 
@@ -125,10 +134,16 @@ describe("MatchDetailScreen", () => {
     mockHookReturn = {
       ...mockHookReturn,
       match: { ...mockMatch, status: "finished", home_score: 3, away_score: 1 },
-      prediction: { id: "p1", home_score_pred: 2, away_score_pred: 1 },
+      prediction: {
+        id: "p1",
+        home_score_pred: 2,
+        away_score_pred: 1,
+        points: 3,
+      },
     };
     const { getByText, queryByText } = render(<MatchDetailScreen />);
-    expect(getByText(/Your prediction: 2 – 1/i)).toBeTruthy();
+    expect(getByText("Your Prediction")).toBeTruthy();
+    expect(getByText("Final Score")).toBeTruthy();
     expect(queryByText("Save Prediction")).toBeNull();
   });
 
@@ -221,5 +236,159 @@ describe("MatchDetailScreen", () => {
         queryByText("Predictions are locked — the match has already started."),
       ).toBeNull();
     });
+  });
+
+  it("shows result badge and points for finished match with exact prediction", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 2, away_score_pred: 1, points: 5 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText, getByTestId } = render(<MatchDetailScreen />);
+    expect(getByTestId("result-badge")).toBeTruthy();
+    expect(getByText("Exact Score!")).toBeTruthy();
+    expect(getByText("+5 pts")).toBeTruthy();
+  });
+
+  it("shows correct result badge for finished match", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 1, away_score_pred: 0, points: 3 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("Correct Result")).toBeTruthy();
+    expect(getByText("+3 pts")).toBeTruthy();
+  });
+
+  it("shows correct result with diff bonus for finished match", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 3, away_score_pred: 2, points: 4 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("Correct Result")).toBeTruthy();
+    expect(getByText("+4 pts")).toBeTruthy();
+  });
+
+  it("shows wrong badge for finished match with wrong prediction", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 0, away_score_pred: 3, points: 0 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("Wrong")).toBeTruthy();
+    expect(getByText("+0 pts")).toBeTruthy();
+  });
+
+  it("shows prediction comparison columns for finished match", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 2, away_score_pred: 1, points: 5 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("Your Prediction")).toBeTruthy();
+    expect(getByText("Final Score")).toBeTruthy();
+  });
+
+  it("shows live point tracking for live match with prediction", () => {
+    mockGroup = { scoring_system: mockScoringSystem };
+    mockHookReturn = {
+      match: { ...mockMatch, status: "live", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 2, away_score_pred: 1 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText, getByTestId } = render(<MatchDetailScreen />);
+    expect(getByTestId("live-indicator")).toBeTruthy();
+    expect(getByText(/Exact Score!/)).toBeTruthy();
+    expect(getByText(/\+5 pts/)).toBeTruthy();
+  });
+
+  it("shows no-prediction message for finished match without prediction", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: null,
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("No prediction submitted")).toBeTruthy();
+    expect(getByText("0 pts")).toBeTruthy();
+  });
+
+  it("shows primary left border on editable stepper card", () => {
+    mockHookReturn = {
+      match: mockMatch,
+      prediction: null,
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByTestId } = render(<MatchDetailScreen />);
+    expect(getByTestId("prediction-card-indicator")).toBeTruthy();
   });
 });

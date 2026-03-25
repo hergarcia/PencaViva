@@ -24,6 +24,7 @@ export interface ExistingPrediction {
   id: string;
   home_score_pred: number;
   away_score_pred: number;
+  points?: number | null;
 }
 
 // ── Fetch match detail + prediction ─────────────────────────────────
@@ -48,7 +49,7 @@ export async function fetchMatchDetail(
 
   const { data: predData, error: predError } = await supabase
     .from("predictions")
-    .select("id, home_score_pred, away_score_pred")
+    .select("id, home_score_pred, away_score_pred, points")
     .eq("user_id", userId)
     .eq("match_id", matchId)
     .eq("group_id", groupId)
@@ -86,6 +87,10 @@ export async function fetchMatchDetail(
           .home_score_pred as number,
         away_score_pred: (predData as Record<string, unknown>)
           .away_score_pred as number,
+        points: (predData as Record<string, unknown>).points as
+          | number
+          | null
+          | undefined,
       }
     : null;
 

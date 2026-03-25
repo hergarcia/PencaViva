@@ -177,8 +177,8 @@ describe("RankingScreen", () => {
     const { getByText } = render(<RankingScreen />);
     expect(getByText("Hernan Garcia")).toBeTruthy();
     expect(getByText("Alice Rodriguez")).toBeTruthy();
-    expect(getByText("🥇")).toBeTruthy();
-    expect(getByText("🥈")).toBeTruthy();
+    expect(getByText("42")).toBeTruthy();
+    expect(getByText("38")).toBeTruthy();
   });
 
   it("shows Ranking title", () => {
