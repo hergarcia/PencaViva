@@ -113,10 +113,10 @@ describe("MatchDetailScreen", () => {
   });
 
   it("renders match info and steppers for scheduled match", () => {
-    const { getAllByText, getByText } = render(<MatchDetailScreen />);
-    expect(getAllByText("Arsenal").length).toBe(2);
-    expect(getAllByText("Chelsea").length).toBe(2);
-    expect(getByText("Premier League")).toBeTruthy();
+    const { getByText } = render(<MatchDetailScreen />);
+    expect(getByText("Arsenal")).toBeTruthy();
+    expect(getByText("Chelsea")).toBeTruthy();
+    expect(getByText(/Premier League/)).toBeTruthy();
     expect(getByText("Your Prediction")).toBeTruthy();
   });
 

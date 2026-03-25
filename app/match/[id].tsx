@@ -195,28 +195,30 @@ export default function MatchDetailScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <Header
         onBack={() => router.back()}
-        title={match.tournament_short_name ?? "Match Detail"}
+        title={match.tournament_short_name ?? match.tournament_name}
       />
 
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
       >
-        {/* Tournament */}
+        {/* Tournament + Status row */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            marginTop: 8,
+            justifyContent: "center",
+            marginTop: 4,
           }}
         >
           <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
             {match.tournament_name}
+            {match.matchday != null ? ` · Matchday ${match.matchday}` : ""}
           </Text>
           {isLive && (
             <View
               style={{
                 backgroundColor: colors.live,
-                paddingHorizontal: 6,
+                paddingHorizontal: 8,
                 paddingVertical: 2,
                 borderRadius: 4,
                 marginLeft: 8,
@@ -229,99 +231,207 @@ export default function MatchDetailScreen() {
           )}
         </View>
 
-        {/* Matchday */}
-        {match.matchday != null && (
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 12,
-              marginTop: 4,
-            }}
+        {/* ── Score Hero (live/finished) ── */}
+        {showScores && (
+          <View
+            style={{ alignItems: "center", marginTop: 24, marginBottom: 8 }}
           >
-            Matchday {match.matchday}
-          </Text>
-        )}
+            {/* Finished badge */}
+            {isFinished && (
+              <View
+                style={{
+                  backgroundColor: colors.surfaceBorder + "80",
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  marginBottom: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: "700",
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                  }}
+                >
+                  FINISHED
+                </Text>
+              </View>
+            )}
 
-        {/* Teams + Scores */}
-        <View
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            padding: 20,
-            marginTop: 16,
-            alignItems: "center",
-          }}
-        >
-          <TeamRow
-            name={match.home_team_name}
-            logo={match.home_team_logo}
-            score={showScores ? match.home_score : null}
-          />
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              fontWeight: "600",
-              marginVertical: 8,
-            }}
-          >
-            {showScores ? "" : "vs"}
-          </Text>
-          <TeamRow
-            name={match.away_team_name}
-            logo={match.away_team_logo}
-            score={showScores ? match.away_score : null}
-          />
-        </View>
-
-        {/* Time + Venue */}
-        <View style={{ marginTop: 12, alignItems: "center" }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-            {kickoffFormatted}
-          </Text>
-          {match.venue && (
-            <Text
+            {/* Teams + Scores row */}
+            <View
+              testID="score-hero"
               style={{
-                color: colors.textSecondary,
-                fontSize: 12,
-                marginTop: 2,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                paddingHorizontal: 8,
               }}
             >
-              {match.venue}
-            </Text>
-          )}
-        </View>
-
-        {/* Prediction section */}
-        {activeGroupId && (
-          <View style={{ marginTop: 28 }}>
-            {isEditable ? (
-              <>
+              {/* Home team */}
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <TeamLogo
+                  logo={match.home_team_logo}
+                  name={match.home_team_name}
+                  size={56}
+                />
                 <Text
                   style={{
                     color: colors.textPrimary,
-                    fontSize: 18,
+                    fontSize: 13,
+                    fontWeight: "600",
+                    marginTop: 10,
+                    textAlign: "center",
+                  }}
+                  numberOfLines={2}
+                >
+                  {match.home_team_name}
+                </Text>
+              </View>
+
+              {/* Scores */}
+              <View
+                style={{
+                  alignItems: "center",
+                  paddingHorizontal: 4,
+                  minWidth: 100,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "baseline",
+                    gap: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 40,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {match.home_score ?? 0}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      fontSize: 22,
+                      fontWeight: "500",
+                    }}
+                  >
+                    -
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 40,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {match.away_score ?? 0}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Away team */}
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <TeamLogo
+                  logo={match.away_team_logo}
+                  name={match.away_team_name}
+                  size={56}
+                />
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: "600",
+                    marginTop: 10,
+                    textAlign: "center",
+                  }}
+                  numberOfLines={2}
+                >
+                  {match.away_team_name}
+                </Text>
+              </View>
+            </View>
+
+            {/* Date + Venue (below hero) */}
+            <View style={{ alignItems: "center", marginTop: 16 }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+                {kickoffFormatted}
+              </Text>
+              {match.venue && (
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    marginTop: 2,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {match.venue}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* ── Prediction Section ── */}
+        {activeGroupId && (
+          <View style={{ marginTop: showScores ? 20 : 24 }}>
+            {isEditable ? (
+              <>
+                {/* "Your Prediction" heading — centered */}
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 20,
                     fontWeight: "700",
-                    marginBottom: 4,
+                    textAlign: "center",
+                    marginBottom: 8,
                   }}
                 >
                   Your Prediction
                 </Text>
 
-                {/* Countdown label */}
+                {/* Countdown pill */}
                 {countdownFormatted !== "" && (
-                  <Text
+                  <View
                     style={{
-                      color: colors.accent,
-                      fontSize: 13,
-                      textAlign: "center",
-                      marginBottom: 8,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                      gap: 6,
                     }}
                   >
-                    Locks in {countdownFormatted}
-                  </Text>
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: colors.accent,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        color: colors.accent,
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
+                    >
+                      Locks in {countdownFormatted}
+                    </Text>
+                  </View>
                 )}
 
+                {/* Stepper card with green indicator */}
                 <View
                   style={{
                     backgroundColor: colors.surface,
@@ -415,10 +525,49 @@ export default function MatchDetailScreen() {
                     {saveError}
                   </Text>
                 )}
+
+                {/* Group predictions locked message */}
+                <View style={{ marginTop: 28 }}>
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      fontSize: 11,
+                      fontWeight: "700",
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                      marginBottom: 12,
+                    }}
+                  >
+                    GROUP PREDICTIONS
+                  </Text>
+                  <View
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: colors.cardRadius,
+                      padding: 24,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={20}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        fontSize: 13,
+                        marginTop: 8,
+                      }}
+                    >
+                      Predictions will appear after kickoff
+                    </Text>
+                  </View>
+                </View>
               </>
             ) : (
               <>
-                {/* Live state — with prediction */}
+                {/* ── Live state — with prediction ── */}
                 {isLive && prediction && (
                   <View
                     style={{
@@ -441,6 +590,7 @@ export default function MatchDetailScreen() {
                         borderBottomLeftRadius: colors.cardRadius,
                       }}
                     />
+                    {/* Header: YOUR PREDICTION + LIVE */}
                     <View
                       style={{
                         flexDirection: "row",
@@ -487,6 +637,8 @@ export default function MatchDetailScreen() {
                         </Text>
                       </View>
                     </View>
+
+                    {/* Score comparison columns */}
                     <View
                       style={{ flexDirection: "row", alignItems: "center" }}
                     >
@@ -495,7 +647,7 @@ export default function MatchDetailScreen() {
                           style={{
                             color: colors.textSecondary,
                             fontSize: 11,
-                            marginBottom: 4,
+                            marginBottom: 6,
                           }}
                         >
                           Prediction
@@ -503,7 +655,7 @@ export default function MatchDetailScreen() {
                         <Text
                           style={{
                             color: colors.textPrimary,
-                            fontSize: 24,
+                            fontSize: 28,
                             fontWeight: "700",
                           }}
                         >
@@ -514,7 +666,7 @@ export default function MatchDetailScreen() {
                       <View
                         style={{
                           width: 1,
-                          height: 40,
+                          height: 44,
                           backgroundColor: colors.surfaceBorder,
                         }}
                       />
@@ -523,7 +675,7 @@ export default function MatchDetailScreen() {
                           style={{
                             color: colors.textSecondary,
                             fontSize: 11,
-                            marginBottom: 4,
+                            marginBottom: 6,
                           }}
                         >
                           Current Score
@@ -531,7 +683,7 @@ export default function MatchDetailScreen() {
                         <Text
                           style={{
                             color: colors.textPrimary,
-                            fontSize: 24,
+                            fontSize: 28,
                             fontWeight: "700",
                           }}
                         >
@@ -539,6 +691,8 @@ export default function MatchDetailScreen() {
                         </Text>
                       </View>
                     </View>
+
+                    {/* Live status pill */}
                     {match.home_score != null &&
                       match.away_score != null &&
                       (() => {
@@ -564,7 +718,7 @@ export default function MatchDetailScreen() {
                             style={{
                               backgroundColor: style.bg,
                               borderRadius: 20,
-                              paddingVertical: 8,
+                              paddingVertical: 10,
                               paddingHorizontal: 16,
                               alignItems: "center",
                               marginTop: 16,
@@ -585,7 +739,7 @@ export default function MatchDetailScreen() {
                   </View>
                 )}
 
-                {/* Finished state — with prediction */}
+                {/* ── Finished state — with prediction ── */}
                 {isFinished && prediction && (
                   <View
                     style={{
@@ -609,6 +763,7 @@ export default function MatchDetailScreen() {
                         const points = prediction.points ?? 0;
                         return (
                           <>
+                            {/* Left indicator */}
                             <View
                               style={{
                                 position: "absolute",
@@ -621,6 +776,8 @@ export default function MatchDetailScreen() {
                                 borderBottomLeftRadius: colors.cardRadius,
                               }}
                             />
+
+                            {/* Result badge pill */}
                             <View
                               testID="result-badge"
                               style={{
@@ -641,6 +798,8 @@ export default function MatchDetailScreen() {
                                 {style.label}
                               </Text>
                             </View>
+
+                            {/* Score comparison columns */}
                             <View
                               style={{
                                 flexDirection: "row",
@@ -652,7 +811,9 @@ export default function MatchDetailScreen() {
                                   style={{
                                     color: colors.textSecondary,
                                     fontSize: 11,
-                                    marginBottom: 4,
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.5,
+                                    marginBottom: 6,
                                   }}
                                 >
                                   Your Prediction
@@ -660,7 +821,7 @@ export default function MatchDetailScreen() {
                                 <Text
                                   style={{
                                     color: colors.textPrimary,
-                                    fontSize: 24,
+                                    fontSize: 28,
                                     fontWeight: "700",
                                   }}
                                 >
@@ -671,7 +832,7 @@ export default function MatchDetailScreen() {
                               <View
                                 style={{
                                   width: 1,
-                                  height: 40,
+                                  height: 44,
                                   backgroundColor: colors.surfaceBorder,
                                 }}
                               />
@@ -680,7 +841,9 @@ export default function MatchDetailScreen() {
                                   style={{
                                     color: colors.textSecondary,
                                     fontSize: 11,
-                                    marginBottom: 4,
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.5,
+                                    marginBottom: 6,
                                   }}
                                 >
                                   Final Score
@@ -688,7 +851,7 @@ export default function MatchDetailScreen() {
                                 <Text
                                   style={{
                                     color: colors.textPrimary,
-                                    fontSize: 24,
+                                    fontSize: 28,
                                     fontWeight: "700",
                                   }}
                                 >
@@ -696,6 +859,8 @@ export default function MatchDetailScreen() {
                                 </Text>
                               </View>
                             </View>
+
+                            {/* Points display */}
                             <Text
                               style={{
                                 color: style.color,
@@ -713,13 +878,13 @@ export default function MatchDetailScreen() {
                   </View>
                 )}
 
-                {/* No prediction state (live or finished) */}
+                {/* ── No prediction (live or finished) ── */}
                 {(isLive || isFinished) && !prediction && (
                   <View
                     style={{
                       backgroundColor: colors.surface,
                       borderRadius: colors.cardRadius,
-                      padding: colors.cardPadding,
+                      padding: 24,
                       overflow: "hidden",
                       position: "relative",
                       alignItems: "center",
@@ -739,14 +904,15 @@ export default function MatchDetailScreen() {
                     />
                     <Ionicons
                       name="lock-closed"
-                      size={24}
+                      size={28}
                       color={colors.textSecondary}
                     />
                     <Text
                       style={{
                         color: colors.textSecondary,
-                        fontSize: 14,
-                        marginTop: 8,
+                        fontSize: 15,
+                        marginTop: 10,
+                        fontWeight: "500",
                       }}
                     >
                       No prediction submitted
@@ -754,9 +920,9 @@ export default function MatchDetailScreen() {
                     <Text
                       style={{
                         color: colors.wrong,
-                        fontSize: 16,
-                        fontWeight: "600",
-                        marginTop: 4,
+                        fontSize: 18,
+                        fontWeight: "700",
+                        marginTop: 6,
                       }}
                     >
                       0 pts
@@ -783,7 +949,7 @@ export default function MatchDetailScreen() {
         )}
 
         {/* Group predictions (visible after kickoff) */}
-        {activeGroupId && user?.id && group && (
+        {activeGroupId && user?.id && group && !isEditable && (
           <GroupPredictions
             matchId={id ?? ""}
             groupId={activeGroupId}
@@ -835,7 +1001,9 @@ function Header({
           fontSize: 18,
           fontWeight: "600",
           marginLeft: 12,
+          flex: 1,
         }}
+        numberOfLines={1}
       >
         {title}
       </Text>
@@ -843,67 +1011,43 @@ function Header({
   );
 }
 
-function TeamRow({
-  name,
+function TeamLogo({
   logo,
-  score,
+  name,
+  size = 56,
 }: {
-  name: string;
   logo: string | null;
-  score: number | null;
+  name: string;
+  size?: number;
 }) {
+  if (logo) {
+    return (
+      <Image
+        source={{ uri: logo }}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+      />
+    );
+  }
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
-      {logo ? (
-        <Image
-          source={{ uri: logo }}
-          style={{ width: 32, height: 32, borderRadius: 16 }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: colors.surfaceBorder,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {name[0]?.toUpperCase() ?? "?"}
-          </Text>
-        </View>
-      )}
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: colors.surfaceBorder,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Text
         style={{
           color: colors.textPrimary,
-          fontSize: 16,
-          fontWeight: "600",
-          marginLeft: 12,
-          flex: 1,
+          fontSize: size * 0.36,
+          fontWeight: "700",
         }}
-        numberOfLines={1}
       >
-        {name}
+        {name[0]?.toUpperCase() ?? "?"}
       </Text>
-      {score != null && (
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 22,
-            fontWeight: "700",
-          }}
-        >
-          {score}
-        </Text>
-      )}
     </View>
   );
 }
