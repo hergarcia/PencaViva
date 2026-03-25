@@ -31,30 +31,30 @@ describe("LeaderboardRow", () => {
     expect(screen.getByText(/42/)).toBeTruthy();
   });
 
-  it("renders position badge for position 1", () => {
+  it("renders ghost watermark and POINTS label for position 1", () => {
     render(<LeaderboardRow entry={baseEntry} isCurrentUser={false} />);
-    expect(screen.getByText("1")).toBeTruthy();
+    expect(screen.getByText("01")).toBeTruthy();
     expect(screen.getByText("POINTS")).toBeTruthy();
   });
 
-  it("renders position badge for position 2", () => {
+  it("renders ghost watermark for position 2", () => {
     render(
       <LeaderboardRow
         entry={{ ...baseEntry, position: 2 }}
         isCurrentUser={false}
       />,
     );
-    expect(screen.getByText("2")).toBeTruthy();
+    expect(screen.getByText("02")).toBeTruthy();
   });
 
-  it("renders position badge for position 3", () => {
+  it("renders ghost watermark for position 3", () => {
     render(
       <LeaderboardRow
         entry={{ ...baseEntry, position: 3 }}
         isCurrentUser={false}
       />,
     );
-    expect(screen.getByText("3")).toBeTruthy();
+    expect(screen.getByText("03")).toBeTruthy();
   });
 
   it("renders zero-padded position number for rank 4+", () => {
