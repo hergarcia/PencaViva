@@ -10,11 +10,26 @@ import Animated, {
 import { colors } from "@lib/constants";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
 
-// Medal config for top 3 positions
-const MEDAL: Record<number, { emoji: string; bg: string }> = {
-  1: { emoji: "🥇", bg: "rgba(255, 184, 0, 0.10)" },
-  2: { emoji: "🥈", bg: "rgba(192, 192, 192, 0.08)" },
-  3: { emoji: "🥉", bg: "rgba(205, 127, 50, 0.08)" },
+// Position badge colors for top 3
+const POSITION_BADGE: Record<
+  number,
+  { bg: string; text: string; rowBg: string }
+> = {
+  1: {
+    bg: "rgba(255, 184, 0, 0.20)",
+    text: "#FFB800",
+    rowBg: "rgba(255, 184, 0, 0.06)",
+  },
+  2: {
+    bg: "rgba(192, 192, 192, 0.20)",
+    text: "#C0C0C0",
+    rowBg: "rgba(192, 192, 192, 0.05)",
+  },
+  3: {
+    bg: "rgba(205, 127, 50, 0.20)",
+    text: "#CD7F32",
+    rowBg: "rgba(205, 127, 50, 0.05)",
+  },
 };
 
 // Cycle through accent colors for avatars
@@ -44,7 +59,8 @@ export function LeaderboardRow({
   positionChange,
   onPress,
 }: LeaderboardRowProps) {
-  const medal = MEDAL[entry.position];
+  const isPodium = entry.position <= 3;
+  const badge = POSITION_BADGE[entry.position];
   const letter = entry.display_name.charAt(0).toUpperCase();
   const accentColor = avatarColor(entry.user_id);
 
@@ -69,6 +85,12 @@ export function LeaderboardRow({
         : "transparent",
   }));
 
+  // Stats text — uppercase pipe-separated
+  const statsText =
+    entry.exact_scores > 0 || entry.correct_results > 0
+      ? `${entry.matches_played} MATCHES | ${entry.exact_scores} EXACT | ${entry.correct_results} CORRECT`
+      : `${entry.matches_played} MATCHES PLAYED`;
+
   return (
     <Pressable
       testID={`leaderboard-row-${entry.user_id}`}
@@ -76,9 +98,9 @@ export function LeaderboardRow({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 12,
+        paddingVertical: isPodium ? 14 : 12,
         paddingHorizontal: 16,
-        backgroundColor: medal ? medal.bg : "transparent",
+        backgroundColor: badge ? badge.rowBg : "transparent",
         borderLeftWidth: isCurrentUser ? 3 : 0,
         borderLeftColor: colors.primary,
         borderBottomWidth: 1,
@@ -106,10 +128,29 @@ export function LeaderboardRow({
         />
       )}
 
-      {/* Position */}
+      {/* Position badge */}
       <View style={{ width: 36, alignItems: "center" }}>
-        {medal ? (
-          <Text style={{ fontSize: 20 }}>{medal.emoji}</Text>
+        {badge ? (
+          <View
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: badge.bg,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: badge.text,
+                fontSize: 13,
+                fontWeight: "800",
+              }}
+            >
+              {entry.position}
+            </Text>
+          </View>
         ) : (
           <Text
             style={{
@@ -118,7 +159,7 @@ export function LeaderboardRow({
               fontWeight: "600",
             }}
           >
-            #{entry.position}
+            {String(entry.position).padStart(2, "0")}
           </Text>
         )}
       </View>
@@ -126,9 +167,9 @@ export function LeaderboardRow({
       {/* Avatar */}
       <View
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
+          width: isPodium ? 44 : 36,
+          height: isPodium ? 44 : 36,
+          borderRadius: isPodium ? 22 : 18,
           backgroundColor: accentColor + "33",
           alignItems: "center",
           justifyContent: "center",
@@ -136,7 +177,13 @@ export function LeaderboardRow({
           marginRight: 12,
         }}
       >
-        <Text style={{ color: accentColor, fontWeight: "700", fontSize: 16 }}>
+        <Text
+          style={{
+            color: accentColor,
+            fontWeight: "700",
+            fontSize: isPodium ? 18 : 14,
+          }}
+        >
           {letter}
         </Text>
       </View>
@@ -148,7 +195,7 @@ export function LeaderboardRow({
             style={{
               color: colors.textPrimary,
               fontWeight: "600",
-              fontSize: 15,
+              fontSize: isPodium ? 16 : 15,
             }}
             numberOfLines={1}
           >
@@ -164,12 +211,15 @@ export function LeaderboardRow({
           )}
         </View>
         <Text
-          style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}
+          style={{
+            color: colors.textSecondary,
+            fontSize: 10,
+            marginTop: 3,
+            letterSpacing: 0.3,
+          }}
           numberOfLines={1}
         >
-          {entry.exact_scores > 0 || entry.correct_results > 0
-            ? `${entry.matches_played} matches · ${entry.exact_scores} exact · ${entry.correct_results} correct`
-            : `${entry.matches_played} matches played`}
+          {statsText}
         </Text>
       </View>
 
@@ -194,26 +244,31 @@ export function LeaderboardRow({
       )}
 
       {/* Points */}
-      <Text
-        style={{
-          color: isCurrentUser ? colors.primary : colors.textPrimary,
-          fontWeight: "700",
-          fontSize: 18,
-          marginLeft: 8,
-        }}
-      >
-        {entry.total_points}
+      <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
         <Text
           style={{
-            color: colors.textSecondary,
-            fontWeight: "400",
-            fontSize: 12,
+            color: isCurrentUser ? colors.primary : colors.textPrimary,
+            fontWeight: "700",
+            fontSize: isPodium ? 22 : 18,
           }}
         >
-          {" "}
-          pts
+          {entry.total_points}
         </Text>
-      </Text>
+        {isPodium && (
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontWeight: "500",
+              fontSize: 9,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              marginTop: 1,
+            }}
+          >
+            POINTS
+          </Text>
+        )}
+      </View>
     </Pressable>
   );
 }

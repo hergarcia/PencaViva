@@ -21,9 +21,9 @@ describe("LeaderboardRow", () => {
   it("renders display name and stats", () => {
     render(<LeaderboardRow entry={baseEntry} isCurrentUser={false} />);
     expect(screen.getByText("Alice Smith")).toBeTruthy();
-    expect(screen.getByText(/15 matches/)).toBeTruthy();
-    expect(screen.getByText(/3 exact/)).toBeTruthy();
-    expect(screen.getByText(/8 correct/)).toBeTruthy();
+    expect(screen.getByText(/15 MATCHES/)).toBeTruthy();
+    expect(screen.getByText(/3 EXACT/)).toBeTruthy();
+    expect(screen.getByText(/8 CORRECT/)).toBeTruthy();
   });
 
   it("renders 42 pts for position 1", () => {
@@ -31,39 +31,40 @@ describe("LeaderboardRow", () => {
     expect(screen.getByText(/42/)).toBeTruthy();
   });
 
-  it("renders gold medal emoji for position 1", () => {
+  it("renders position badge for position 1", () => {
     render(<LeaderboardRow entry={baseEntry} isCurrentUser={false} />);
-    expect(screen.getByText("🥇")).toBeTruthy();
+    expect(screen.getByText("1")).toBeTruthy();
+    expect(screen.getByText("POINTS")).toBeTruthy();
   });
 
-  it("renders silver medal emoji for position 2", () => {
+  it("renders position badge for position 2", () => {
     render(
       <LeaderboardRow
         entry={{ ...baseEntry, position: 2 }}
         isCurrentUser={false}
       />,
     );
-    expect(screen.getByText("🥈")).toBeTruthy();
+    expect(screen.getByText("2")).toBeTruthy();
   });
 
-  it("renders bronze medal emoji for position 3", () => {
+  it("renders position badge for position 3", () => {
     render(
       <LeaderboardRow
         entry={{ ...baseEntry, position: 3 }}
         isCurrentUser={false}
       />,
     );
-    expect(screen.getByText("🥉")).toBeTruthy();
+    expect(screen.getByText("3")).toBeTruthy();
   });
 
-  it("renders position number for rank 4+", () => {
+  it("renders zero-padded position number for rank 4+", () => {
     render(
       <LeaderboardRow
         entry={{ ...baseEntry, position: 4 }}
         isCurrentUser={false}
       />,
     );
-    expect(screen.getByText("#4")).toBeTruthy();
+    expect(screen.getByText("04")).toBeTruthy();
   });
 
   it("renders 'You' badge when isCurrentUser is true", () => {
@@ -95,7 +96,7 @@ describe("LeaderboardRow", () => {
         isCurrentUser={false}
       />,
     );
-    expect(screen.getByText("15 matches played")).toBeTruthy();
+    expect(screen.getByText("15 MATCHES PLAYED")).toBeTruthy();
   });
 
   it("renders without crashing when positionChange is undefined", () => {

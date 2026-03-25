@@ -199,31 +199,57 @@ export default function RankingScreen() {
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
   const renderItem = useCallback(
-    ({ item }: { item: LeaderboardEntry }) => (
-      <LeaderboardRow
-        entry={item}
-        isCurrentUser={item.user_id === user?.id}
-        positionChange={positionChanges[item.user_id]}
-        onPress={() =>
-          router.push({
-            pathname: "/player-stats/[userId]",
-            params: {
-              userId: item.user_id,
-              groupId: activeGroupId ?? "",
-              displayName: item.display_name,
-              username: item.username,
-              avatarUrl: item.avatar_url ?? "",
-              position: String(item.position),
-              totalPoints: String(item.total_points),
-              exactScores: String(item.exact_scores),
-              correctResults: String(item.correct_results),
-              matchesPlayed: String(item.matches_played),
-            },
-          })
-        }
-      />
+    ({ item, index }: { item: LeaderboardEntry; index: number }) => (
+      <>
+        {/* "COMPETITORS" divider between position 3 and 4 */}
+        {index > 0 &&
+          entries[index - 1]?.position <= 3 &&
+          item.position > 3 && (
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingTop: 20,
+                paddingBottom: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 11,
+                  fontWeight: "700",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                COMPETITORS
+              </Text>
+            </View>
+          )}
+        <LeaderboardRow
+          entry={item}
+          isCurrentUser={item.user_id === user?.id}
+          positionChange={positionChanges[item.user_id]}
+          onPress={() =>
+            router.push({
+              pathname: "/player-stats/[userId]",
+              params: {
+                userId: item.user_id,
+                groupId: activeGroupId ?? "",
+                displayName: item.display_name,
+                username: item.username,
+                avatarUrl: item.avatar_url ?? "",
+                position: String(item.position),
+                totalPoints: String(item.total_points),
+                exactScores: String(item.exact_scores),
+                correctResults: String(item.correct_results),
+                matchesPlayed: String(item.matches_played),
+              },
+            })
+          }
+        />
+      </>
     ),
-    [user?.id, positionChanges, activeGroupId, router],
+    [user?.id, positionChanges, activeGroupId, router, entries],
   );
 
   const keyExtractor = useCallback((item: LeaderboardEntry) => item.id, []);
