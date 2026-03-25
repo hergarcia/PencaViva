@@ -348,10 +348,10 @@
   - Added result styling helper (getResultStyle) and scoring-utils integration
   - Established styling rules: NativeWind for layout, inline for colors, never mix on same property
 
-- [ ] **F2-07** Pull to refresh on all screens
+- [~] **F2-07** Pull to refresh on all screens
   - Effort: 2h
 
-- [ ] **F2-08** Loading states + skeletons
+- [~] **F2-08** Loading states + skeletons
   - Skeleton screens for lists (matches, ranking, groups)
   - Effort: 4h
 
