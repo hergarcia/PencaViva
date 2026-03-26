@@ -1,50 +1,35 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
   Modal,
   Pressable,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "@components/common/EmptyState";
-import { useAuth } from "@hooks/use-auth";
-import { fetchUserGroups } from "@lib/groups-service";
 import { colors } from "@lib/constants";
 import { GroupCard } from "@components/groups/GroupCard";
+import { SkeletonGroupCard } from "@components/skeletons/SkeletonGroupCard";
+import { useUserGroups } from "@hooks/use-user-groups";
 import type { UserGroup } from "@lib/groups-service";
 
 export default function GroupsScreen() {
-  const { user } = useAuth();
   const router = useRouter();
+  const {
+    groups,
+    isLoading,
+    isRefreshing,
+    error: fetchError,
+    refetch,
+  } = useUserGroups();
 
-  const [groups, setGroups] = useState<UserGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const menuAnchorRef = useRef<View>(null);
-
-  const loadGroups = useCallback(async () => {
-    if (!user?.id) return;
-    setIsLoading(true);
-    setFetchError(null);
-    try {
-      const data = await fetchUserGroups(user.id);
-      setGroups(data);
-    } catch {
-      setFetchError("Failed to load groups.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    loadGroups();
-  }, [loadGroups]);
 
   const handleGroupPress = useCallback(
     (groupId: string) => {
@@ -63,13 +48,9 @@ export default function GroupsScreen() {
     router.push("/groups/join");
   }, [router]);
 
-  // ── Guards ──────────────────────────────────────────────────────
-
-  if (!user) return null;
-
   // ── Loading state ───────────────────────────────────────────────
 
-  if (isLoading) {
+  if (isLoading && !isRefreshing) {
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: colors.background }}
@@ -86,14 +67,10 @@ export default function GroupsScreen() {
             My Groups
           </Text>
         </View>
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            testID="loading-indicator"
-          />
+        <View style={{ paddingHorizontal: 24 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonGroupCard key={i} />
+          ))}
         </View>
       </SafeAreaView>
     );
@@ -133,7 +110,7 @@ export default function GroupsScreen() {
             {fetchError}
           </Text>
           <TouchableOpacity
-            onPress={loadGroups}
+            onPress={refetch}
             style={{ marginTop: 16 }}
             testID="retry-button"
           >
@@ -295,7 +272,7 @@ export default function GroupsScreen() {
         </Pressable>
       </Modal>
 
-      <FlatList
+      <FlatList<UserGroup>
         data={groups}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -303,6 +280,14 @@ export default function GroupsScreen() {
         )}
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
         testID="groups-list"
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refetch}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
       />
     </SafeAreaView>
   );

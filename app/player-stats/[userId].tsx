@@ -3,7 +3,6 @@ import {
   View,
   Text,
   SectionList,
-  ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
@@ -18,6 +17,7 @@ import { PlayerStatsHeader } from "@components/ranking/PlayerStatsHeader";
 import { StatsGrid } from "@components/ranking/StatsGrid";
 import { StreakDisplay } from "@components/ranking/StreakDisplay";
 import { PredictionHistoryRow } from "@components/ranking/PredictionHistoryRow";
+import { SkeletonPredictionHistoryRow } from "@components/skeletons/SkeletonPredictionHistoryRow";
 import type { PlayerPredictionRecord } from "@lib/player-stats-service";
 
 type Section = {
@@ -61,10 +61,8 @@ export default function PlayerStatsScreen() {
   const userId = params.userId;
   const groupId = params.groupId;
 
-  const { predictions, streaks, isLoading, error, refetch } = usePlayerStats(
-    userId,
-    groupId,
-  );
+  const { predictions, streaks, isLoading, isRefreshing, error, refetch } =
+    usePlayerStats(userId, groupId);
 
   const sections = groupByDate(predictions);
 
@@ -134,15 +132,11 @@ export default function PlayerStatsScreen() {
         </Text>
       </View>
 
-      {isLoading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator
-            testID="loading-indicator"
-            size="large"
-            color={colors.primary}
-          />
+      {isLoading && !isRefreshing ? (
+        <View testID="loading-indicator" style={{ paddingTop: 8 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonPredictionHistoryRow key={i} />
+          ))}
         </View>
       ) : error ? (
         <View
@@ -262,7 +256,7 @@ export default function PlayerStatsScreen() {
           }
           refreshControl={
             <RefreshControl
-              refreshing={false}
+              refreshing={isRefreshing}
               onRefresh={refetch}
               tintColor={colors.primary}
               colors={[colors.primary]}

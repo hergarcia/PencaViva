@@ -348,12 +348,14 @@
   - Added result styling helper (getResultStyle) and scoring-utils integration
   - Established styling rules: NativeWind for layout, inline for colors, never mix on same property
 
-- [~] **F2-07** Pull to refresh on all screens
+- [x] **F2-07** Pull to refresh on all screens
   - Effort: 2h
+  - Notes: Added `isRefreshing` state to all hooks (useGroupMatches, useGroupLeaderboard, useGroupDetail, usePlayerStats). Extracted `useUserGroups` hook from groups screen inline logic. All 5 list screens now have `RefreshControl` with reactive `refreshing={isRefreshing}` prop. Initial load (isLoading) and user-triggered refresh (isRefreshing) are distinct states.
 
-- [~] **F2-08** Loading states + skeletons
+- [x] **F2-08** Loading states + skeletons
   - Skeleton screens for lists (matches, ranking, groups)
   - Effort: 4h
+  - Notes: Created `useSkeletonAnimation` hook (Reanimated pulse 0.3↔0.7 opacity). 5 skeleton components matching real item dimensions: SkeletonMatchCard, SkeletonLeaderboardRow, SkeletonGroupCard, SkeletonMemberRow, SkeletonPredictionHistoryRow. Replaced ActivityIndicator on all screens. Skeletons only shown on initial load (`isLoading && !isRefreshing`). Added `withRepeat` and `Easing` to Reanimated mock.
 
 - [ ] **F2-09** Global error handling
   - Error boundaries, toast messages, retry logic
@@ -496,10 +498,10 @@
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 13     | 13        | 0           | 0       |
 | Phase 1: MVP     | 29     | 24        | 0           | 5       |
-| Phase 2: Polish  | 12     | 0         | 0           | 12      |
+| Phase 2: Polish  | 12     | 2         | 0           | 10      |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **69** | **37**    | **0**       | **32**  |
+| **Total MVP**    | **69** | **39**    | **0**       | **30**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
 **Overall MVP progress: 53.6%**

@@ -89,8 +89,9 @@ src/
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
 │   ├── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation, GroupPredictions, PredictionRow
-│   └── ranking/        # LeaderboardRow (with Reanimated glow + position indicators), PlayerStatsHeader, StatsGrid, StreakDisplay, PredictionHistoryRow
-├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard(groupId, filter?), usePlayerStats(userId, groupId))
+│   ├── ranking/        # LeaderboardRow (with Reanimated glow + position indicators), PlayerStatsHeader, StatsGrid, StreakDisplay, PredictionHistoryRow
+│   └── skeletons/      # Skeleton loading components: SkeletonMatchCard, SkeletonLeaderboardRow, SkeletonGroupCard, SkeletonMemberRow, SkeletonPredictionHistoryRow + useSkeletonAnimation hook
+├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard(groupId, filter?), usePlayerStats(userId, groupId), useUserGroups)
 ├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL + success/danger colors), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils, leaderboard-service (LeaderboardFilter, fetchGroupLeaderboardByDateRange, fetchGroupLeaderboardFiltered), player-stats-service (PlayerPredictionRecord, computeStreaks, fetchPlayerGroupStats)
 │   ├── mock/              # Mock Supabase client (activated by EXPO_PUBLIC_USE_MOCKS=true)
 │   │   ├── index.ts       # Re-exports createMockClient

@@ -79,6 +79,7 @@ describe("PlayerStatsScreen", () => {
       predictions: [],
       streaks: { currentStreak: { count: 0, type: "correct" }, bestStreak: 0 },
       isLoading: true,
+      isRefreshing: false,
       error: null,
       refetch: jest.fn(),
     });
@@ -92,6 +93,7 @@ describe("PlayerStatsScreen", () => {
       predictions: [],
       streaks: { currentStreak: { count: 0, type: "correct" }, bestStreak: 0 },
       isLoading: false,
+      isRefreshing: false,
       error: "Network error",
       refetch: jest.fn(),
     });
@@ -106,6 +108,7 @@ describe("PlayerStatsScreen", () => {
       predictions: mockPredictions,
       streaks: mockStreaks,
       isLoading: false,
+      isRefreshing: false,
       error: null,
       refetch: jest.fn(),
     });
@@ -120,6 +123,7 @@ describe("PlayerStatsScreen", () => {
       predictions: mockPredictions,
       streaks: mockStreaks,
       isLoading: false,
+      isRefreshing: false,
       error: null,
       refetch: jest.fn(),
     });
@@ -133,6 +137,7 @@ describe("PlayerStatsScreen", () => {
       predictions: mockPredictions,
       streaks: mockStreaks,
       isLoading: false,
+      isRefreshing: false,
       error: null,
       refetch: jest.fn(),
     });
@@ -147,6 +152,7 @@ describe("PlayerStatsScreen", () => {
       predictions: mockPredictions,
       streaks: mockStreaks,
       isLoading: false,
+      isRefreshing: false,
       error: null,
       refetch: jest.fn(),
     });
@@ -160,6 +166,7 @@ describe("PlayerStatsScreen", () => {
       predictions: [],
       streaks: { currentStreak: { count: 0, type: "correct" }, bestStreak: 0 },
       isLoading: false,
+      isRefreshing: false,
       error: null,
       refetch: jest.fn(),
     });

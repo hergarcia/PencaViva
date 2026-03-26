@@ -3,7 +3,6 @@ import {
   View,
   Text,
   SectionList,
-  ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
@@ -12,6 +11,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@lib/constants";
 import { EmptyState } from "@components/common/EmptyState";
+import { SkeletonMatchCard } from "@components/skeletons/SkeletonMatchCard";
 import { useActiveGroup } from "@hooks/use-active-group";
 import { useGroupMatches } from "@hooks/use-group-matches";
 import { MatchCard } from "@components/predictions/MatchCard";
@@ -32,6 +32,7 @@ export default function PredictScreen() {
   const {
     sections,
     isLoading: matchesLoading,
+    isRefreshing,
     error,
     refetch,
   } = useGroupMatches(activeGroupId);
@@ -138,11 +139,11 @@ export default function PredictScreen() {
       </View>
 
       {/* Loading */}
-      {isLoading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
+      {isLoading && !isRefreshing ? (
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonMatchCard key={i} />
+          ))}
         </View>
       ) : error ? (
         /* Error state */
@@ -214,7 +215,7 @@ export default function PredictScreen() {
           stickySectionHeadersEnabled={false}
           refreshControl={
             <RefreshControl
-              refreshing={false}
+              refreshing={isRefreshing}
               onRefresh={refetch}
               tintColor={colors.primary}
               colors={[colors.primary]}
