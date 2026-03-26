@@ -33,12 +33,14 @@ describe("withRetry", () => {
   });
 
   it("throws after all retries exhausted", async () => {
-    // Use async mock to avoid unhandled rejection warnings from bare Promise.reject
     const fn = jest.fn().mockImplementation(async () => {
       throw new Error("network error");
     });
 
     const promise = withRetry(fn, { maxRetries: 2, baseDelay: 100 });
+    // Suppress unhandled rejection: attach a no-op catch so Node.js does not
+    // emit PromiseRejectionHandledWarning before the assertion below.
+    promise.catch(() => {});
 
     // Advance through both retry delays (100ms + 200ms)
     await jest.advanceTimersByTimeAsync(350);
