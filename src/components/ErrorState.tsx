@@ -12,7 +12,7 @@ type ErrorStateProps = {
 
 export function ErrorState({
   message,
-  title = "Oops!",
+  title = "Something went wrong",
   onRetry,
   icon = "alert-circle-outline",
 }: ErrorStateProps) {

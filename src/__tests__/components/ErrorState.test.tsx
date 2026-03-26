@@ -3,9 +3,10 @@ import { render, fireEvent } from "@testing-library/react-native";
 import { ErrorState } from "@components/ErrorState";
 
 describe("ErrorState", () => {
-  it("renders error message", () => {
-    const { getByText } = render(<ErrorState message="Something went wrong" />);
+  it("renders error message and default title", () => {
+    const { getByText } = render(<ErrorState message="Network error" />);
     expect(getByText("Something went wrong")).toBeTruthy();
+    expect(getByText("Network error")).toBeTruthy();
   });
 
   it("renders default icon", () => {
