@@ -8,6 +8,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { colors } from "@/lib/constants";
 import { configureGoogleSignIn } from "@/lib/google-auth";
 import { useAuthInit } from "@/hooks/use-auth";
+import { GlobalErrorBoundary } from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/Toast";
 
 SplashScreen.preventAutoHideAsync();
 configureGoogleSignIn();
@@ -22,14 +24,18 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: stackContentStyle,
-        }}
-      />
-    </SafeAreaProvider>
+    <GlobalErrorBoundary>
+      <SafeAreaProvider>
+        <ToastProvider>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: stackContentStyle,
+            }}
+          />
+        </ToastProvider>
+      </SafeAreaProvider>
+    </GlobalErrorBoundary>
   );
 }

@@ -1,4 +1,5 @@
 import { ComponentProps } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/lib/constants";
@@ -54,6 +55,64 @@ const tabBarLabelStyle = {
   fontSize: 11,
   fontWeight: "600" as const,
 };
+
+export function ErrorBoundary({
+  error,
+  retry,
+}: {
+  error: Error;
+  retry: () => void;
+}) {
+  return (
+    <View
+      testID="tabs-error-boundary"
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.background,
+        paddingHorizontal: 32,
+      }}
+    >
+      <Ionicons name="alert-circle-outline" size={48} color={colors.accent} />
+      <Text
+        style={{
+          color: colors.textPrimary,
+          fontSize: 16,
+          fontWeight: "600",
+          marginTop: 12,
+          textAlign: "center",
+        }}
+      >
+        Something went wrong
+      </Text>
+      <Text
+        style={{
+          color: colors.textSecondary,
+          fontSize: 14,
+          marginTop: 4,
+          textAlign: "center",
+        }}
+      >
+        {error.message}
+      </Text>
+      <TouchableOpacity
+        onPress={retry}
+        style={{
+          backgroundColor: colors.primary,
+          paddingHorizontal: 24,
+          paddingVertical: 10,
+          borderRadius: 20,
+          marginTop: 16,
+        }}
+      >
+        <Text style={{ color: colors.background, fontWeight: "600" }}>
+          Try again
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
