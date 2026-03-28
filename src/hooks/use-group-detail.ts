@@ -16,6 +16,7 @@ type UseGroupDetailResult = {
   members: GroupMember[];
   tournaments: GroupTournament[];
   loading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 };
@@ -31,39 +32,48 @@ export function useGroupDetail(groupId: string): UseGroupDetailResult {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [tournaments, setTournaments] = useState<GroupTournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cancelledRef = useRef(false);
 
-  const loadData = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [g, m, t] = await Promise.all([
-        fetchGroupById(groupId),
-        fetchGroupMembers(groupId),
-        fetchGroupTournaments(groupId),
-      ]);
-      if (!cancelledRef.current) {
-        setGroup(g);
-        setMembers(m);
-        setTournaments(t);
-      }
-    } catch (err: unknown) {
-      if (!cancelledRef.current) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      }
-    } finally {
-      if (!cancelledRef.current) {
+  const loadData = useCallback(
+    async (opts?: { isRefresh?: boolean }) => {
+      if (!user) {
         setLoading(false);
+        return;
       }
-    }
-  }, [groupId, user]);
+
+      if (opts?.isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
+      try {
+        const [g, m, t] = await Promise.all([
+          fetchGroupById(groupId),
+          fetchGroupMembers(groupId),
+          fetchGroupTournaments(groupId),
+        ]);
+        if (!cancelledRef.current) {
+          setGroup(g);
+          setMembers(m);
+          setTournaments(t);
+        }
+      } catch (err: unknown) {
+        if (!cancelledRef.current) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+        }
+      } finally {
+        if (!cancelledRef.current) {
+          setLoading(false);
+          setIsRefreshing(false);
+        }
+      }
+    },
+    [groupId, user],
+  );
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -79,8 +89,8 @@ export function useGroupDetail(groupId: string): UseGroupDetailResult {
 
   const refetch = useCallback(async () => {
     cancelledRef.current = false;
-    await loadData();
+    await loadData({ isRefresh: true });
   }, [loadData]);
 
-  return { group, members, tournaments, loading, error, refetch };
+  return { group, members, tournaments, loading, isRefreshing, error, refetch };
 }

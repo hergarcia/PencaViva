@@ -16,6 +16,7 @@ type UseGroupMatchesResult = {
   matches: MatchWithPrediction[];
   sections: DateSection[];
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 };
@@ -55,36 +56,45 @@ export function useGroupMatches(groupId: string | null): UseGroupMatchesResult {
   const [matches, setMatches] = useState<MatchWithPrediction[]>([]);
   const [sections, setSections] = useState<DateSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cancelledRef = useRef(false);
 
-  const loadMatches = useCallback(async () => {
-    if (!user?.id || !groupId) {
-      setIsLoading(false);
-      setMatches([]);
-      setSections([]);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await fetchGroupMatches(groupId, user.id);
-      if (!cancelledRef.current) {
-        setMatches(data);
-        setSections(groupMatchesByDate(data));
-      }
-    } catch (err: unknown) {
-      if (!cancelledRef.current) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      }
-    } finally {
-      if (!cancelledRef.current) {
+  const loadMatches = useCallback(
+    async (opts?: { isRefresh?: boolean }) => {
+      if (!user?.id || !groupId) {
         setIsLoading(false);
+        setMatches([]);
+        setSections([]);
+        return;
       }
-    }
-  }, [groupId, user?.id]);
+
+      if (opts?.isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+
+      try {
+        const data = await fetchGroupMatches(groupId, user.id);
+        if (!cancelledRef.current) {
+          setMatches(data);
+          setSections(groupMatchesByDate(data));
+        }
+      } catch (err: unknown) {
+        if (!cancelledRef.current) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+        }
+      } finally {
+        if (!cancelledRef.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
+      }
+    },
+    [groupId, user?.id],
+  );
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -100,8 +110,8 @@ export function useGroupMatches(groupId: string | null): UseGroupMatchesResult {
 
   const refetch = useCallback(async () => {
     cancelledRef.current = false;
-    await loadMatches();
+    await loadMatches({ isRefresh: true });
   }, [loadMatches]);
 
-  return { matches, sections, isLoading, error, refetch };
+  return { matches, sections, isLoading, isRefreshing, error, refetch };
 }

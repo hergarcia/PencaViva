@@ -10,6 +10,11 @@ const withTiming = (toValue: any) => toValue;
 const withSpring = (toValue: any) => toValue;
 const withDelay = (_delay: number, value: any) => value;
 const withSequence = (...values: any[]) => values[values.length - 1];
+const withRepeat = (_anim: any, _reps?: number, _reverse?: boolean) => _anim;
+const Easing = {
+  inOut: (fn: any) => fn,
+  ease: 0,
+};
 
 const runOnJS = (fn: (...args: any[]) => any) => fn;
 
@@ -31,6 +36,8 @@ export {
   withSpring,
   withDelay,
   withSequence,
+  withRepeat,
+  Easing,
   runOnJS,
   useAnimatedScrollHandler,
 };

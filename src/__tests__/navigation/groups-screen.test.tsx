@@ -13,41 +13,46 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-jest.mock("@hooks/use-auth", () => ({
-  useAuth: jest.fn(),
-}));
-
-const mockFetchUserGroups = jest.fn();
-jest.mock("@lib/groups-service", () => ({
-  fetchUserGroups: (...args: unknown[]) => mockFetchUserGroups(...args),
+const mockUseUserGroups = jest.fn();
+jest.mock("@hooks/use-user-groups", () => ({
+  useUserGroups: () => mockUseUserGroups(),
 }));
 
 // Must import AFTER mocks
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { useAuth } = require("@hooks/use-auth");
 const GroupsScreen = require("../../../app/(tabs)/groups/index").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+const defaultHook = {
+  groups: [],
+  isLoading: false,
+  isRefreshing: false,
+  error: null,
+  refetch: jest.fn(),
+};
+
 beforeEach(() => {
-  // Defensive: restore real timers in case a preceding test file in the same
-  // Jest worker left fake timers active (e.g. complete-profile-screen).
   jest.useRealTimers();
   jest.resetAllMocks();
-  useAuth.mockReturnValue({
-    user: { id: "user-1" },
-  });
+  mockUseUserGroups.mockReturnValue(defaultHook);
 });
 
 describe("GroupsScreen", () => {
-  it("shows loading indicator while fetching", () => {
-    mockFetchUserGroups.mockReturnValue(new Promise(() => {}));
+  it("shows loading skeleton while fetching", () => {
+    mockUseUserGroups.mockReturnValue({
+      ...defaultHook,
+      isLoading: true,
+      isRefreshing: false,
+    });
 
-    const { getByTestId } = render(<GroupsScreen />);
-    expect(getByTestId("loading-indicator")).toBeTruthy();
+    const { getByTestId, getAllByTestId } = render(<GroupsScreen />);
+    expect(getByTestId("groups-screen")).toBeTruthy();
+    // Skeleton cards shown during initial load
+    expect(getAllByTestId("skeleton-group-card").length).toBeGreaterThan(0);
   });
 
   it("renders list of groups after loading", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([
+    const groups = [
       {
         id: "g1",
         name: "Test Group",
@@ -58,20 +63,17 @@ describe("GroupsScreen", () => {
         member_count: 3,
         role: "admin",
       },
-    ]);
+    ];
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups });
 
-    // renderAsync uses await act() instead of void act(), so all async work
-    // (mount, effects, data-fetch) is drained before we assert. This prevents
-    // the first async test in a Jest worker from hanging under React 19
-    // concurrent mode when void act() in renderWithAct orphans scheduler init.
     const { getByText, queryByTestId } = await renderAsync(<GroupsScreen />);
 
-    expect(queryByTestId("loading-indicator")).toBeNull();
+    expect(queryByTestId("skeleton-group-card")).toBeNull();
     expect(getByText("Test Group")).toBeTruthy();
   });
 
   it("shows empty state when user has no groups", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([]);
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups: [] });
 
     const { getByTestId, getByText } = render(<GroupsScreen />);
 
@@ -83,7 +85,10 @@ describe("GroupsScreen", () => {
   });
 
   it("shows error state with retry button on fetch failure", async () => {
-    mockFetchUserGroups.mockRejectedValueOnce(new Error("Network error"));
+    mockUseUserGroups.mockReturnValue({
+      ...defaultHook,
+      error: "Failed to load groups.",
+    });
 
     const { getByTestId, getByText } = render(<GroupsScreen />);
 
@@ -95,10 +100,13 @@ describe("GroupsScreen", () => {
     expect(getByTestId("retry-button")).toBeTruthy();
   });
 
-  it("retries fetch when retry button is pressed", async () => {
-    mockFetchUserGroups
-      .mockRejectedValueOnce(new Error("Network error"))
-      .mockResolvedValueOnce([]);
+  it("calls refetch when retry button is pressed", async () => {
+    const refetch = jest.fn();
+    mockUseUserGroups.mockReturnValue({
+      ...defaultHook,
+      error: "Failed to load groups.",
+      refetch,
+    });
 
     const { getByTestId } = render(<GroupsScreen />);
 
@@ -107,14 +115,11 @@ describe("GroupsScreen", () => {
     });
 
     fireEvent.press(getByTestId("retry-button"));
-
-    await waitFor(() => {
-      expect(mockFetchUserGroups).toHaveBeenCalledTimes(2);
-    });
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 
   it("navigates to group detail when card is pressed", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([
+    const groups = [
       {
         id: "g1",
         name: "Test Group",
@@ -125,7 +130,8 @@ describe("GroupsScreen", () => {
         member_count: 2,
         role: "member",
       },
-    ]);
+    ];
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups });
 
     const { getByTestId } = render(<GroupsScreen />);
 
@@ -138,7 +144,7 @@ describe("GroupsScreen", () => {
   });
 
   it("navigates to create group screen when create button is pressed", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([]);
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups: [] });
 
     const { getByTestId } = render(<GroupsScreen />);
 
@@ -151,7 +157,7 @@ describe("GroupsScreen", () => {
   });
 
   it("navigates to join group screen when join button is pressed", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([]);
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups: [] });
 
     const { getByTestId } = render(<GroupsScreen />);
 
@@ -163,15 +169,8 @@ describe("GroupsScreen", () => {
     expect(mockPush).toHaveBeenCalledWith("/groups/join");
   });
 
-  it("returns null when user is not authenticated", () => {
-    useAuth.mockReturnValue({ user: null });
-
-    const { toJSON } = render(<GroupsScreen />);
-    expect(toJSON()).toBeNull();
-  });
-
   it("shows header add button and menu options when groups exist", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([
+    const groups = [
       {
         id: "g1",
         name: "Test Group",
@@ -182,7 +181,8 @@ describe("GroupsScreen", () => {
         member_count: 2,
         role: "member",
       },
-    ]);
+    ];
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups });
 
     const { getByTestId } = render(<GroupsScreen />);
 
@@ -190,17 +190,15 @@ describe("GroupsScreen", () => {
       expect(getByTestId("header-add-button")).toBeTruthy();
     });
 
-    // Open menu
     fireEvent.press(getByTestId("header-add-button"));
 
-    // Tap Create Group
     await waitFor(() => expect(getByTestId("menu-create-group")).toBeTruthy());
     fireEvent.press(getByTestId("menu-create-group"));
     expect(mockPush).toHaveBeenCalledWith("/groups/create");
   });
 
   it("navigates to join group from header menu", async () => {
-    mockFetchUserGroups.mockResolvedValueOnce([
+    const groups = [
       {
         id: "g1",
         name: "Test Group",
@@ -211,7 +209,8 @@ describe("GroupsScreen", () => {
         member_count: 2,
         role: "member",
       },
-    ]);
+    ];
+    mockUseUserGroups.mockReturnValue({ ...defaultHook, groups });
 
     const { getByTestId } = render(<GroupsScreen />);
 

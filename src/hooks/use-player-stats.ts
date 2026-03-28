@@ -11,6 +11,7 @@ interface UsePlayerStatsResult {
   predictions: PlayerPredictionRecord[];
   streaks: StreakResult;
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
@@ -27,33 +28,44 @@ export function usePlayerStats(
   const [predictions, setPredictions] = useState<PlayerPredictionRecord[]>([]);
   const [streaks, setStreaks] = useState<StreakResult>(EMPTY_STREAKS);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cancelledRef = useRef(false);
 
-  const load = useCallback(async () => {
-    if (!userId || !groupId) return;
-    setIsLoading(true);
-    setError(null);
-    cancelledRef.current = false;
+  const load = useCallback(
+    async (opts?: { isRefresh?: boolean }) => {
+      if (!userId || !groupId) return;
+      if (opts?.isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+      cancelledRef.current = false;
 
-    try {
-      const data = await fetchPlayerGroupStats(userId, groupId);
-      if (cancelledRef.current) return;
+      try {
+        const data = await fetchPlayerGroupStats(userId, groupId);
+        if (cancelledRef.current) return;
 
-      const sorted = [...data].sort(
-        (a, b) =>
-          new Date(b.match.kickoff_time).getTime() -
-          new Date(a.match.kickoff_time).getTime(),
-      );
-      setPredictions(sorted);
-      setStreaks(computeStreaks(data));
-    } catch (err) {
-      if (cancelledRef.current) return;
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      if (!cancelledRef.current) setIsLoading(false);
-    }
-  }, [userId, groupId]);
+        const sorted = [...data].sort(
+          (a, b) =>
+            new Date(b.match.kickoff_time).getTime() -
+            new Date(a.match.kickoff_time).getTime(),
+        );
+        setPredictions(sorted);
+        setStreaks(computeStreaks(data));
+      } catch (err) {
+        if (cancelledRef.current) return;
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        if (!cancelledRef.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
+      }
+    },
+    [userId, groupId],
+  );
 
   useEffect(() => {
     load();
@@ -62,5 +74,10 @@ export function usePlayerStats(
     };
   }, [load]);
 
-  return { predictions, streaks, isLoading, error, refetch: load };
+  const refetch = useCallback(async () => {
+    cancelledRef.current = false;
+    await load({ isRefresh: true });
+  }, [load]);
+
+  return { predictions, streaks, isLoading, isRefreshing, error, refetch };
 }

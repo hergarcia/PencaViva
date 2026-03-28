@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
   ViewToken,
@@ -13,6 +12,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@lib/constants";
 import { EmptyState } from "@components/common/EmptyState";
+import { SkeletonLeaderboardRow } from "@components/skeletons/SkeletonLeaderboardRow";
 import { useAuth } from "@hooks/use-auth";
 import { useActiveGroup } from "@hooks/use-active-group";
 import { useGroupLeaderboard } from "@hooks/use-group-leaderboard";
@@ -174,6 +174,7 @@ export default function RankingScreen() {
   const {
     entries,
     isLoading: leaderboardLoading,
+    isRefreshing,
     error,
     refetch,
     positionChanges,
@@ -336,11 +337,11 @@ export default function RankingScreen() {
       <FilterTabs activeFilter={activeFilter} onSelect={handleFilterSelect} />
 
       {/* Loading */}
-      {isLoading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
+      {isLoading && !isRefreshing ? (
+        <View style={{ paddingTop: 8 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonLeaderboardRow key={i} />
+          ))}
         </View>
       ) : error ? (
         /* Error state */
@@ -421,7 +422,7 @@ export default function RankingScreen() {
             contentContainerStyle={{ paddingBottom: 20 }}
             refreshControl={
               <RefreshControl
-                refreshing={false}
+                refreshing={isRefreshing}
                 onRefresh={refetch}
                 tintColor={colors.primary}
                 colors={[colors.primary]}

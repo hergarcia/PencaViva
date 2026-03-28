@@ -10,6 +10,7 @@ import {
 type UseGroupLeaderboardResult = {
   entries: LeaderboardEntry[];
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   refetch: () => Promise<void>;
   positionChanges: Record<string, number>;
@@ -22,6 +23,7 @@ export function useGroupLeaderboard(
   const { isInitialized } = useAuth();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [positionChanges, setPositionChanges] = useState<
     Record<string, number>
@@ -29,51 +31,59 @@ export function useGroupLeaderboard(
   const cancelledRef = useRef(false);
   const prevPositionsRef = useRef<Record<string, number>>({});
 
-  const loadLeaderboard = useCallback(async () => {
-    if (!groupId) {
-      setIsLoading(false);
-      setEntries([]);
-      return;
-    }
+  const loadLeaderboard = useCallback(
+    async (opts?: { isRefresh?: boolean }) => {
+      if (!groupId) {
+        setIsLoading(false);
+        setEntries([]);
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      if (opts?.isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
 
-    try {
-      const data = await fetchGroupLeaderboardFiltered(groupId, filter);
-      if (!cancelledRef.current) {
-        // Compute position changes
-        const prev = prevPositionsRef.current;
-        const changes: Record<string, number> = {};
-        if (Object.keys(prev).length > 0) {
-          for (const entry of data) {
-            const oldPos = prev[entry.user_id];
-            if (oldPos !== undefined && oldPos !== entry.position) {
-              changes[entry.user_id] = oldPos - entry.position;
+      try {
+        const data = await fetchGroupLeaderboardFiltered(groupId, filter);
+        if (!cancelledRef.current) {
+          // Compute position changes
+          const prev = prevPositionsRef.current;
+          const changes: Record<string, number> = {};
+          if (Object.keys(prev).length > 0) {
+            for (const entry of data) {
+              const oldPos = prev[entry.user_id];
+              if (oldPos !== undefined && oldPos !== entry.position) {
+                changes[entry.user_id] = oldPos - entry.position;
+              }
             }
           }
-        }
 
-        // Update prev positions for next comparison
-        const newPositions: Record<string, number> = {};
-        for (const entry of data) {
-          newPositions[entry.user_id] = entry.position;
-        }
-        prevPositionsRef.current = newPositions;
+          // Update prev positions for next comparison
+          const newPositions: Record<string, number> = {};
+          for (const entry of data) {
+            newPositions[entry.user_id] = entry.position;
+          }
+          prevPositionsRef.current = newPositions;
 
-        setEntries(data);
-        setPositionChanges(changes);
+          setEntries(data);
+          setPositionChanges(changes);
+        }
+      } catch (err: unknown) {
+        if (!cancelledRef.current) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+        }
+      } finally {
+        if (!cancelledRef.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
-    } catch (err: unknown) {
-      if (!cancelledRef.current) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      }
-    } finally {
-      if (!cancelledRef.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [groupId, filter]);
+    },
+    [groupId, filter],
+  );
 
   // Reset position tracking when groupId or filter changes
   useEffect(() => {
@@ -121,8 +131,8 @@ export function useGroupLeaderboard(
 
   const refetch = useCallback(async () => {
     cancelledRef.current = false;
-    await loadLeaderboard();
+    await loadLeaderboard({ isRefresh: true });
   }, [loadLeaderboard]);
 
-  return { entries, isLoading, error, refetch, positionChanges };
+  return { entries, isLoading, isRefreshing, error, refetch, positionChanges };
 }

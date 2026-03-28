@@ -5,7 +5,7 @@ import {
   FlatList,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
+  RefreshControl,
   Share,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +19,7 @@ import { useGroupDetail } from "@hooks/use-group-detail";
 import { useAuth } from "@hooks/use-auth";
 import { ScreenHeader } from "@components/common/ScreenHeader";
 import { MemberRow } from "@components/groups/MemberRow";
+import { SkeletonMemberRow } from "@components/skeletons/SkeletonMemberRow";
 import type { GroupMember } from "@lib/groups-service";
 
 type Tab = "members" | "info";
@@ -27,7 +28,7 @@ export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { group, members, tournaments, loading, error, refetch } =
+  const { group, members, tournaments, loading, isRefreshing, error, refetch } =
     useGroupDetail(id);
   const [activeTab, setActiveTab] = useState<Tab>("members");
   const hasMountedRef = useRef(false);
@@ -60,16 +61,17 @@ export default function GroupDetailScreen() {
     copyTimeoutRef.current = setTimeout(() => setCopiedState(null), 1500);
   }
 
-  if (loading) {
+  if (loading && !isRefreshing) {
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: colors.background }}
         testID="loading-indicator"
       >
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator color={colors.primary} size="large" />
+        <ScreenHeader title="Loading..." />
+        <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonMemberRow key={i} />
+          ))}
         </View>
       </SafeAreaView>
     );
@@ -162,6 +164,14 @@ export default function GroupDetailScreen() {
             />
           )}
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refetch}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
           ListEmptyComponent={
             <Text
               style={{
