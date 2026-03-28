@@ -72,6 +72,7 @@ module.exports = {
               strict: true,
               resolveJsonModule: true,
               skipLibCheck: true,
+              types: ["jest", "node"],
             },
           },
         ],
