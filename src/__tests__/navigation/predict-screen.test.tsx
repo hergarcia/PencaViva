@@ -3,6 +3,8 @@ import { render } from "@testing-library/react-native";
 
 import PredictScreen from "../../../app/(tabs)/predict";
 
+jest.mock("@components/Toast");
+
 // Mock use-auth
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),

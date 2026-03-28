@@ -86,13 +86,17 @@ src/
 ├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, reanimated, css, etc.)
 ├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
 ├── components/         # Feature-organized components
+│   ├── common/         # EmptyState
+│   ├── ErrorState.tsx   # Reusable inline error display (icon + title + message + retry)
+│   ├── ErrorBoundary.tsx # Global error boundary (class component, wraps root Stack)
+│   ├── Toast.tsx        # ToastProvider + useToast hook + animated banner (success/error/info)
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
 │   ├── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation, GroupPredictions, PredictionRow
 │   ├── ranking/        # LeaderboardRow (with Reanimated glow + position indicators), PlayerStatsHeader, StatsGrid, StreakDisplay, PredictionHistoryRow
 │   └── skeletons/      # Skeleton loading components: SkeletonMatchCard, SkeletonLeaderboardRow, SkeletonGroupCard, SkeletonMemberRow, SkeletonPredictionHistoryRow + useSkeletonAnimation hook
 ├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard(groupId, filter?), usePlayerStats(userId, groupId), useUserGroups)
-├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL + success/danger colors), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils, leaderboard-service (LeaderboardFilter, fetchGroupLeaderboardByDateRange, fetchGroupLeaderboardFiltered), player-stats-service (PlayerPredictionRecord, computeStreaks, fetchPlayerGroupStats)
+├── lib/                # Supabase client, secure-store adapter, google-auth, constants (+ APP_BASE_URL + success/danger colors), onboarding data, groups-service, matches-service, prediction-service, profile-service, scoring-utils, leaderboard-service (LeaderboardFilter, fetchGroupLeaderboardByDateRange, fetchGroupLeaderboardFiltered), player-stats-service (PlayerPredictionRecord, computeStreaks, fetchPlayerGroupStats), retry (withRetry, isTransientError)
 │   ├── mock/              # Mock Supabase client (activated by EXPO_PUBLIC_USE_MOCKS=true)
 │   │   ├── index.ts       # Re-exports createMockClient
 │   │   ├── mock-client.ts # Mock SupabaseClient assembly + RPC handlers
@@ -111,7 +115,7 @@ supabase/
 ├── migrations/         # SQL migrations (00001-00006: schema, RLS, functions/triggers)
 └── __tests__/          # SQL integration tests (db-functions/, rls/, triggers/)
 ├── functions/          # Edge Functions (Deno v2 runtime)
-│   └── match-sync/    # API-Football → matches table sync (daily/live/single modes)
+89i│   └── match-sync/    # API-Football → matches table sync (daily/live/single modes)
 # Planned: functions/calculate-scores, send-notification
 ```
 
@@ -177,6 +181,7 @@ First Edge Function in the project. Syncs match data from API-Football into the 
 - **NativeWind v5**: Uses Tailwind CSS v4 (not v3). Metro config: `withNativewind(config)` with no second argument
 - **Navigation pattern**: The 5-tab bar is the app's home base. Tab root screens live in `app/(tabs)/<name>.tsx` (tab bar visible). All other screens (detail, action, form) live at root level in `app/<feature>/<name>.tsx` (no tab bar, back arrow returns to previous screen). Example: `app/groups/join.tsx`, `app/groups/create.tsx`, `app/groups/[id].tsx`, `app/groups/manage-tournaments.tsx`, `app/match/[id].tsx`. This rule applies to all tabs and all future features.
 - **Focus refetch pattern**: Group detail screen uses `useFocusEffect` from `@react-navigation/native` with a `hasMountedRef` guard to refetch data when returning from sub-screens (e.g., manage-tournaments). Skips the first render to avoid double-fetching.
+- **Error handling**: Two-layer error boundaries (global `GlobalErrorBoundary` class component + Expo Router `ErrorBoundary` export on tabs layout). Toast notifications via custom Reanimated banner (`ToastProvider` + `useToast` hook, no external lib). `withRetry` utility with exponential backoff (2 retries, 1s/2s delay) for all data-fetching hooks. Standardized `ErrorState` component replaces inline error UIs across all screens.
 
 ## Database Schema
 

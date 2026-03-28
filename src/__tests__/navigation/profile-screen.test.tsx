@@ -9,6 +9,8 @@ import {
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
+jest.mock("@components/Toast");
+
 // Mocks must be declared before imports that use them
 jest.mock("react-native-safe-area-context", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -155,7 +157,7 @@ describe("ProfileScreen — view mode", () => {
     });
     render(<ProfileScreen />);
     await waitFor(() => {
-      expect(screen.getByTestId("error-message")).toBeTruthy();
+      expect(screen.getByTestId("error-state")).toBeTruthy();
     });
   });
 });

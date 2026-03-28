@@ -11,6 +11,8 @@ jest.mock("@lib/groups-service", () => ({
   fetchGroupTournaments: jest.fn(),
 }));
 
+jest.mock("@lib/retry");
+
 jest.mock("@hooks/use-auth", () => ({
   useAuth: jest.fn(),
 }));

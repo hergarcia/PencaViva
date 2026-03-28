@@ -1,16 +1,11 @@
-import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  SectionList,
-  RefreshControl,
-  TouchableOpacity,
-} from "react-native";
+import React, { useCallback, useEffect } from "react";
+import { View, Text, SectionList, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@lib/constants";
 import { EmptyState } from "@components/common/EmptyState";
+import { ErrorState } from "@components/ErrorState";
+import { useToast } from "@components/Toast";
 import { SkeletonMatchCard } from "@components/skeletons/SkeletonMatchCard";
 import { useActiveGroup } from "@hooks/use-active-group";
 import { useGroupMatches } from "@hooks/use-group-matches";
@@ -22,6 +17,7 @@ import type { MatchWithPrediction } from "@lib/matches-service";
 
 export default function PredictScreen() {
   const router = useRouter();
+  const { showToast } = useToast();
   const {
     activeGroupId,
     activeGroup,
@@ -38,6 +34,10 @@ export default function PredictScreen() {
   } = useGroupMatches(activeGroupId);
 
   const isLoading = groupsLoading || matchesLoading;
+
+  useEffect(() => {
+    if (error) showToast("error", error);
+  }, [error, showToast]);
 
   const handleMatchPress = useCallback(
     (matchId: string) => {
@@ -146,57 +146,7 @@ export default function PredictScreen() {
           ))}
         </View>
       ) : error ? (
-        /* Error state */
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="alert-circle-outline"
-            size={48}
-            color={colors.accent}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 16,
-              fontWeight: "600",
-              marginTop: 12,
-              textAlign: "center",
-            }}
-          >
-            Something went wrong
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              marginTop: 4,
-              textAlign: "center",
-            }}
-          >
-            {error}
-          </Text>
-          <TouchableOpacity
-            testID="retry-button"
-            onPress={refetch}
-            style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 10,
-              borderRadius: 20,
-              marginTop: 16,
-            }}
-          >
-            <Text style={{ color: colors.background, fontWeight: "600" }}>
-              Try again
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState message={error} onRetry={refetch} />
       ) : sections.length === 0 ? (
         /* Empty matches state */
         <EmptyState

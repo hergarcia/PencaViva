@@ -9,6 +9,8 @@ jest.mock("@lib/leaderboard-service", () => ({
     mockFetchGroupLeaderboardFiltered(...args),
 }));
 
+jest.mock("@lib/retry");
+
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ isInitialized: true }),
 }));

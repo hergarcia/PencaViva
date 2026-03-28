@@ -6,6 +6,7 @@ import {
   type PlayerPredictionRecord,
   type StreakResult,
 } from "@lib/player-stats-service";
+import { withRetry } from "@lib/retry";
 
 interface UsePlayerStatsResult {
   predictions: PlayerPredictionRecord[];
@@ -44,7 +45,9 @@ export function usePlayerStats(
       cancelledRef.current = false;
 
       try {
-        const data = await fetchPlayerGroupStats(userId, groupId);
+        const data = await withRetry(() =>
+          fetchPlayerGroupStats(userId, groupId),
+        );
         if (cancelledRef.current) return;
 
         const sorted = [...data].sort(

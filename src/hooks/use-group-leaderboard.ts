@@ -6,6 +6,7 @@ import {
   type LeaderboardEntry,
   type LeaderboardFilter,
 } from "@lib/leaderboard-service";
+import { withRetry } from "@lib/retry";
 
 type UseGroupLeaderboardResult = {
   entries: LeaderboardEntry[];
@@ -47,7 +48,9 @@ export function useGroupLeaderboard(
       setError(null);
 
       try {
-        const data = await fetchGroupLeaderboardFiltered(groupId, filter);
+        const data = await withRetry(() =>
+          fetchGroupLeaderboardFiltered(groupId, filter),
+        );
         if (!cancelledRef.current) {
           // Compute position changes
           const prev = prevPositionsRef.current;

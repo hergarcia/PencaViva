@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
+import { ErrorState } from "@components/ErrorState";
+import { useToast } from "@components/Toast";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -36,6 +38,7 @@ type Profile = {
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const { showToast } = useToast();
   const { width } = useWindowDimensions();
   const showThreeStats = width >= 390;
   const insets = useSafeAreaInsets();
@@ -139,6 +142,10 @@ export default function ProfileScreen() {
     fetchProfile();
   }, [fetchProfile]);
 
+  useEffect(() => {
+    if (fetchError) showToast("error", fetchError);
+  }, [fetchError, showToast]);
+
   // ── Edit handlers ───────────────────────────────────────────────
 
   const handleEdit = useCallback(() => {
@@ -238,21 +245,22 @@ export default function ProfileScreen() {
 
       setPendingAvatarUri(null);
       setIsEditing(false);
+      showToast("success", "Profile saved");
     } catch {
-      Alert.alert(copy.saveErrorTitle, copy.saveErrorBody);
+      showToast("error", copy.saveErrorBody);
     } finally {
       setIsSaving(false);
       setIsUploading(false);
     }
   }, [
     copy.saveErrorBody,
-    copy.saveErrorTitle,
     profile,
     user?.id,
     editDisplayName,
     editBio,
     editFavoriteTeam,
     pendingAvatarUri,
+    showToast,
   ]);
 
   const handleSignOut = useCallback(async () => {
@@ -285,26 +293,10 @@ export default function ProfileScreen() {
   if (fetchError) {
     return (
       <SafeAreaView
-        style={{ flex: 1, backgroundColor: colors.background, padding: 24 }}
+        style={{ flex: 1, backgroundColor: colors.background }}
         testID="profile-screen"
       >
-        <Text
-          style={{
-            color: colors.textPrimary,
-            textAlign: "center",
-            marginTop: 40,
-          }}
-          testID="error-message"
-        >
-          {fetchError}
-        </Text>
-        <TouchableOpacity
-          onPress={fetchProfile}
-          style={{ marginTop: 16, alignItems: "center" }}
-          testID="retry-button"
-        >
-          <Text style={{ color: colors.primary }}>{copy.retry}</Text>
-        </TouchableOpacity>
+        <ErrorState message={fetchError} onRetry={fetchProfile} />
       </SafeAreaView>
     );
   }

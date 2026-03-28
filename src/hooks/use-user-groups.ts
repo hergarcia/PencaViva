@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@hooks/use-auth";
 import { fetchUserGroups } from "@lib/groups-service";
 import type { UserGroup } from "@lib/groups-service";
+import { withRetry } from "@lib/retry";
 
 type UseUserGroupsResult = {
   groups: UserGroup[];
@@ -34,7 +35,7 @@ export function useUserGroups(): UseUserGroupsResult {
       setError(null);
 
       try {
-        const data = await fetchUserGroups(user.id);
+        const data = await withRetry(() => fetchUserGroups(user.id));
         if (!cancelledRef.current) setGroups(data);
       } catch (err: unknown) {
         if (!cancelledRef.current) {

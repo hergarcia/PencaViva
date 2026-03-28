@@ -9,6 +9,7 @@ import type {
 
 jest.mock("@hooks/use-player-stats");
 jest.mock("@lib/supabase");
+jest.mock("@components/Toast");
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({
     userId: "u1",

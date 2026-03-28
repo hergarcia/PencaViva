@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchGroupPredictions } from "@lib/prediction-service";
+import { withRetry } from "@lib/retry";
 import type { GroupPrediction } from "@lib/prediction-service";
 import type { MatchStatus } from "@lib/matches-service";
 
@@ -34,7 +35,9 @@ export function useGroupPredictions(
     setError(null);
 
     try {
-      const data = await fetchGroupPredictions(matchId, groupId);
+      const data = await withRetry(() =>
+        fetchGroupPredictions(matchId, groupId),
+      );
       if (!cancelledRef.current) {
         setPredictions(data);
       }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@hooks/use-auth";
 import { fetchMatchDetail, savePrediction } from "@lib/prediction-service";
+import { withRetry } from "@lib/retry";
 import type { MatchDetail, ExistingPrediction } from "@lib/prediction-service";
 
 function isRLSError(message: string): boolean {
@@ -44,7 +45,9 @@ export function useMatchDetail(
     setIsLockedByServer(false); // reset on every load/refetch
 
     try {
-      const result = await fetchMatchDetail(matchId, groupId, user.id);
+      const result = await withRetry(() =>
+        fetchMatchDetail(matchId, groupId, user.id),
+      );
       if (!cancelledRef.current) {
         setMatch(result.match);
         setPrediction(result.prediction);
