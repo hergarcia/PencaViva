@@ -357,7 +357,7 @@
   - Effort: 4h
   - Notes: Created `useSkeletonAnimation` hook (Reanimated pulse 0.3↔0.7 opacity). 5 skeleton components matching real item dimensions: SkeletonMatchCard, SkeletonLeaderboardRow, SkeletonGroupCard, SkeletonMemberRow, SkeletonPredictionHistoryRow. Replaced ActivityIndicator on all screens. Skeletons only shown on initial load (`isLoading && !isRefreshing`). Added `withRepeat` and `Easing` to Reanimated mock.
 
-- [ ] **F2-09** Global error handling
+- [x] **F2-09** Global error handling
   - Error boundaries, toast messages, retry logic
   - Effort: 3h
 
