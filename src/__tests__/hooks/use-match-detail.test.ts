@@ -7,6 +7,8 @@ jest.mock("@lib/prediction-service", () => ({
   savePrediction: (...args: unknown[]) => mockSavePrediction(...args),
 }));
 
+jest.mock("@lib/retry");
+
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "u1" }, isInitialized: true }),
 }));

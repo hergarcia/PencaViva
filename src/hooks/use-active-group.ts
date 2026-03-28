@@ -3,6 +3,7 @@ import { useAuth } from "@hooks/use-auth";
 import { useGroupStore } from "@stores/group-store";
 import { fetchUserGroups } from "@lib/groups-service";
 import type { UserGroup } from "@lib/groups-service";
+import { withRetry } from "@lib/retry";
 
 type UseActiveGroupResult = {
   activeGroupId: string | null;
@@ -10,6 +11,7 @@ type UseActiveGroupResult = {
   groups: UserGroup[];
   setActiveGroupId: (id: string) => void;
   isLoading: boolean;
+  error: string | null;
 };
 
 export function useActiveGroup(): UseActiveGroupResult {
@@ -18,6 +20,7 @@ export function useActiveGroup(): UseActiveGroupResult {
   const setStoreGroupId = useGroupStore((s) => s.setActiveGroupId);
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Use a ref to read activeGroupId inside loadGroups without adding it as
   // a dependency (avoids double-fetch when auto-selecting the first group).
   const activeGroupIdRef = useRef(activeGroupId);
@@ -30,16 +33,17 @@ export function useActiveGroup(): UseActiveGroupResult {
     }
 
     setIsLoading(true);
+    setError(null);
     try {
-      const data = await fetchUserGroups(user.id);
+      const data = await withRetry(() => fetchUserGroups(user.id));
       setGroups(data);
 
       // Auto-select first group if none active
       if (!activeGroupIdRef.current && data.length > 0) {
         setStoreGroupId(data[0].id);
       }
-    } catch {
-      // Silently fail — groups list will be empty
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load groups");
     } finally {
       setIsLoading(false);
     }
@@ -58,5 +62,6 @@ export function useActiveGroup(): UseActiveGroupResult {
     groups,
     setActiveGroupId: setStoreGroupId,
     isLoading,
+    error,
   };
 }

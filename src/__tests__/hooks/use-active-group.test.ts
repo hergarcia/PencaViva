@@ -4,6 +4,8 @@ import { useGroupStore } from "@stores/group-store";
 // Import after mocks
 import { useActiveGroup } from "@hooks/use-active-group";
 
+jest.mock("@lib/retry");
+
 // Mock groups-service
 const mockFetchUserGroups = jest.fn();
 jest.mock("@lib/groups-service", () => ({

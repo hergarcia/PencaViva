@@ -5,6 +5,7 @@ import {
   fetchGroupMembers,
   fetchGroupTournaments,
 } from "@lib/groups-service";
+import { withRetry } from "@lib/retry";
 import type {
   UserGroup,
   GroupMember,
@@ -51,11 +52,13 @@ export function useGroupDetail(groupId: string): UseGroupDetailResult {
       setError(null);
 
       try {
-        const [g, m, t] = await Promise.all([
-          fetchGroupById(groupId),
-          fetchGroupMembers(groupId),
-          fetchGroupTournaments(groupId),
-        ]);
+        const [g, m, t] = await withRetry(() =>
+          Promise.all([
+            fetchGroupById(groupId),
+            fetchGroupMembers(groupId),
+            fetchGroupTournaments(groupId),
+          ]),
+        );
         if (!cancelledRef.current) {
           setGroup(g);
           setMembers(m);

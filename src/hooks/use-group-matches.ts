@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@hooks/use-auth";
 import { fetchGroupMatches } from "@lib/matches-service";
 import type { MatchWithPrediction } from "@lib/matches-service";
+import { withRetry } from "@lib/retry";
 import { format, isToday, isTomorrow } from "date-fns";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -77,7 +78,7 @@ export function useGroupMatches(groupId: string | null): UseGroupMatchesResult {
       setError(null);
 
       try {
-        const data = await fetchGroupMatches(groupId, user.id);
+        const data = await withRetry(() => fetchGroupMatches(groupId, user.id));
         if (!cancelledRef.current) {
           setMatches(data);
           setSections(groupMatchesByDate(data));

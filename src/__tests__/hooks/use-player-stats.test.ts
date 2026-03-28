@@ -4,6 +4,7 @@ import { usePlayerStats } from "@hooks/use-player-stats";
 import * as service from "@lib/player-stats-service";
 
 jest.mock("@lib/supabase");
+jest.mock("@lib/retry");
 jest.mock("@lib/player-stats-service");
 
 const mockFetch = service.fetchPlayerGroupStats as jest.MockedFunction<

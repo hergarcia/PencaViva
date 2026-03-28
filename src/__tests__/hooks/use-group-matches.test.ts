@@ -9,6 +9,8 @@ jest.mock("@lib/matches-service", () => ({
   fetchGroupMatches: (...args: unknown[]) => mockFetchGroupMatches(...args),
 }));
 
+jest.mock("@lib/retry");
+
 // Mock use-auth
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),
