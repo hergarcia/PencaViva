@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "@components/common/EmptyState";
+import { ErrorState } from "@components/ErrorState";
+import { useToast } from "@components/Toast";
 import { colors } from "@lib/constants";
 import { GroupCard } from "@components/groups/GroupCard";
 import { SkeletonGroupCard } from "@components/skeletons/SkeletonGroupCard";
@@ -20,6 +22,7 @@ import type { UserGroup } from "@lib/groups-service";
 
 export default function GroupsScreen() {
   const router = useRouter();
+  const { showToast } = useToast();
   const {
     groups,
     isLoading,
@@ -29,6 +32,10 @@ export default function GroupsScreen() {
   } = useUserGroups();
 
   const [menuVisible, setMenuVisible] = useState(false);
+
+  useEffect(() => {
+    if (fetchError) showToast("error", fetchError);
+  }, [fetchError, showToast]);
   const menuAnchorRef = useRef<View>(null);
 
   const handleGroupPress = useCallback(
@@ -95,28 +102,7 @@ export default function GroupsScreen() {
             My Groups
           </Text>
         </View>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 24,
-          }}
-        >
-          <Text
-            style={{ color: colors.textPrimary, textAlign: "center" }}
-            testID="error-message"
-          >
-            {fetchError}
-          </Text>
-          <TouchableOpacity
-            onPress={refetch}
-            style={{ marginTop: 16 }}
-            testID="retry-button"
-          >
-            <Text style={{ color: colors.primary }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState message={fetchError} onRetry={refetch} />
       </SafeAreaView>
     );
   }

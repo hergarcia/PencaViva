@@ -1,6 +1,8 @@
 import React from "react";
 import { render, fireEvent, act } from "@testing-library/react-native";
 
+jest.mock("@components/Toast");
+
 // Mock expo-router
 const mockBack = jest.fn();
 jest.mock("expo-router", () => ({

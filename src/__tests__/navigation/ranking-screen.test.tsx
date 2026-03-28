@@ -4,6 +4,8 @@ import { render, fireEvent } from "@testing-library/react-native";
 import RankingScreen from "../../../app/(tabs)/ranking";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
 
+jest.mock("@components/Toast");
+
 // Mock hooks
 jest.mock("@hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isInitialized: true }),

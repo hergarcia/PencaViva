@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { ErrorState } from "@components/ErrorState";
+import { useToast } from "@components/Toast";
 import * as Haptics from "expo-haptics";
 import { format } from "date-fns";
 import { colors } from "@lib/constants";
@@ -55,6 +57,7 @@ function getResultStyle(status: PredictionStatus) {
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { showToast } = useToast();
   const activeGroupId = useGroupStore((s) => s.activeGroupId);
   const { user } = useAuth();
   const { group } = useGroupDetail(activeGroupId ?? "");
@@ -91,6 +94,10 @@ export default function MatchDetailScreen() {
     return () => clearTimeout(timeoutId);
   }, [saveError]);
 
+  useEffect(() => {
+    if (error) showToast("error", error);
+  }, [error, showToast]);
+
   // Derive displayed scores (stepper state or prediction fallback)
   const displayHome = homeScore ?? prediction?.home_score_pred ?? 0;
   const displayAway = awayScore ?? prediction?.away_score_pred ?? 0;
@@ -108,13 +115,14 @@ export default function MatchDetailScreen() {
     const success = await save(displayHome, displayAway);
     if (success) {
       setShowConfirmation(true);
+      showToast("success", "Prediction saved!");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setHomeScore(null);
       setAwayScore(null);
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
-  }, [save, displayHome, displayAway]);
+  }, [save, displayHome, displayAway, showToast]);
 
   // ── Loading ──
   if (isLoading) {
@@ -139,46 +147,7 @@ export default function MatchDetailScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <Header onBack={() => router.back()} />
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="alert-circle-outline"
-            size={48}
-            color={colors.accent}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 16,
-              fontWeight: "600",
-              marginTop: 12,
-              textAlign: "center",
-            }}
-          >
-            {error ?? "Match not found"}
-          </Text>
-          <TouchableOpacity
-            testID="retry-button"
-            onPress={refetch}
-            style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 10,
-              borderRadius: 20,
-              marginTop: 16,
-            }}
-          >
-            <Text style={{ color: colors.background, fontWeight: "600" }}>
-              Try again
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState message={error ?? "Match not found"} onRetry={refetch} />
       </SafeAreaView>
     );
   }

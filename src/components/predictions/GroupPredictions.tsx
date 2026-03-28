@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { colors } from "@lib/constants";
+import { ErrorState } from "@components/ErrorState";
 import { useGroupPredictions } from "@hooks/use-group-predictions";
 import {
   calculatePotentialPoints,
@@ -38,7 +39,7 @@ export function GroupPredictions({
   currentUserId,
   scoringSystem,
 }: GroupPredictionsProps) {
-  const { predictions, isLoading, error } = useGroupPredictions(
+  const { predictions, isLoading, error, refetch } = useGroupPredictions(
     matchId,
     groupId,
     matchStatus,
@@ -67,8 +68,8 @@ export function GroupPredictions({
 
   if (error) {
     return (
-      <View style={{ marginTop: 28, alignItems: "center" }}>
-        <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text>
+      <View style={{ marginTop: 28, alignItems: "center", flex: 1 }}>
+        <ErrorState message={error} onRetry={refetch} />
       </View>
     );
   }

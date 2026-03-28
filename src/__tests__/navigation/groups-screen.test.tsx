@@ -8,6 +8,8 @@ import {
 
 // ── Mocks ────────────────────────────────────────────────────────────
 
+jest.mock("@components/Toast");
+
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -93,7 +95,7 @@ describe("GroupsScreen", () => {
     const { getByTestId, getByText } = render(<GroupsScreen />);
 
     await waitFor(() => {
-      expect(getByTestId("error-message")).toBeTruthy();
+      expect(getByTestId("error-state")).toBeTruthy();
     });
 
     expect(getByText("Failed to load groups.")).toBeTruthy();

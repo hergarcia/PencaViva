@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { ErrorState } from "@components/ErrorState";
+import { useToast } from "@components/Toast";
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import { colors } from "@lib/constants";
@@ -45,6 +47,7 @@ function groupByDate(predictions: PlayerPredictionRecord[]): Section[] {
 
 export default function PlayerStatsScreen() {
   const router = useRouter();
+  const { showToast } = useToast();
   const params = useLocalSearchParams<{
     userId: string;
     groupId: string;
@@ -63,6 +66,10 @@ export default function PlayerStatsScreen() {
 
   const { predictions, streaks, isLoading, isRefreshing, error, refetch } =
     usePlayerStats(userId, groupId);
+
+  useEffect(() => {
+    if (error) showToast("error", error);
+  }, [error, showToast]);
 
   const sections = groupByDate(predictions);
 
@@ -139,56 +146,7 @@ export default function PlayerStatsScreen() {
           ))}
         </View>
       ) : error ? (
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 32,
-          }}
-        >
-          <Ionicons
-            name="alert-circle-outline"
-            size={48}
-            color={colors.accent}
-          />
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 16,
-              fontWeight: "600",
-              marginTop: 12,
-              textAlign: "center",
-            }}
-          >
-            Something went wrong
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 14,
-              marginTop: 4,
-              textAlign: "center",
-            }}
-          >
-            {error}
-          </Text>
-          <TouchableOpacity
-            testID="retry-button"
-            onPress={refetch}
-            style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 10,
-              borderRadius: 20,
-              marginTop: 16,
-            }}
-          >
-            <Text style={{ color: colors.background, fontWeight: "600" }}>
-              Try again
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState message={error} onRetry={refetch} />
       ) : (
         <SectionList
           sections={sections}

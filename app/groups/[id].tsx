@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Share,
 } from "react-native";
+import { ErrorState } from "@components/ErrorState";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
@@ -80,33 +81,11 @@ export default function GroupDetailScreen() {
   if (error || !group) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 24,
-          }}
-        >
-          <Text
-            testID="error-message"
-            style={{
-              color: colors.textSecondary,
-              textAlign: "center",
-              fontSize: 15,
-            }}
-          >
-            {error ?? "Group not found."}
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ marginTop: 16 }}
-          >
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>
-              Go back
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState
+          message={error ?? "Group not found."}
+          onRetry={() => router.back()}
+          title={error ? "Something went wrong" : "Group not found"}
+        />
       </SafeAreaView>
     );
   }
