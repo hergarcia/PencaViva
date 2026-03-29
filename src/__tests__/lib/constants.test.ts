@@ -20,6 +20,10 @@ describe("colors", () => {
     expect(colors.live).toBe("#FF4444");
   });
 
+  it("exports liveRgb for rgba() usage in animations", () => {
+    expect(colors.liveRgb).toBe("255, 68, 68");
+  });
+
   it("exports card tokens", () => {
     expect(colors.cardRadius).toBe(16);
     expect(colors.cardPadding).toBe(16);
