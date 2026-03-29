@@ -53,4 +53,26 @@ describe("PredictionHistoryRow", () => {
     render(<PredictionHistoryRow prediction={basePred} />);
     expect(screen.getByTestId("prediction-history-row-p1")).toBeTruthy();
   });
+
+  it("renders exact star when prediction is an exact score (points >= 5)", () => {
+    const exactPrediction = {
+      ...basePred,
+      points: 5,
+      home_score_pred: 2,
+      away_score_pred: 1,
+      match: { ...basePred.match, home_score: 2, away_score: 1 },
+    };
+    const { getByTestId } = render(
+      <PredictionHistoryRow prediction={exactPrediction} />,
+    );
+    expect(getByTestId("exact-star")).toBeTruthy();
+  });
+
+  it("does not render exact star when points < 5", () => {
+    const wrongPrediction = { ...basePred, points: 3 };
+    const { queryByTestId } = render(
+      <PredictionHistoryRow prediction={wrongPrediction} />,
+    );
+    expect(queryByTestId("exact-star")).toBeNull();
+  });
 });

@@ -192,6 +192,26 @@ describe("LeaderboardRow", () => {
     // no crash = pass
   });
 
+  it("renders exact star when exact_scores > 0", () => {
+    render(
+      <LeaderboardRow
+        entry={{ ...baseEntry, exact_scores: 3 }}
+        isCurrentUser={false}
+      />,
+    );
+    expect(screen.getByTestId("exact-star")).toBeTruthy();
+  });
+
+  it("does not render exact star when exact_scores is 0", () => {
+    render(
+      <LeaderboardRow
+        entry={{ ...baseEntry, exact_scores: 0, correct_results: 5 }}
+        isCurrentUser={false}
+      />,
+    );
+    expect(screen.queryByTestId("exact-star")).toBeNull();
+  });
+
   it("glow overlay remains mounted when positionChange becomes undefined (P0-2)", () => {
     const { rerender, queryByTestId } = render(
       <LeaderboardRow

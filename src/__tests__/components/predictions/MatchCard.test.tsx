@@ -86,6 +86,21 @@ describe("MatchCard", () => {
     expect(getByText("LIVE")).toBeTruthy();
   });
 
+  it("renders LivePulse dot for live matches", () => {
+    const liveMatch = { ...baseMatch, status: "live" as const };
+    const { getByTestId } = render(
+      <MatchCard match={liveMatch} onPress={jest.fn()} />,
+    );
+    expect(getByTestId("live-pulse-dot")).toBeTruthy();
+  });
+
+  it("does not render LivePulse for scheduled matches", () => {
+    const { queryByTestId } = render(
+      <MatchCard match={baseMatch} onPress={jest.fn()} />,
+    );
+    expect(queryByTestId("live-pulse-dot")).toBeNull();
+  });
+
   it("renders letter fallback when team logo is null", () => {
     const { getByText } = render(
       <MatchCard match={baseMatch} onPress={jest.fn()} />,

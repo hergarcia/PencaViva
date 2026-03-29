@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { colors } from "@lib/constants";
 import { PredictionBadge } from "./PredictionBadge";
+import { LivePulse } from "./LivePulse";
 import { format } from "date-fns";
 import type { MatchWithPrediction } from "@lib/matches-service";
 
@@ -95,12 +96,16 @@ export function MatchCard({ match, onPress }: MatchCardProps) {
         {isLive && (
           <View
             style={{
+              flexDirection: "row",
+              alignItems: "center",
               backgroundColor: colors.live,
               paddingHorizontal: 6,
               paddingVertical: 2,
               borderRadius: 4,
+              gap: 4,
             }}
           >
+            <LivePulse size={5} />
             <Text style={{ color: "#FFFFFF", fontSize: 10, fontWeight: "700" }}>
               LIVE
             </Text>

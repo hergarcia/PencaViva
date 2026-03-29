@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { colors } from "@lib/constants";
+import { ExactStar } from "@components/common/ExactStar";
 import type { PlayerPredictionRecord } from "@lib/player-stats-service";
 
 interface PredictionHistoryRowProps {
@@ -79,16 +80,25 @@ export function PredictionHistoryRow({
             </Text>
           </View>
         </View>
-        <Text
+        <View
           style={{
-            color: pointsColor(points),
-            fontWeight: "700",
-            fontSize: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
             marginLeft: 8,
           }}
         >
-          +{points}
-        </Text>
+          {points >= 5 && <ExactStar size={12} />}
+          <Text
+            style={{
+              color: pointsColor(points),
+              fontWeight: "700",
+              fontSize: 16,
+            }}
+          >
+            +{points}
+          </Text>
+        </View>
       </View>
     </View>
   );

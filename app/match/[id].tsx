@@ -26,6 +26,8 @@ import { useCountdown } from "@hooks/use-countdown";
 import { ScoreStepper } from "@components/predictions/ScoreStepper";
 import { SaveConfirmation } from "@components/predictions/SaveConfirmation";
 import { GroupPredictions } from "@components/predictions/GroupPredictions";
+import { LivePulse } from "@components/predictions/LivePulse";
+import { ExactStar } from "@components/common/ExactStar";
 import { useAuth } from "@hooks/use-auth";
 import { useGroupDetail } from "@hooks/use-group-detail";
 
@@ -587,14 +589,7 @@ export default function MatchDetailScreen() {
                           gap: 4,
                         }}
                       >
-                        <View
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 3,
-                            backgroundColor: colors.live,
-                          }}
-                        />
+                        <LivePulse />
                         <Text
                           style={{
                             color: colors.live,
@@ -691,8 +686,12 @@ export default function MatchDetailScreen() {
                               paddingHorizontal: 16,
                               alignItems: "center",
                               marginTop: 16,
+                              flexDirection: "row",
+                              justifyContent: "center",
+                              gap: 6,
                             }}
                           >
+                            {status === "exact" && <ExactStar size={14} />}
                             <Text
                               style={{
                                 color: style.color,
@@ -755,8 +754,14 @@ export default function MatchDetailScreen() {
                                 paddingVertical: 10,
                                 alignItems: "center",
                                 marginBottom: 16,
+                                flexDirection: "row",
+                                justifyContent: "center",
+                                gap: 6,
                               }}
                             >
+                              {status === "exact" && (
+                                <ExactStar animated size={16} />
+                              )}
                               <Text
                                 style={{
                                   color: style.color,
