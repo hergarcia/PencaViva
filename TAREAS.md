@@ -361,12 +361,13 @@
   - Error boundaries, toast messages, retry logic
   - Effort: 3h
 
-- [ ] **F2-10** Animations and micro-interactions
+- [x] **F2-10** Animations and micro-interactions
   - Confetti on saving prediction
   - Gold star on exact result
   - Bouncing ball on pull-to-refresh
   - Red pulse on LIVE matches
   - Effort: 6h
+  - Notes: Three new Reanimated v4 components: ConfettiOverlay (30-particle burst in SaveConfirmation), LivePulse (pulsing dot in MatchCard and match detail LIVE indicators), ExactStar (gold star icon in LeaderboardRow, PredictionHistoryRow, and match detail result badges). Pull-to-refresh kept as native RefreshControl (custom implementation too fragile for minimal UX gain). Added `liveRgb` design token. 27 new tests (12 component + 15 integration).
 
 - [ ] **F2-11** Dark mode + Light mode toggle
   - NativeWind dark: variant
@@ -498,13 +499,13 @@
 | ---------------- | ------ | --------- | ----------- | ------- |
 | Phase 0: Setup   | 13     | 13        | 0           | 0       |
 | Phase 1: MVP     | 29     | 24        | 0           | 5       |
-| Phase 2: Polish  | 12     | 2         | 0           | 10      |
+| Phase 2: Polish  | 12     | 5         | 0           | 7       |
 | Phase 3: Testing | 8      | 0         | 0           | 8       |
 | Phase 4: Launch  | 7      | 0         | 0           | 7       |
-| **Total MVP**    | **69** | **39**    | **0**       | **30**  |
+| **Total MVP**    | **69** | **42**    | **0**       | **27**  |
 | Phase 5-7: Later | 16     | 0         | 0           | 16      |
 
-**Overall MVP progress: 53.6%**
+**Overall MVP progress: 60.9%**
 
 ---
 
