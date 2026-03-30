@@ -41,6 +41,7 @@ jest.mock("@hooks/use-group-detail", () => ({
 jest.mock("@react-native-clipboard/clipboard");
 /* eslint-disable @typescript-eslint/no-require-imports */
 const Clipboard = require("@react-native-clipboard/clipboard").default;
+const Haptics = require("expo-haptics");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 const loadedGroup = {
@@ -153,6 +154,22 @@ describe("Invite code section", () => {
     renderAndOpenInfoTab();
     expect(screen.queryByText("Code copied!")).toBeNull();
   });
+
+  it("fires success haptic when copying invite code", () => {
+    renderAndOpenInfoTab();
+    fireEvent.press(screen.getByTestId("invite-code"));
+    expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
+
+  it("fires success haptic when copying link", () => {
+    renderAndOpenInfoTab();
+    fireEvent.press(screen.getByTestId("copy-link-button"));
+    expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
 });
 
 describe("Group detail tabs", () => {
@@ -216,6 +233,12 @@ describe("Group detail tabs", () => {
     render(<GroupDetailScreen />);
     fireEvent.press(screen.getByTestId("tab-info"));
     expect(screen.getByTestId("group-info-tab")).toBeTruthy();
+  });
+
+  it("fires selection haptic on tab switch", () => {
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByTestId("tab-info"));
+    expect(Haptics.selectionAsync).toHaveBeenCalled();
   });
 
   it("renders scoring grid on Info tab", () => {

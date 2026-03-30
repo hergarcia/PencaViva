@@ -32,6 +32,7 @@ const {
   joinGroupByCode,
 } = require("@lib/groups-service");
 const { useAuth } = require("@hooks/use-auth");
+const Haptics = require("expo-haptics");
 const JoinGroupScreen = require("../../../app/groups/join").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -518,5 +519,93 @@ describe("JoinGroupScreen", () => {
     });
 
     expect(queryByTestId("group-preview")).toBeNull();
+  });
+
+  it("fires success haptic on successful join", async () => {
+    lookupGroupByInviteCode.mockResolvedValueOnce({
+      id: "g-1",
+      name: "Test Group",
+      description: null,
+      avatar_url: null,
+      member_count: 5,
+      max_members: 50,
+      scoring_system: {
+        exact_score: 5,
+        correct_result: 3,
+        correct_goal_diff: 1,
+        wrong: 0,
+      },
+    });
+    joinGroupByCode.mockResolvedValueOnce({
+      id: "g-1",
+      name: "Test Group",
+      invite_code: "AB12CD34",
+    });
+
+    const { getAllByTestId, getByTestId } = render(<JoinGroupScreen />);
+    const inputs = getAllByTestId(/^code-input-/);
+
+    await act(async () => {
+      const code = "AB12CD34";
+      for (let i = 0; i < 8; i++) {
+        fireEvent.changeText(inputs[i], code[i]);
+      }
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("join-button")).toBeTruthy();
+    });
+
+    await act(async () => {
+      fireEvent.press(getByTestId("join-button"));
+    });
+
+    await waitFor(() => {
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Success,
+      );
+    });
+  });
+
+  it("fires error haptic on failed join", async () => {
+    lookupGroupByInviteCode.mockResolvedValueOnce({
+      id: "g-1",
+      name: "Test Group",
+      description: null,
+      avatar_url: null,
+      member_count: 5,
+      max_members: 50,
+      scoring_system: {
+        exact_score: 5,
+        correct_result: 3,
+        correct_goal_diff: 1,
+        wrong: 0,
+      },
+    });
+    joinGroupByCode.mockRejectedValueOnce(new Error("group_full"));
+
+    const { getAllByTestId, getByTestId } = render(<JoinGroupScreen />);
+    const inputs = getAllByTestId(/^code-input-/);
+
+    await act(async () => {
+      const code = "AB12CD34";
+      for (let i = 0; i < 8; i++) {
+        fireEvent.changeText(inputs[i], code[i]);
+      }
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("join-button")).toBeTruthy();
+    });
+
+    await act(async () => {
+      fireEvent.press(getByTestId("join-button"));
+    });
+
+    await waitFor(() => {
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Error,
+      );
+    });
   });
 });

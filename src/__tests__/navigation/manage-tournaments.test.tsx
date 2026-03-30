@@ -47,6 +47,7 @@ const {
   fetchActiveTournaments,
   updateGroupTournaments,
 } = require("@lib/groups-service");
+const Haptics = require("expo-haptics");
 // useGroupDetail is mocked at module level above
 
 beforeEach(() => {
@@ -163,5 +164,65 @@ describe("ManageTournamentsScreen", () => {
     await waitFor(() => expect(screen.getByTestId("back-button")).toBeTruthy());
     fireEvent.press(screen.getByTestId("back-button"));
     expect(mockBack).toHaveBeenCalled();
+  });
+
+  it("fires light impact haptic on tournament chip toggle", async () => {
+    fetchActiveTournaments.mockResolvedValue([
+      { id: "t1", name: "Premier League", short_name: "PL", logo_url: null },
+    ]);
+
+    render(<ManageTournamentsScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("tournament-chip-t1")).toBeTruthy(),
+    );
+
+    fireEvent.press(screen.getByTestId("tournament-chip-t1"));
+
+    expect(Haptics.impactAsync).toHaveBeenCalledWith(
+      Haptics.ImpactFeedbackStyle.Light,
+    );
+  });
+
+  it("fires success haptic on successful save", async () => {
+    fetchActiveTournaments.mockResolvedValue([
+      { id: "t1", name: "Premier League", short_name: "PL", logo_url: null },
+    ]);
+    updateGroupTournaments.mockResolvedValue(undefined);
+
+    render(<ManageTournamentsScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("tournament-chip-t1")).toBeTruthy(),
+    );
+
+    fireEvent.press(screen.getByTestId("save-button"));
+
+    await waitFor(() => {
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Success,
+      );
+    });
+  });
+
+  it("fires error haptic on failed save", async () => {
+    fetchActiveTournaments.mockResolvedValue([
+      { id: "t1", name: "Premier League", short_name: "PL", logo_url: null },
+    ]);
+    updateGroupTournaments.mockRejectedValue(new Error("RLS violation"));
+
+    render(<ManageTournamentsScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("tournament-chip-t1")).toBeTruthy(),
+    );
+
+    fireEvent.press(screen.getByTestId("save-button"));
+
+    await waitFor(() => {
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Error,
+      );
+    });
   });
 });

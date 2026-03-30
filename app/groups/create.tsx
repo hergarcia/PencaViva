@@ -23,6 +23,7 @@ import {
   ScoringPresetCard,
   ScoringPreset,
 } from "@components/groups/ScoringPresetCard";
+import * as Haptics from "expo-haptics";
 import { colors } from "@lib/constants";
 import { ScreenHeader } from "@components/common/ScreenHeader";
 
@@ -135,6 +136,7 @@ export default function CreateGroupScreen() {
       : SCORING_PRESETS.find((p) => p.key === selectedPreset)!.values;
 
   function toggleTournament(id: string) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedTournamentIds((prev) =>
       prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id],
     );
@@ -159,8 +161,10 @@ export default function CreateGroupScreen() {
         tournament_ids:
           selectedTournamentIds.length > 0 ? selectedTournamentIds : undefined,
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace(`/groups/${created.id}`);
     } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
         "Could not create group",
         err instanceof Error ? err.message : "Something went wrong.",
@@ -338,7 +342,10 @@ export default function CreateGroupScreen() {
               key={preset.key}
               preset={preset}
               selected={selectedPreset === preset.key}
-              onPress={() => setSelectedPreset(preset.key)}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSelectedPreset(preset.key);
+              }}
             />
           ))}
 

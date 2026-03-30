@@ -15,6 +15,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import QRCode from "react-native-qrcode-svg";
 import { Ionicons } from "@expo/vector-icons";
 import Clipboard from "@react-native-clipboard/clipboard";
+import * as Haptics from "expo-haptics";
 import { colors, APP_BASE_URL } from "@lib/constants";
 import { useGroupDetail } from "@hooks/use-group-detail";
 import { useAuth } from "@hooks/use-auth";
@@ -57,6 +58,7 @@ export default function GroupDetailScreen() {
 
   function copyWithFeedback(text: string, type: "code" | "link") {
     Clipboard.setString(text);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     setCopiedState(type);
     copyTimeoutRef.current = setTimeout(() => setCopiedState(null), 1500);
@@ -106,7 +108,10 @@ export default function GroupDetailScreen() {
           <TouchableOpacity
             key={tab}
             testID={`tab-${tab}`}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveTab(tab);
+            }}
             style={{
               flex: 1,
               paddingVertical: 12,

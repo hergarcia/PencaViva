@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { colors } from "@lib/constants";
 import { ScreenHeader } from "@components/common/ScreenHeader";
 import {
@@ -45,6 +46,7 @@ export default function ManageTournamentsScreen() {
   }, []);
 
   function toggleTournament(id: string) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id],
     );
@@ -54,8 +56,10 @@ export default function ManageTournamentsScreen() {
     setIsSaving(true);
     try {
       await updateGroupTournaments(groupId, selectedIds);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
         "Could not update tournaments",
         err instanceof Error ? err.message : "Something went wrong.",
