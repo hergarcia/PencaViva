@@ -223,7 +223,7 @@ Scoring system (configurable per group via JSONB):
 
 ### Task Workflow
 
-1. **Brainstorm & plan**: Use the `superpowers:brainstorming` skill (with `/model opus` — Claude Opus) to explore intent, requirements, and design. Then use the native `/plan` command (also with `/model opus`) to produce and refine the implementation plan. Switch back to the default model (Sonnet) for execution via the native `/plan` execute flow
+1. **Think & plan**: For unclear or complex tasks, run `/think` to validate scope and direction before committing to an approach. Then run `/nano` to produce a scoped, actionable implementation plan before writing any code
 2. **Check dependencies**: Verify that all task dependencies listed in `TAREAS.md` are completed (`[x]`) before starting. Do not proceed if any dependency is incomplete
 3. Create branch `feature/F0-XX-description` from `develop`
 4. Mark task as `[~]` in `TAREAS.md`
@@ -237,7 +237,7 @@ Scoring system (configurable per group via JSONB):
    - **Implementation from Stitch**: The finalized Stitch design is the **source of truth** for the UI. Implementation must faithfully reproduce the approved mockup — layout, spacing, colors, typography hierarchy, and component structure. Use `/react-components` to convert Stitch designs into modular React components with AST-based validation when applicable. The design is NOT decorative — it drives the code
    - **Scope**: New screens, screen redesigns, new components, layout changes, empty/error/loading states. Code must match the approved Stitch mockup
 6. **UX Writing check**: Evaluate whether the task involves user-facing text (buttons, labels, error messages, empty states, onboarding copy, notifications, tooltips, confirmation dialogs, etc.). If it does, delegate all microcopy work to `/ux-writing` skill for professional, consistent interface text
-7. Develop with TDD (`superpowers:test-driven-development` skill — RED-GREEN-REFACTOR in vertical slices)
+7. **Build**: Develop with `/tdd` (RED → GREEN → REFACTOR in vertical slices)
 8. **Mock data verification**: If the task adds or modifies a service function or Supabase query, verify that the mock system handles the new operation. Add mock RPC handlers, fixtures, or query builder support as needed
 9. **Manual app verification**: Run `EXPO_PUBLIC_USE_MOCKS=true npm start` and visually confirm all new/modified flows work end-to-end in the mock environment before proceeding
 10. Each completed subtask or logical unit → commit with Conventional Commits. Before each commit, run the pre-commit CI checks:
@@ -248,13 +248,15 @@ Scoring system (configurable per group via JSONB):
     npm run test:ci
     ```
     Fix any failures before committing (use `npm run format` / `npm run lint:fix` for auto-fixable issues)
-11. **Pre-PR document updates** (BEFORE push + PR creation):
+11. **Code quality pass**: Run `/review` on all changed code (two-pass: structural + adversarial). Run `/qa` to verify the code works correctly
+12. **Security check**: Run `/security` before shipping any auth, data-access, or infra changes
+13. **Pre-PR document updates** (BEFORE push + PR creation):
     - Update **every** file or document affected by the task — not just code. This includes but is not limited to: `TAREAS.md`, `CLAUDE.md`, `PLAN_MAESTRO.md`, `.env.example`, `README.md`, type definitions, config files, and any other docs that reference changed behavior.
     - Commit doc updates as part of the final commit or as a separate `docs:` commit
-12. **Verification pass**: Run the `superpowers:verification-before-completion` skill to confirm all work is correct and complete before declaring the task done
-13. **Code quality pass**: Run the `simplify` skill on all changed code to review for reuse, quality, and efficiency. Then run the `superpowers:requesting-code-review` skill on the full changeset to verify correctness and adherence to the plan
-14. Push and create PR to `develop`, wait for green CI
-15. Merge (squash) the PR
+14. **Ship**: Run `/ship` to create the PR, merge, and generate the sprint journal entry
+15. Mark task `[x]` in `TAREAS.md`
+
+**Nanostack workflow order**: `/think` → `/nano` → build → `/review` + `/qa` + `/security` (parallel) → `/ship`
 
 ### Task tracking
 
