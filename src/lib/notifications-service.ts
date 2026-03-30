@@ -61,12 +61,17 @@ export async function saveNotificationSettings(
  * Configures the foreground notification handler so banners appear when the
  * app is open. Must be called once at app startup (from useNotificationsInit).
  *
- * Uses a lazy require so expo-notifications native modules are not loaded
- * until this function is actually called — safe to import in Expo Go.
+ * No-op on simulators/emulators — expo-notifications native modules are not
+ * available there and will throw if loaded.
  */
 export function configureNotificationHandler(): void {
+  const { isDevice } = require("expo-device") as { isDevice: boolean };
+  if (!isDevice) return;
+
   const Notifications =
     require("expo-notifications") as typeof import("expo-notifications");
+  if (!Notifications?.setNotificationHandler) return;
+
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,

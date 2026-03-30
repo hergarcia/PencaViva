@@ -76,6 +76,12 @@ describe("configureNotificationHandler", () => {
     // Handler should not be set just from importing the module
     expect(Notifications.setNotificationHandler).not.toHaveBeenCalled();
   });
+
+  it("is a no-op on simulator (isDevice = false)", () => {
+    const { service, Notifications } = loadModule(false);
+    service.configureNotificationHandler();
+    expect(Notifications.setNotificationHandler).not.toHaveBeenCalled();
+  });
 });
 
 // ── registerForPushNotifications — simulator guard ───────────────────

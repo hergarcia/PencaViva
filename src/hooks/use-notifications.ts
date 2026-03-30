@@ -21,8 +21,12 @@ export function useNotificationsInit(): void {
   useEffect(() => {
     if (!isInitialized || !userId) return;
 
-    // Configure handler lazily here — safe in Expo Go, effective on dev client
-    configureNotificationHandler();
+    try {
+      // No-op on simulators — guards inside prevent native module crash
+      configureNotificationHandler();
+    } catch {
+      // Non-fatal: notification handler setup failed (e.g. Expo Go / simulator)
+    }
 
     registerForPushNotifications()
       .then((token) => savePushToken(userId, token))
