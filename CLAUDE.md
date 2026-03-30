@@ -86,13 +86,13 @@ src/
 ├── __mocks__/          # Jest mocks (expo-router, expo-secure-store, reanimated, css, etc.)
 ├── __tests__/          # Unit tests (lib/, navigation/, onboarding/)
 ├── components/         # Feature-organized components
-│   ├── common/         # EmptyState
+│   ├── common/         # EmptyState, ExactStar (gold star icon with optional spring animation)
 │   ├── ErrorState.tsx   # Reusable inline error display (icon + title + message + retry)
 │   ├── ErrorBoundary.tsx # Global error boundary (class component, wraps root Stack)
 │   ├── Toast.tsx        # ToastProvider + useToast hook + animated banner (success/error/info)
 │   ├── onboarding/     # OnboardingPageView, PageIndicator
 │   ├── groups/         # ScoringPresetCard, GroupCard, MemberRow
-│   ├── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation, GroupPredictions, PredictionRow
+│   ├── predictions/    # MatchCard, PredictionBadge, GroupSelector, DateSectionHeader, ScoreStepper, SaveConfirmation (+ ConfettiOverlay), GroupPredictions, PredictionRow, LivePulse (pulsing LIVE dot), ConfettiOverlay (30-particle burst)
 │   ├── ranking/        # LeaderboardRow (with Reanimated glow + position indicators), PlayerStatsHeader, StatsGrid, StreakDisplay, PredictionHistoryRow
 │   └── skeletons/      # Skeleton loading components: SkeletonMatchCard, SkeletonLeaderboardRow, SkeletonGroupCard, SkeletonMemberRow, SkeletonPredictionHistoryRow + useSkeletonAnimation hook
 ├── hooks/              # Custom hooks (useAuthInit, useAuth, useDebounce, useGroupDetail, useActiveGroup, useGroupMatches, useMatchDetail, useCountdown, useGroupPredictions, useGroupLeaderboard(groupId, filter?), usePlayerStats(userId, groupId), useUserGroups)

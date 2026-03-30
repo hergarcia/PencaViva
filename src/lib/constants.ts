@@ -21,6 +21,7 @@ export const colors = {
   wrong: "#6B6B80",
   // Match status
   live: "#FF4444",
+  liveRgb: "255, 68, 68", // for rgba() templates in animations
   // Card tokens
   cardRadius: 16,
   cardPadding: 16,

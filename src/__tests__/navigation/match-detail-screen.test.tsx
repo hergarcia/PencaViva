@@ -260,6 +260,42 @@ describe("MatchDetailScreen", () => {
     expect(getByText("+5 pts")).toBeTruthy();
   });
 
+  it("renders ExactStar on exact result badge in finished state", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 2, away_score_pred: 1, points: 5 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByTestId } = render(<MatchDetailScreen />);
+    expect(getByTestId("exact-star")).toBeTruthy();
+  });
+
+  it("does not render ExactStar on wrong prediction in finished state", () => {
+    mockHookReturn = {
+      match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
+      prediction: { home_score_pred: 0, away_score_pred: 3, points: 0 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { queryByTestId } = render(<MatchDetailScreen />);
+    expect(queryByTestId("exact-star")).toBeNull();
+  });
+
   it("shows correct result badge for finished match", () => {
     mockHookReturn = {
       match: { ...mockMatch, status: "finished", home_score: 2, away_score: 1 },
@@ -355,6 +391,25 @@ describe("MatchDetailScreen", () => {
     expect(getByTestId("live-indicator")).toBeTruthy();
     expect(getByText(/Exact Score!/)).toBeTruthy();
     expect(getByText(/\+5 pts/)).toBeTruthy();
+  });
+
+  it("renders LivePulse dot in live match indicator", () => {
+    mockGroup = { scoring_system: mockScoringSystem };
+    mockHookReturn = {
+      match: { ...mockMatch, status: "live", home_score: 1, away_score: 0 },
+      prediction: { home_score_pred: 1, away_score_pred: 0 },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      save: mockSave,
+      isSaving: false,
+      saveError: null,
+      isLockedByServer: false,
+    };
+    mockUseCountdown.mockReturnValue(defaultCountdown);
+
+    const { getByTestId } = render(<MatchDetailScreen />);
+    expect(getByTestId("live-pulse-dot")).toBeTruthy();
   });
 
   it("shows no-prediction message for finished match without prediction", () => {

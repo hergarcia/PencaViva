@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
+import { ExactStar } from "@components/common/ExactStar";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -222,17 +223,27 @@ export function LeaderboardRow({
                 </Text>
               )}
             </View>
-            <Text
+            <View
               style={{
-                color: colors.textSecondary,
-                fontSize: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
                 marginTop: 4,
-                letterSpacing: 0.8,
               }}
-              numberOfLines={1}
             >
-              {statsText}
-            </Text>
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 10,
+                  letterSpacing: 0.8,
+                  flex: 1,
+                }}
+                numberOfLines={1}
+              >
+                {statsText}
+              </Text>
+              {entry.exact_scores > 0 && <ExactStar />}
+            </View>
           </View>
 
           {/* Position change indicator */}
@@ -391,18 +402,28 @@ export function LeaderboardRow({
             </Text>
           )}
         </View>
-        <Text
+        <View
           style={{
-            color: colors.textSecondary,
-            fontSize: 9,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
             marginTop: 3,
-            letterSpacing: 0.5,
-            opacity: 0.7,
           }}
-          numberOfLines={1}
         >
-          {statsText}
-        </Text>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 9,
+              letterSpacing: 0.5,
+              opacity: 0.7,
+              flex: 1,
+            }}
+            numberOfLines={1}
+          >
+            {statsText}
+          </Text>
+          {entry.exact_scores > 0 && <ExactStar size={12} />}
+        </View>
       </View>
 
       {/* Position change indicator */}

@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@lib/constants";
+import { ConfettiOverlay } from "./ConfettiOverlay";
 
 type SaveConfirmationProps = {
   visible: boolean;
@@ -54,6 +55,7 @@ export function SaveConfirmation({
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
+      <ConfettiOverlay active={visible} />
       <Ionicons name="checkmark-circle" size={64} color={colors.primary} />
     </Animated.View>
   );
