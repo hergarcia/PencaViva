@@ -335,11 +335,12 @@
   - Depends: F0-07 (notifications table)
   - Effort: 4h
 
-- [ ] **F2-06** Notification settings (toggles)
+- [x] **F2-06** Notification settings (toggles)
   - Toggle per type: reminders, results, ranking, invitations
   - Quiet mode by schedule
   - Depends: F2-01 (push setup)
   - Effort: 3h
+  - Notes: Added `notification_settings` JSONB column to profiles (migration 00014, pending apply when Supabase project resumes). `fetchNotificationSettings` and `saveNotificationSettings` in notifications-service.ts. Settings screen at `app/settings/notifications.tsx` with 4 type toggles + quiet hours window (HH:MM text inputs). Profile screen gets a Notification Settings nav row. Mock fixtures updated. 14 unit tests added.
 
 ### UX Polish
 

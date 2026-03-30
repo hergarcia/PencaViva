@@ -76,6 +76,16 @@ function daysAgo(days: number): string {
 
 // ── Profiles ────────────────────────────────────────────────────────
 
+const DEFAULT_NOTIFICATION_SETTINGS = {
+  reminders: true,
+  results: true,
+  ranking: true,
+  invitations: true,
+  quietHoursEnabled: false,
+  quietFrom: "22:00",
+  quietTo: "08:00",
+};
+
 export const mockProfiles = [
   {
     id: MOCK_USER_ID,
@@ -85,6 +95,7 @@ export const mockProfiles = [
     bio: "Football fan from Montevideo",
     favorite_team: "Nacional",
     points_total: 42,
+    notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
     updated_at: new Date().toISOString(),
     created_at: daysAgo(30),
   },
@@ -96,6 +107,7 @@ export const mockProfiles = [
     bio: null,
     favorite_team: "Penarol",
     points_total: 38,
+    notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
     updated_at: new Date().toISOString(),
     created_at: daysAgo(28),
   },
@@ -107,6 +119,7 @@ export const mockProfiles = [
     bio: null,
     favorite_team: "Liverpool",
     points_total: 35,
+    notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
     updated_at: new Date().toISOString(),
     created_at: daysAgo(25),
   },
@@ -118,6 +131,7 @@ export const mockProfiles = [
     bio: null,
     favorite_team: null,
     points_total: 29,
+    notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
     updated_at: new Date().toISOString(),
     created_at: daysAgo(20),
   },
@@ -129,6 +143,7 @@ export const mockProfiles = [
     bio: null,
     favorite_team: "Defensor",
     points_total: 22,
+    notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
     updated_at: new Date().toISOString(),
     created_at: daysAgo(15),
   },

@@ -3,8 +3,30 @@
 // and to control expo-device's isDevice value per test.
 /* eslint-disable @typescript-eslint/no-require-imports */
 
+// ── Supabase mock for settings tests ────────────────────────────────
+
+const mockChain: Record<string, jest.Mock> = {};
+mockChain.select = jest.fn(() => mockChain);
+mockChain.update = jest.fn(() => mockChain);
+mockChain.eq = jest.fn(() => mockChain);
+mockChain.single = jest.fn(() => Promise.resolve({ data: null, error: null }));
+
+jest.mock("@lib/supabase", () => ({
+  supabase: {
+    from: jest.fn(() => mockChain),
+  },
+}));
+
 beforeEach(() => {
   jest.resetModules();
+  jest.clearAllMocks();
+  // Re-wire chain after clearAllMocks
+  mockChain.select = jest.fn(() => mockChain);
+  mockChain.update = jest.fn(() => mockChain);
+  mockChain.eq = jest.fn(() => mockChain);
+  mockChain.single = jest.fn(() =>
+    Promise.resolve({ data: null, error: null }),
+  );
 });
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -105,5 +127,95 @@ describe("registerForPushNotifications — physical device", () => {
     Notifications.getExpoPushTokenAsync.mockResolvedValue({ data: undefined });
     const token = await service.registerForPushNotifications();
     expect(token).toBeNull();
+  });
+});
+
+// ── fetchNotificationSettings ────────────────────────────────────────
+
+describe("fetchNotificationSettings", () => {
+  const {
+    fetchNotificationSettings,
+    DEFAULT_NOTIFICATION_SETTINGS,
+  } = require("@lib/notifications-service");
+
+  it("returns settings merged with defaults on success", async () => {
+    const stored = {
+      reminders: false,
+      results: true,
+      ranking: true,
+      invitations: true,
+      quietHoursEnabled: false,
+      quietFrom: "22:00",
+      quietTo: "08:00",
+    };
+    mockChain.single.mockResolvedValueOnce({
+      data: { notification_settings: stored },
+      error: null,
+    });
+
+    const result = await fetchNotificationSettings("user-1");
+
+    expect(result).toEqual({ ...DEFAULT_NOTIFICATION_SETTINGS, ...stored });
+  });
+
+  it("fills in missing fields with defaults (partial stored settings)", async () => {
+    mockChain.single.mockResolvedValueOnce({
+      data: { notification_settings: { reminders: false } },
+      error: null,
+    });
+
+    const result = await fetchNotificationSettings("user-1");
+
+    expect(result.reminders).toBe(false);
+    expect(result.results).toBe(DEFAULT_NOTIFICATION_SETTINGS.results);
+    expect(result.quietFrom).toBe(DEFAULT_NOTIFICATION_SETTINGS.quietFrom);
+  });
+
+  it("throws when supabase returns an error", async () => {
+    mockChain.single.mockResolvedValueOnce({
+      data: null,
+      error: new Error("DB error"),
+    });
+
+    await expect(fetchNotificationSettings("user-1")).rejects.toThrow(
+      "DB error",
+    );
+  });
+});
+
+// ── saveNotificationSettings ─────────────────────────────────────────
+
+describe("saveNotificationSettings", () => {
+  const {
+    saveNotificationSettings,
+    DEFAULT_NOTIFICATION_SETTINGS,
+  } = require("@lib/notifications-service");
+
+  it("resolves without error on success", async () => {
+    mockChain.eq.mockResolvedValueOnce({ error: null });
+
+    await expect(
+      saveNotificationSettings("user-1", DEFAULT_NOTIFICATION_SETTINGS),
+    ).resolves.toBeUndefined();
+  });
+
+  it("throws when supabase returns an error", async () => {
+    mockChain.eq.mockResolvedValueOnce({ error: new Error("Update failed") });
+
+    await expect(
+      saveNotificationSettings("user-1", DEFAULT_NOTIFICATION_SETTINGS),
+    ).rejects.toThrow("Update failed");
+  });
+
+  it("calls update with the correct settings payload", async () => {
+    mockChain.eq.mockResolvedValueOnce({ error: null });
+
+    const settings = { ...DEFAULT_NOTIFICATION_SETTINGS, reminders: false };
+    await saveNotificationSettings("user-1", settings);
+
+    expect(mockChain.update).toHaveBeenCalledWith(
+      expect.objectContaining({ notification_settings: settings }),
+    );
+    expect(mockChain.eq).toHaveBeenCalledWith("id", "user-1");
   });
 });

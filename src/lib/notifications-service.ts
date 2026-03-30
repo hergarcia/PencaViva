@@ -1,5 +1,58 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { supabase } from "@/lib/supabase";
+
+// ── Notification settings ────────────────────────────────────────────
+
+export type NotificationSettings = {
+  reminders: boolean;
+  results: boolean;
+  ranking: boolean;
+  invitations: boolean;
+  quietHoursEnabled: boolean;
+  quietFrom: string; // HH:MM 24h
+  quietTo: string; // HH:MM 24h
+};
+
+export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  reminders: true,
+  results: true,
+  ranking: true,
+  invitations: true,
+  quietHoursEnabled: false,
+  quietFrom: "22:00",
+  quietTo: "08:00",
+};
+
+export async function fetchNotificationSettings(
+  userId: string,
+): Promise<NotificationSettings> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("notification_settings")
+    .eq("id", userId)
+    .single();
+
+  if (error) throw error;
+
+  // Merge with defaults so older rows missing fields still work
+  return { ...DEFAULT_NOTIFICATION_SETTINGS, ...data.notification_settings };
+}
+
+export async function saveNotificationSettings(
+  userId: string,
+  settings: NotificationSettings,
+): Promise<void> {
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      notification_settings: settings,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  if (error) throw error;
+}
 
 // Configure foreground notification behavior at module load.
 // This ensures notifications show as banners even when the app is open.

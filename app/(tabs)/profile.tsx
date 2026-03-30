@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { ErrorState } from "@components/ErrorState";
 import { useToast } from "@components/Toast";
 import {
@@ -39,6 +41,7 @@ type Profile = {
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { showToast } = useToast();
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const showThreeStats = width >= 390;
   const insets = useSafeAreaInsets();
@@ -527,6 +530,35 @@ export default function ProfileScreen() {
                 <Text style={{ color: colors.background, fontWeight: "bold" }}>
                   {copy.editProfile}
                 </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  marginTop: 12,
+                  padding: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.surfaceBorder,
+                  gap: 10,
+                }}
+                onPress={() => router.push("/settings/notifications")}
+                testID="notification-settings-button"
+              >
+                <Ionicons
+                  name="notifications-outline"
+                  size={18}
+                  color={colors.textSecondary}
+                />
+                <Text style={{ color: colors.textPrimary, flex: 1 }}>
+                  Notification Settings
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={colors.textSecondary}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
