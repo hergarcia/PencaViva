@@ -312,10 +312,11 @@
   - Effort: 4h
   - Notes: expo-notifications + expo-device installed (SDK 55 compatible). `notifications-service.ts` configures foreground handler at module load and exposes `registerForPushNotifications()` (returns null on simulator/permission-denied, re-registers on every launch for token rotation). `savePushToken(userId, token)` added to profile-service.ts. `useNotificationsInit()` hook wired into root `_layout.tsx` (runs post-auth, errors swallowed — push failure never blocks launch). Jest mocks for expo-notifications and expo-device added to moduleNameMapper. EXPO_PUBLIC_PROJECT_ID documented in .env.example. 14 new tests (7 service, 5 hook, 2 setNotificationHandler).
 
-- [ ] **F2-02** Prediction reminder (Edge Function cron)
+- [x] **F2-02** Prediction reminder (Edge Function cron)
   - Edge Function with cron: 2h and 30min before kickoff
   - Depends: F2-01 (push setup), F1-16 (matches)
   - Effort: 4h
+  - Notes: `reminder-push` Edge Function (supabase/functions/reminder-push/). Two pre-kickoff windows: 2h (110–130min) and 30min (20–40min). Eligibility: active group member, group tracks tournament, push token present, no existing prediction, not notified in last 3h (dedup via notifications table). Expo push via raw fetch in batches of 100. Cron: every 15 minutes (migration 00013). UX copy: "Peñarol vs Nacional" / "2 hours to kick off…" for 2h; "…— 30 min to go" / "Last call!" for 30min. **PENDING DEPLOYMENT**: Supabase project is paused. When unpaused: (1) deploy Edge Function via `supabase functions deploy reminder-push --project-ref jkxxiwhjitilgysjkkul`, (2) apply migration 00013 via Supabase MCP or CLI. 14 Deno unit tests (query.test.ts + expo-push.test.ts).
 
 - [ ] **F2-03** Result available notification
   - Fire when match ends and points are calculated
