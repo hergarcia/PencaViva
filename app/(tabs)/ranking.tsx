@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { colors } from "@lib/constants";
 import { ErrorState } from "@components/ErrorState";
 import { useToast } from "@components/Toast";
@@ -169,6 +170,7 @@ export default function RankingScreen() {
     useState<LeaderboardFilter>("overall");
 
   const handleFilterSelect = useCallback((f: LeaderboardFilter) => {
+    Haptics.selectionAsync();
     setActiveFilter(f);
     setMyRowVisible(true);
   }, []);

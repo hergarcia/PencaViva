@@ -22,6 +22,7 @@ jest.mock("expo-router", () => ({
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { createGroup, fetchActiveTournaments } = require("@lib/groups-service");
 const { useAuth } = require("@hooks/use-auth");
+const Haptics = require("expo-haptics");
 const CreateGroupScreen = require("../../../app/groups/create").default;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -145,5 +146,70 @@ describe("CreateGroupScreen", () => {
     fireEvent.press(getByText("Custom"));
 
     expect(queryByTestId("custom-scoring-inputs")).toBeTruthy();
+  });
+
+  it("fires success haptic on successful group creation", async () => {
+    createGroup.mockResolvedValueOnce({
+      id: "g-1",
+      name: "Test",
+      invite_code: "X",
+    });
+    const { getByTestId } = render(<CreateGroupScreen />);
+    await waitFor(() => expect(fetchActiveTournaments).toHaveBeenCalled());
+
+    fireEvent.changeText(getByTestId("name-input"), "Test Group");
+    await act(async () => {
+      fireEvent.press(getByTestId("create-button"));
+    });
+
+    await waitFor(() => {
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Success,
+      );
+    });
+  });
+
+  it("fires error haptic on failed group creation", async () => {
+    createGroup.mockRejectedValueOnce(new Error("Fail"));
+    const { getByTestId } = render(<CreateGroupScreen />);
+    await waitFor(() => expect(fetchActiveTournaments).toHaveBeenCalled());
+
+    fireEvent.changeText(getByTestId("name-input"), "Valid Name");
+    await act(async () => {
+      fireEvent.press(getByTestId("create-button"));
+    });
+
+    await waitFor(() => {
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Error,
+      );
+    });
+  });
+
+  it("fires light impact haptic on tournament chip toggle", async () => {
+    fetchActiveTournaments.mockResolvedValueOnce([
+      { id: "t-1", name: "Premier League", short_name: "PL", logo_url: null },
+    ]);
+    const { getByTestId } = render(<CreateGroupScreen />);
+    await waitFor(() =>
+      expect(getByTestId("tournament-chip-t-1")).toBeTruthy(),
+    );
+
+    fireEvent.press(getByTestId("tournament-chip-t-1"));
+
+    expect(Haptics.impactAsync).toHaveBeenCalledWith(
+      Haptics.ImpactFeedbackStyle.Light,
+    );
+  });
+
+  it("fires light impact haptic on scoring preset selection", async () => {
+    const { getByText } = render(<CreateGroupScreen />);
+    await waitFor(() => expect(fetchActiveTournaments).toHaveBeenCalled());
+
+    fireEvent.press(getByText("Custom"));
+
+    expect(Haptics.impactAsync).toHaveBeenCalledWith(
+      Haptics.ImpactFeedbackStyle.Light,
+    );
   });
 });

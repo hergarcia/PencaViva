@@ -1,8 +1,12 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 import RankingScreen from "../../../app/(tabs)/ranking";
 import type { LeaderboardEntry } from "@lib/leaderboard-service";
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+const Haptics = require("expo-haptics");
 
 jest.mock("@components/Toast");
 
@@ -295,5 +299,27 @@ describe("RankingScreen", () => {
     expect(
       getByText("Rankings appear after the first match is scored"),
     ).toBeTruthy();
+  });
+
+  it("fires selection haptic on filter tab press", () => {
+    mockUseActiveGroup.mockReturnValue({
+      activeGroupId: "g1",
+      activeGroup: mockGroup,
+      groups: [mockGroup],
+      setActiveGroupId: jest.fn(),
+      isLoading: false,
+    });
+    mockUseGroupLeaderboard.mockReturnValue({
+      entries: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      positionChanges: {},
+    });
+
+    const { getByTestId } = render(<RankingScreen />);
+    fireEvent.press(getByTestId("filter-tab-week"));
+
+    expect(Haptics.selectionAsync).toHaveBeenCalled();
   });
 });

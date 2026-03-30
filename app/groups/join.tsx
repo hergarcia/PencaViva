@@ -17,6 +17,7 @@ import {
   type GroupPreview,
   type ScoringSystem,
 } from "@lib/groups-service";
+import * as Haptics from "expo-haptics";
 import { colors } from "@lib/constants";
 
 const CODE_LENGTH = 8;
@@ -178,8 +179,10 @@ export default function JoinGroupScreen() {
     setState("joining");
     try {
       const result = await joinGroupByCode(digitsRef.current.join(""));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace(`/groups/${result.id}`);
     } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setErrorText(getErrorMessage(err));
       setState("error");
     }
