@@ -97,6 +97,18 @@ export async function checkProfileComplete(userId: string): Promise<boolean> {
   return !defaultPattern.test(data.username);
 }
 
+export async function savePushToken(
+  userId: string,
+  token: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ push_token: token, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  if (error) throw error;
+}
+
 // ── Storage ─────────────────────────────────────────────────────────
 
 export async function uploadAvatar(

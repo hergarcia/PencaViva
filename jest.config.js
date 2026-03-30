@@ -52,6 +52,8 @@ module.exports = {
         "^@react-native-clipboard/clipboard$":
           "<rootDir>/src/__mocks__/@react-native-clipboard/clipboard.ts",
         "^expo-haptics$": "<rootDir>/src/__mocks__/expo-haptics.ts",
+        "^expo-notifications$": "<rootDir>/src/__mocks__/expo-notifications.ts",
+        "^expo-device$": "<rootDir>/src/__mocks__/expo-device.ts",
       },
     },
     // ========================================
