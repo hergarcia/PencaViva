@@ -4,11 +4,13 @@ import { useNotificationsInit } from "@hooks/use-notifications";
 // ── Mocks ───────────────────────────────────────────────────────────
 
 const mockRegister = jest.fn();
+const mockConfigure = jest.fn();
 const mockSaveToken = jest.fn();
 const mockUseAuth = jest.fn();
 
 jest.mock("@lib/notifications-service", () => ({
   registerForPushNotifications: (...args: unknown[]) => mockRegister(...args),
+  configureNotificationHandler: (...args: unknown[]) => mockConfigure(...args),
 }));
 
 jest.mock("@lib/profile-service", () => ({
@@ -23,6 +25,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockRegister.mockResolvedValue("ExponentPushToken[test]");
   mockSaveToken.mockResolvedValue(undefined);
+  mockConfigure.mockReturnValue(undefined);
 });
 
 describe("useNotificationsInit", () => {

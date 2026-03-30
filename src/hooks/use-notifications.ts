@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { registerForPushNotifications } from "@/lib/notifications-service";
+import {
+  configureNotificationHandler,
+  registerForPushNotifications,
+} from "@/lib/notifications-service";
 import { savePushToken } from "@/lib/profile-service";
 
 /**
- * Registers the device for push notifications and persists the Expo push token
- * to the user's profile. Runs once after authentication is initialized.
+ * Configures the foreground notification handler and registers the device for
+ * push notifications, persisting the Expo push token to the user's profile.
+ * Runs once after authentication is initialized.
  *
  * Safe to call on every app launch — always re-registers to handle token rotation.
  * Errors are swallowed; push setup failure must never block app launch.
@@ -16,6 +20,9 @@ export function useNotificationsInit(): void {
 
   useEffect(() => {
     if (!isInitialized || !userId) return;
+
+    // Configure handler lazily here — safe in Expo Go, effective on dev client
+    configureNotificationHandler();
 
     registerForPushNotifications()
       .then((token) => savePushToken(userId, token))

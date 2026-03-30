@@ -49,24 +49,32 @@ function loadModule(isDevice = true) {
   return { service, Notifications };
 }
 
-// ── setNotificationHandler (module-level side effect) ───────────────
+// ── configureNotificationHandler ────────────────────────────────────
 
-describe("setNotificationHandler", () => {
-  it("is configured when the module is loaded", () => {
-    const { Notifications } = loadModule();
+describe("configureNotificationHandler", () => {
+  it("calls setNotificationHandler when invoked", () => {
+    const { service, Notifications } = loadModule();
+    service.configureNotificationHandler();
     expect(Notifications.setNotificationHandler).toHaveBeenCalledWith(
       expect.objectContaining({ handleNotification: expect.any(Function) }),
     );
   });
 
   it("foreground handler enables banner and sound, disables badge", async () => {
-    const { Notifications } = loadModule();
+    const { service, Notifications } = loadModule();
+    service.configureNotificationHandler();
     const [handler] = Notifications.setNotificationHandler.mock.calls[0];
     const result = await handler.handleNotification();
     expect(result.shouldShowBanner).toBe(true);
     expect(result.shouldPlaySound).toBe(true);
     expect(result.shouldSetBadge).toBe(false);
     expect(result.shouldShowList).toBe(true);
+  });
+
+  it("does NOT call setNotificationHandler at import time", () => {
+    const { Notifications } = loadModule();
+    // Handler should not be set just from importing the module
+    expect(Notifications.setNotificationHandler).not.toHaveBeenCalled();
   });
 });
 

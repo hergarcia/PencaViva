@@ -1,4 +1,7 @@
-import * as Notifications from "expo-notifications";
+// expo-notifications is NOT imported at the top level.
+// It requires native modules (ExpoPushTokenManager) that crash in Expo Go
+// if loaded eagerly. All usages go through lazy requires inside functions.
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { Platform } from "react-native";
 import { supabase } from "@/lib/supabase";
 
@@ -54,16 +57,25 @@ export async function saveNotificationSettings(
   if (error) throw error;
 }
 
-// Configure foreground notification behavior at module load.
-// This ensures notifications show as banners even when the app is open.
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowList: true,
-  }),
-});
+/**
+ * Configures the foreground notification handler so banners appear when the
+ * app is open. Must be called once at app startup (from useNotificationsInit).
+ *
+ * Uses a lazy require so expo-notifications native modules are not loaded
+ * until this function is actually called — safe to import in Expo Go.
+ */
+export function configureNotificationHandler(): void {
+  const Notifications =
+    require("expo-notifications") as typeof import("expo-notifications");
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowList: true,
+    }),
+  });
+}
 
 /**
  * Requests push notification permission and retrieves the Expo push token.
@@ -79,6 +91,9 @@ export async function registerForPushNotifications(): Promise<string | null> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { isDevice } = require("expo-device") as { isDevice: boolean };
   if (!isDevice) return null;
+
+  const Notifications =
+    require("expo-notifications") as typeof import("expo-notifications");
 
   // Android 8+ requires a notification channel before token fetch
   if (Platform.OS === "android") {
