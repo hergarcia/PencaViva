@@ -39,7 +39,6 @@ export async function fetchRemindersToSend(
   supabase: SupabaseClient,
   now: Date,
 ): Promise<ReminderBatch[]> {
-  const nowIso = now.toISOString();
   const dedupeWindowAgo = new Date(
     now.getTime() - 3 * 60 * 60 * 1000,
   ).toISOString();
@@ -82,23 +81,33 @@ export async function fetchRemindersToSend(
     if (!matches || matches.length === 0) continue;
 
     for (const match of matches) {
+      if (!match.tournament_id) {
+        console.warn(
+          `reminder-push: match ${match.id} has null tournament_id, skipping`,
+        );
+        continue;
+      }
+
       // ── Step 2: find eligible users for this match ──────────────────
-      // Users who are active members of a group that tracks this tournament
-      // and have a push token.
+      // Query group_tournaments as the base table (filtered by tournament_id),
+      // join up to group_members and profiles. This avoids invalid nested
+      // PostgREST filter syntax on multi-level relations.
       const { data: candidates, error: candidatesErr } = await supabase
-        .from("group_members")
+        .from("group_tournaments")
         .select(
           `
-          user_id,
-          profiles!inner(display_name, push_token),
           groups!inner(
-            group_tournaments!inner(tournament_id)
+            group_members!inner(
+              user_id,
+              is_active,
+              profiles!inner(display_name, push_token)
+            )
           )
         `,
         )
-        .eq("is_active", true)
-        .eq("groups.group_tournaments.tournament_id", match.tournament_id)
-        .not("profiles.push_token", "is", null);
+        .eq("tournament_id", match.tournament_id)
+        .eq("groups.group_members.is_active", true)
+        .not("groups.group_members.profiles.push_token", "is", null);
 
       if (candidatesErr) {
         console.error(
@@ -110,9 +119,42 @@ export async function fetchRemindersToSend(
 
       if (!candidates || candidates.length === 0) continue;
 
-      const candidateUserIds = candidates.map(
-        (c: { user_id: string }) => c.user_id,
-      );
+      // Flatten the nested join result into EligibleUser candidates
+      const flatCandidates: Array<{
+        userId: string;
+        pushToken: string;
+        displayName: string;
+      }> = [];
+      const seenUserIds = new Set<string>();
+
+      for (const gt of candidates as Array<{
+        groups: {
+          group_members: Array<{
+            user_id: string;
+            is_active: boolean;
+            profiles: { display_name: string; push_token: string } | null;
+          }>;
+        } | null;
+      }>) {
+        for (const member of gt.groups?.group_members ?? []) {
+          if (
+            member.is_active &&
+            member.profiles?.push_token &&
+            !seenUserIds.has(member.user_id)
+          ) {
+            seenUserIds.add(member.user_id);
+            flatCandidates.push({
+              userId: member.user_id,
+              pushToken: member.profiles.push_token,
+              displayName: member.profiles.display_name,
+            });
+          }
+        }
+      }
+
+      if (flatCandidates.length === 0) continue;
+
+      const candidateUserIds = flatCandidates.map((c) => c.userId);
 
       // ── Step 3: exclude users who already predicted this match ───────
       const { data: existingPredictions, error: predErr } = await supabase
@@ -155,22 +197,11 @@ export async function fetchRemindersToSend(
       );
 
       // ── Step 5: build eligible list ──────────────────────────────────
-      const eligibleUsers: EligibleUser[] = candidates
-        .filter(
-          (c: { user_id: string }) =>
-            !predictedUserIds.has(c.user_id) &&
-            !alreadyNotifiedUserIds.has(c.user_id),
-        )
-        .map(
-          (c: {
-            user_id: string;
-            profiles: { display_name: string; push_token: string };
-          }) => ({
-            userId: c.user_id,
-            pushToken: c.profiles.push_token,
-            displayName: c.profiles.display_name,
-          }),
-        );
+      const eligibleUsers: EligibleUser[] = flatCandidates.filter(
+        (c) =>
+          !predictedUserIds.has(c.userId) &&
+          !alreadyNotifiedUserIds.has(c.userId),
+      );
 
       if (eligibleUsers.length === 0) continue;
 

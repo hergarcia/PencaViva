@@ -18,6 +18,16 @@ Deno.serve(async (req) => {
     // ── Auth check ─────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
     const expectedKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!expectedKey) {
+      console.error("reminder-push: SUPABASE_SERVICE_ROLE_KEY is not set");
+      return new Response(
+        JSON.stringify({ error: "Server misconfiguration" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
     if (!authHeader || authHeader !== `Bearer ${expectedKey}`) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -26,10 +36,7 @@ Deno.serve(async (req) => {
     }
 
     // ── Supabase admin client ──────────────────────────────────────
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, expectedKey);
 
     const now = new Date();
 
@@ -62,30 +69,27 @@ Deno.serve(async (req) => {
       const result = await sendPushBatch(messages);
       allErrors.push(...result.errors);
 
-      // ── Record sent notifications (only successes) ───────────────
-      // Determine which users got sent successfully (Expo tickets are
-      // returned in the same order as the messages array).
-      if (result.successCount > 0) {
+      // ── Record sent notifications for exactly the successful recipients ─
+      // successPerMessage mirrors the messages array so we can identify
+      // which specific users were accepted by Expo.
+      const successfulUsers = users.filter(
+        (_, idx) => result.successPerMessage[idx],
+      );
+
+      if (successfulUsers.length > 0) {
         const sentAt = now.toISOString();
 
-        // Insert one notification row per successfully-sent user.
-        // We track success by successCount; since partial failures are
-        // possible in a batch, we conservatively record all users in a
-        // batch that had at least one success — the dedup gate (3h window)
-        // prevents re-sends either way.
-        const notificationRows = users
-          .slice(0, result.successCount)
-          .map((user) => ({
-            user_id: user.userId,
-            type: "match_reminder" as const,
-            title,
-            body,
-            data: {
-              match_id: match.matchId,
-              window_minutes: match.windowMinutes,
-            },
-            sent_at: sentAt,
-          }));
+        const notificationRows = successfulUsers.map((user) => ({
+          user_id: user.userId,
+          type: "match_reminder" as const,
+          title,
+          body,
+          data: {
+            match_id: match.matchId,
+            window_minutes: match.windowMinutes,
+          },
+          sent_at: sentAt,
+        }));
 
         const { error: insertErr } = await supabase
           .from("notifications")
@@ -98,7 +102,7 @@ Deno.serve(async (req) => {
           );
           allErrors.push(insertErr.message);
         } else {
-          notificationsSent += result.successCount;
+          notificationsSent += successfulUsers.length;
         }
       }
 
@@ -109,10 +113,16 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Log full error details internally; return only counts in the response
+    // to avoid leaking DB schema, table names, or token values to callers.
+    if (allErrors.length > 0) {
+      console.error("reminder-push errors:", JSON.stringify(allErrors));
+    }
+
     const summary = {
       matches_checked: batches.length,
       notifications_sent: notificationsSent,
-      errors: allErrors,
+      error_count: allErrors.length,
       timestamp: now.toISOString(),
     };
 

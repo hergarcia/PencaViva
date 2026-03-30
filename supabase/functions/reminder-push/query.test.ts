@@ -6,8 +6,10 @@ import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 const NOW = new Date("2026-03-30T12:00:00.000Z");
 
+const TOURNAMENT_ID = "tournament-uuid-001";
+
 /** Creates a minimal Supabase client stub that returns the provided data
- *  for the given table sequence. Each call to .from() consumes the next entry. */
+ *  for each table query in sequence. Each .from() call consumes the next entry. */
 function makeStubClient(
   responses: Array<{
     table: string;
@@ -20,7 +22,6 @@ function makeStubClient(
   const makeChain = (entry: (typeof responses)[0]) => {
     const chain: Record<string, unknown> = {};
 
-    // All filter/select methods return the chain itself for fluent chaining
     const noop = () => chain;
     chain.select = noop;
     chain.eq = noop;
@@ -29,7 +30,6 @@ function makeStubClient(
     chain.in = noop;
     chain.not = noop;
 
-    // Awaiting resolves with the stubbed result
     chain.then = (
       resolve: (value: { data: unknown; error: unknown }) => void,
     ) => {
@@ -49,6 +49,28 @@ function makeStubClient(
       return makeChain(entry);
     },
   } as unknown as SupabaseClient;
+}
+
+/** Makes a group_tournaments response with the nested join shape
+ *  that fetchRemindersToSend expects after the query restructure. */
+function makeGroupTournamentsResponse(
+  userId: string,
+  displayName: string,
+  pushToken: string,
+) {
+  return [
+    {
+      groups: {
+        group_members: [
+          {
+            user_id: userId,
+            is_active: true,
+            profiles: { display_name: displayName, push_token: pushToken },
+          },
+        ],
+      },
+    },
+  ];
 }
 
 // ── fetchRemindersToSend ───────────────────────────────────────────────
@@ -71,7 +93,6 @@ Deno.test(
   async () => {
     const matchId = "match-uuid-001";
     const userId = "user-uuid-001";
-    const tournamentId = "tournament-uuid-001";
 
     const supabase = makeStubClient([
       // 2h window: one match found
@@ -83,23 +104,18 @@ Deno.test(
             home_team_name: "Peñarol",
             away_team_name: "Nacional",
             kickoff_time: "2026-03-30T14:00:00Z",
-            tournament_id: tournamentId,
+            tournament_id: TOURNAMENT_ID,
           },
         ],
       },
-      // candidates: one user with push token
+      // group_tournaments → group_members → profiles
       {
-        table: "group_members",
-        data: [
-          {
-            user_id: userId,
-            profiles: {
-              display_name: "Juan",
-              push_token: "ExponentPushToken[xxx]",
-            },
-            groups: { group_tournaments: [{ tournament_id: tournamentId }] },
-          },
-        ],
+        table: "group_tournaments",
+        data: makeGroupTournamentsResponse(
+          userId,
+          "Juan",
+          "ExponentPushToken[xxx]",
+        ),
       },
       // predictions: this user already predicted
       { table: "predictions", data: [{ user_id: userId }] },
@@ -119,7 +135,6 @@ Deno.test(
   async () => {
     const matchId = "match-uuid-002";
     const userId = "user-uuid-002";
-    const tournamentId = "tournament-uuid-002";
 
     const supabase = makeStubClient([
       // 2h window: one match found
@@ -131,23 +146,17 @@ Deno.test(
             home_team_name: "River",
             away_team_name: "Boca",
             kickoff_time: "2026-03-30T14:10:00Z",
-            tournament_id: tournamentId,
+            tournament_id: TOURNAMENT_ID,
           },
         ],
       },
-      // candidates: one user with push token
       {
-        table: "group_members",
-        data: [
-          {
-            user_id: userId,
-            profiles: {
-              display_name: "Maria",
-              push_token: "ExponentPushToken[yyy]",
-            },
-            groups: { group_tournaments: [{ tournament_id: tournamentId }] },
-          },
-        ],
+        table: "group_tournaments",
+        data: makeGroupTournamentsResponse(
+          userId,
+          "Maria",
+          "ExponentPushToken[yyy]",
+        ),
       },
       // predictions: user has NOT predicted
       { table: "predictions", data: [] },
@@ -167,7 +176,6 @@ Deno.test(
   async () => {
     const matchId = "match-uuid-003";
     const userId = "user-uuid-003";
-    const tournamentId = "tournament-uuid-003";
 
     const supabase = makeStubClient([
       // 2h window: one match found
@@ -179,23 +187,17 @@ Deno.test(
             home_team_name: "Flamengo",
             away_team_name: "Palmeiras",
             kickoff_time: "2026-03-30T14:05:00Z",
-            tournament_id: tournamentId,
+            tournament_id: TOURNAMENT_ID,
           },
         ],
       },
-      // candidates
       {
-        table: "group_members",
-        data: [
-          {
-            user_id: userId,
-            profiles: {
-              display_name: "Carlos",
-              push_token: "ExponentPushToken[zzz]",
-            },
-            groups: { group_tournaments: [{ tournament_id: tournamentId }] },
-          },
-        ],
+        table: "group_tournaments",
+        data: makeGroupTournamentsResponse(
+          userId,
+          "Carlos",
+          "ExponentPushToken[zzz]",
+        ),
       },
       // predictions: none
       { table: "predictions", data: [] },
@@ -219,7 +221,6 @@ Deno.test(
 Deno.test("fetchRemindersToSend: labels 30min window correctly", async () => {
   const matchId = "match-uuid-004";
   const userId = "user-uuid-004";
-  const tournamentId = "tournament-uuid-004";
 
   const supabase = makeStubClient([
     // 2h window: no matches
@@ -233,22 +234,17 @@ Deno.test("fetchRemindersToSend: labels 30min window correctly", async () => {
           home_team_name: "Uruguay",
           away_team_name: "Brasil",
           kickoff_time: "2026-03-30T12:25:00Z",
-          tournament_id: tournamentId,
+          tournament_id: TOURNAMENT_ID,
         },
       ],
     },
     {
-      table: "group_members",
-      data: [
-        {
-          user_id: userId,
-          profiles: {
-            display_name: "Rodrigo",
-            push_token: "ExponentPushToken[abc]",
-          },
-          groups: { group_tournaments: [{ tournament_id: tournamentId }] },
-        },
-      ],
+      table: "group_tournaments",
+      data: makeGroupTournamentsResponse(
+        userId,
+        "Rodrigo",
+        "ExponentPushToken[abc]",
+      ),
     },
     { table: "predictions", data: [] },
     { table: "notifications", data: [] },
@@ -272,13 +268,13 @@ Deno.test(
             home_team_name: "A",
             away_team_name: "B",
             kickoff_time: "2026-03-30T14:05:00Z",
-            tournament_id: "t-err",
+            tournament_id: TOURNAMENT_ID,
           },
         ],
       },
-      // candidates query errors
+      // group_tournaments query errors
       {
-        table: "group_members",
+        table: "group_tournaments",
         data: null,
         error: { message: "connection reset" },
       },
@@ -288,6 +284,72 @@ Deno.test(
 
     const result = await fetchRemindersToSend(supabase, NOW);
     assertEquals(result, []);
+  },
+);
+
+Deno.test(
+  "fetchRemindersToSend: deduplicates users that appear in multiple groups",
+  async () => {
+    const matchId = "match-uuid-005";
+    const userId = "user-uuid-005";
+
+    // Same user appears in two group_tournaments rows (member of 2 groups)
+    const supabase = makeStubClient([
+      {
+        table: "matches",
+        data: [
+          {
+            id: matchId,
+            home_team_name: "X",
+            away_team_name: "Y",
+            kickoff_time: "2026-03-30T14:05:00Z",
+            tournament_id: TOURNAMENT_ID,
+          },
+        ],
+      },
+      {
+        table: "group_tournaments",
+        data: [
+          {
+            groups: {
+              group_members: [
+                {
+                  user_id: userId,
+                  is_active: true,
+                  profiles: {
+                    display_name: "Dual",
+                    push_token: "ExponentPushToken[d]",
+                  },
+                },
+              ],
+            },
+          },
+          {
+            groups: {
+              group_members: [
+                {
+                  user_id: userId,
+                  is_active: true,
+                  profiles: {
+                    display_name: "Dual",
+                    push_token: "ExponentPushToken[d]",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+      { table: "predictions", data: [] },
+      { table: "notifications", data: [] },
+      { table: "matches", data: [] },
+    ]);
+
+    const result = await fetchRemindersToSend(supabase, NOW);
+    // User should appear exactly once despite being in two groups
+    assertEquals(result.length, 1);
+    assertEquals(result[0].users.length, 1);
+    assertEquals(result[0].users[0].userId, userId);
   },
 );
 
@@ -311,15 +373,15 @@ Deno.test("buildTitle: 30min window appends time suffix", () => {
 // ── buildBody ──────────────────────────────────────────────────────────
 
 Deno.test("buildBody: 2h window copy", () => {
-  const body = buildBody(120);
-  assertEquals(typeof body, "string");
-  assertEquals(body.length > 0, true);
+  assertEquals(
+    buildBody(120),
+    "2 hours to kick off — your prediction is still missing. Don't let your friends score while you sit this one out.",
+  );
 });
 
 Deno.test("buildBody: 30min window copy", () => {
-  const body = buildBody(30);
-  assertEquals(typeof body, "string");
-  assertEquals(body.length > 0, true);
-  // 30min copy should be distinct from 2h copy
-  assertEquals(body !== buildBody(120), true);
+  assertEquals(
+    buildBody(30),
+    "Last call! Submit your prediction before kickoff and stay in the game.",
+  );
 });

@@ -1,5 +1,9 @@
 import { assertEquals } from "jsr:@std/assert@1";
-import { sendPushBatch, type ExpoPushMessage } from "./expo-push.ts";
+import {
+  isValidPushToken,
+  sendPushBatch,
+  type ExpoPushMessage,
+} from "./expo-push.ts";
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -31,7 +35,10 @@ function mockFetch(
   };
 }
 
-function makeMessage(to = "ExponentPushToken[test]"): ExpoPushMessage {
+/** Valid Expo token for use in tests. */
+const VALID_TOKEN = "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]";
+
+function makeMessage(to = VALID_TOKEN): ExpoPushMessage {
   return {
     to,
     title: "Test Match",
@@ -39,6 +46,23 @@ function makeMessage(to = "ExponentPushToken[test]"): ExpoPushMessage {
     data: { matchId: "match-001", screen: "match" },
   };
 }
+
+// ── isValidPushToken ───────────────────────────────────────────────────
+
+Deno.test("isValidPushToken: accepts valid ExponentPushToken format", () => {
+  assertEquals(isValidPushToken("ExponentPushToken[abc123]"), true);
+  assertEquals(
+    isValidPushToken("ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"),
+    true,
+  );
+});
+
+Deno.test("isValidPushToken: rejects short/plain strings", () => {
+  assertEquals(isValidPushToken("short"), false);
+  assertEquals(isValidPushToken("ok-token"), false);
+  assertEquals(isValidPushToken("bad-token"), false);
+  assertEquals(isValidPushToken(""), false);
+});
 
 // ── sendPushBatch ──────────────────────────────────────────────────────
 
@@ -57,7 +81,28 @@ Deno.test("sendPushBatch: empty input makes no fetch call", async () => {
   assertEquals(result.successCount, 0);
   assertEquals(result.errorCount, 0);
   assertEquals(result.errors, []);
+  assertEquals(result.successPerMessage, []);
 });
+
+Deno.test(
+  "sendPushBatch: invalid token is skipped without fetch call",
+  async () => {
+    let fetchCalled = false;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => {
+      fetchCalled = true;
+      return {} as Response;
+    };
+
+    const result = await sendPushBatch([makeMessage("not-a-valid-token")]);
+
+    globalThis.fetch = originalFetch;
+    assertEquals(fetchCalled, false);
+    assertEquals(result.successCount, 0);
+    assertEquals(result.errorCount, 1);
+    assertEquals(result.successPerMessage, [false]);
+  },
+);
 
 Deno.test("sendPushBatch: single message succeeds", async () => {
   const restore = mockFetch([
@@ -73,6 +118,7 @@ Deno.test("sendPushBatch: single message succeeds", async () => {
   assertEquals(result.successCount, 1);
   assertEquals(result.errorCount, 0);
   assertEquals(result.errors, []);
+  assertEquals(result.successPerMessage, [true]);
 });
 
 Deno.test(
@@ -92,11 +138,16 @@ Deno.test(
 
     assertEquals(result.successCount, 101);
     assertEquals(result.errorCount, 0);
+    assertEquals(result.successPerMessage.length, 101);
+    assertEquals(
+      result.successPerMessage.every((v) => v === true),
+      true,
+    );
   },
 );
 
 Deno.test(
-  "sendPushBatch: partial error response is counted correctly",
+  "sendPushBatch: partial error response sets correct successPerMessage",
   async () => {
     const restore = mockFetch([
       {
@@ -110,9 +161,10 @@ Deno.test(
       },
     ]);
 
+    // Both tokens must pass format validation to reach Expo
     const result = await sendPushBatch([
-      makeMessage("ok-token"),
-      makeMessage("bad-token"),
+      makeMessage("ExponentPushToken[ok-token-aaa]"),
+      makeMessage("ExponentPushToken[bad-token-bbb]"),
     ]);
     restore();
 
@@ -120,6 +172,8 @@ Deno.test(
     assertEquals(result.errorCount, 1);
     assertEquals(result.errors.length, 1);
     assertEquals(result.errors[0], "DeviceNotRegistered");
+    // First message ok, second failed
+    assertEquals(result.successPerMessage, [true, false]);
   },
 );
 
@@ -136,6 +190,7 @@ Deno.test(
     assertEquals(result.successCount, 0);
     assertEquals(result.errorCount, 1);
     assertEquals(result.errors.length, 1);
+    assertEquals(result.successPerMessage, [false]);
   },
 );
 
@@ -151,4 +206,5 @@ Deno.test("sendPushBatch: network error is handled gracefully", async () => {
   assertEquals(result.successCount, 0);
   assertEquals(result.errorCount, 1);
   assertEquals(result.errors[0], "network failure");
+  assertEquals(result.successPerMessage, [false]);
 });

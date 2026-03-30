@@ -31,3 +31,13 @@ DO $$ BEGIN
 EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'pg_cron scheduling not available (local dev), skipping prediction-reminder job';
 END $$;
+
+-- Verify the required app settings are present at migration time.
+-- current_setting(..., false) raises an error if the setting is missing,
+-- making misconfiguration visible immediately rather than silently no-oping.
+DO $$ BEGIN
+  PERFORM current_setting('app.settings.supabase_url', false);
+  PERFORM current_setting('app.settings.service_role_key', false);
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'app.settings not configured (local dev), reminder cron will not fire until configured';
+END $$;
