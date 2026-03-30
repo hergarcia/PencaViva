@@ -38,6 +38,7 @@ const {
   updateProfile,
   checkProfileComplete,
   uploadAvatar,
+  savePushToken,
 } = require("@lib/profile-service");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -258,3 +259,41 @@ describe("uploadAvatar", () => {
   });
 });
 /* eslint-enable @typescript-eslint/no-require-imports */
+
+// ── savePushToken ─────────────────────────────────────────────────────
+
+describe("savePushToken", () => {
+  beforeEach(() => {
+    // update().eq() chain returns a result object
+    mockChain.update = jest.fn(() => mockChain);
+    mockChain.eq = jest.fn(() => ({ error: null }));
+  });
+
+  it("updates push_token in profiles for the given userId", async () => {
+    const { supabase } = require("@lib/supabase"); // eslint-disable-line @typescript-eslint/no-require-imports
+
+    await savePushToken("user-123", "ExponentPushToken[abc]");
+
+    expect(supabase.from).toHaveBeenCalledWith("profiles");
+    expect(mockChain.update).toHaveBeenCalledWith(
+      expect.objectContaining({ push_token: "ExponentPushToken[abc]" }),
+    );
+    expect(mockChain.eq).toHaveBeenCalledWith("id", "user-123");
+  });
+
+  it("saves null token to clear push_token when permission is revoked", async () => {
+    await savePushToken("user-123", null);
+
+    expect(mockChain.update).toHaveBeenCalledWith(
+      expect.objectContaining({ push_token: null }),
+    );
+  });
+
+  it("throws on supabase error", async () => {
+    mockChain.eq = jest.fn(() => ({ error: new Error("DB error") }));
+
+    await expect(savePushToken("user-123", "token")).rejects.toThrow(
+      "DB error",
+    );
+  });
+});

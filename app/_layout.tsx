@@ -8,6 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { colors } from "@/lib/constants";
 import { configureGoogleSignIn } from "@/lib/google-auth";
 import { useAuthInit } from "@/hooks/use-auth";
+import { useNotificationsInit } from "@/hooks/use-notifications";
 import { GlobalErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast";
 
@@ -18,6 +19,7 @@ const stackContentStyle = { backgroundColor: colors.background };
 
 export default function RootLayout() {
   useAuthInit();
+  useNotificationsInit();
 
   useEffect(() => {
     SplashScreen.hideAsync();

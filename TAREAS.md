@@ -305,11 +305,12 @@
 
 ### Push Notifications
 
-- [ ] **F2-01** Push notifications setup (Expo)
+- [x] **F2-01** Push notifications setup (Expo)
   - Configure expo-notifications
   - Register push tokens in profiles.push_token
   - Depends: F1-02/F1-03 (auth)
   - Effort: 4h
+  - Notes: expo-notifications + expo-device installed (SDK 55 compatible). `notifications-service.ts` configures foreground handler at module load and exposes `registerForPushNotifications()` (returns null on simulator/permission-denied, re-registers on every launch for token rotation). `savePushToken(userId, token)` added to profile-service.ts. `useNotificationsInit()` hook wired into root `_layout.tsx` (runs post-auth, errors swallowed — push failure never blocks launch). Jest mocks for expo-notifications and expo-device added to moduleNameMapper. EXPO_PUBLIC_PROJECT_ID documented in .env.example. 14 new tests (7 service, 5 hook, 2 setNotificationHandler).
 
 - [ ] **F2-02** Prediction reminder (Edge Function cron)
   - Edge Function with cron: 2h and 30min before kickoff
@@ -374,7 +375,7 @@
   - Persist preference in AsyncStorage
   - Effort: 3h
 
-- [ ] **F2-12** Haptic feedback on key actions
+- [x] **F2-12** Haptic feedback on key actions
   - Save prediction, exact result, ranking change
   - Effort: 2h
 
