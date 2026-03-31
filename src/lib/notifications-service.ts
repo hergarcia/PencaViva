@@ -61,66 +61,72 @@ export async function saveNotificationSettings(
  * Configures the foreground notification handler so banners appear when the
  * app is open. Must be called once at app startup (from useNotificationsInit).
  *
- * No-op on simulators/emulators — expo-notifications native modules are not
- * available there and will throw if loaded.
+ * Silently no-ops when native modules are unavailable (Expo Go without a
+ * dev client build). All native requires are wrapped in try/catch so this
+ * function never throws.
  */
 export function configureNotificationHandler(): void {
-  const { isDevice } = require("expo-device") as { isDevice: boolean };
-  if (!isDevice) return;
-
-  const Notifications =
-    require("expo-notifications") as typeof import("expo-notifications");
-  if (!Notifications?.setNotificationHandler) return;
-
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowList: true,
-    }),
-  });
+  try {
+    const Notifications =
+      require("expo-notifications") as typeof import("expo-notifications");
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowList: true,
+      }),
+    });
+  } catch {
+    // Native module unavailable — silently skip
+  }
 }
 
 /**
  * Requests push notification permission and retrieves the Expo push token.
  *
  * Returns null if:
+ * - Native modules are unavailable (Expo Go without dev client)
  * - Running in a simulator/emulator (push tokens are not available)
  * - The user denies notification permission
  * - The token fetch fails
  *
- * Safe to call on every app launch — always returns the latest token.
+ * Never throws — all failures return null.
  */
 export async function registerForPushNotifications(): Promise<string | null> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { isDevice } = require("expo-device") as { isDevice: boolean };
-  if (!isDevice) return null;
+  try {
+    const { isDevice } = require("expo-device") as { isDevice: boolean };
+    if (!isDevice) return null;
 
-  const Notifications =
-    require("expo-notifications") as typeof import("expo-notifications");
+    const Notifications =
+      require("expo-notifications") as typeof import("expo-notifications");
 
-  // Android 8+ requires a notification channel before token fetch
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "Default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-    });
+    // Android 8+ requires a notification channel before token fetch
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "Default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+      });
+    }
+
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== "granted") return null;
+
+    // projectId is read automatically from app.config.ts > extra.eas.projectId
+    const { data: token } = await Notifications.getExpoPushTokenAsync({});
+
+    return token ?? null;
+  } catch {
+    // Native modules unavailable — silently return null
+    return null;
   }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== "granted") return null;
-
-  // projectId is read automatically from app.config.ts > extra.eas.projectId
-  const { data: token } = await Notifications.getExpoPushTokenAsync({});
-
-  return token ?? null;
 }

@@ -21,17 +21,18 @@ export function useNotificationsInit(): void {
   useEffect(() => {
     if (!isInitialized || !userId) return;
 
-    try {
-      // No-op on simulators — guards inside prevent native module crash
-      configureNotificationHandler();
-    } catch {
-      // Non-fatal: notification handler setup failed (e.g. Expo Go / simulator)
-    }
-
-    registerForPushNotifications()
-      .then((token) => savePushToken(userId, token))
-      .catch(() => {
-        // Non-fatal: app works without push notifications
-      });
+    // Entire push setup is wrapped in an async IIFE with blanket error handling.
+    // Native modules (expo-device, expo-notifications) are unavailable when
+    // running without a dev client build (e.g. Expo Go on a bare project).
+    // Any failure here is non-fatal — the app works fine without push.
+    (async () => {
+      try {
+        configureNotificationHandler();
+        const token = await registerForPushNotifications();
+        await savePushToken(userId, token);
+      } catch {
+        // Non-fatal: native modules unavailable or permission denied
+      }
+    })();
   }, [isInitialized, userId]);
 }

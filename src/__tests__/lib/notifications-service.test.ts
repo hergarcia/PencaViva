@@ -77,10 +77,20 @@ describe("configureNotificationHandler", () => {
     expect(Notifications.setNotificationHandler).not.toHaveBeenCalled();
   });
 
-  it("is a no-op on simulator (isDevice = false)", () => {
-    const { service, Notifications } = loadModule(false);
-    service.configureNotificationHandler();
-    expect(Notifications.setNotificationHandler).not.toHaveBeenCalled();
+  it("does not throw when expo-notifications native module is unavailable", () => {
+    // Use a factory that throws ONLY for this require, then restore the normal mock
+    const originalRequire = jest.requireActual("expo-notifications");
+    let shouldThrow = true;
+    jest.doMock("expo-notifications", () => {
+      if (shouldThrow) {
+        throw new Error("Cannot find native module 'ExpoPushTokenManager'");
+      }
+      return originalRequire;
+    });
+    const service = require("@lib/notifications-service");
+    expect(() => service.configureNotificationHandler()).not.toThrow();
+    // Restore so subsequent tests aren't affected
+    shouldThrow = false;
   });
 });
 
