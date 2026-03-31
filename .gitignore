@@ -59,3 +59,7 @@ __snapshots__/
 
 # Nanostack artifacts
 .nanostack/
+
+# Minion Runner
+.minion-logs/
+.minion-plans/
