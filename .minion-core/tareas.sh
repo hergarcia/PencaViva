@@ -1,5 +1,10 @@
 # .minion-core/tareas.sh — TAREAS.md parser + task state management
 
+# Portable sed in-place (macOS BSD sed vs GNU sed)
+_sed_i() {
+    sed -i.bak "$@" && rm -f "${@: -1}.bak"
+}
+
 # ── Task ID detection ──────────────────────────────────
 # Returns 0 if $TASK matches F{digit}-{digits} pattern, sets TASK_ID.
 # Returns 1 otherwise (free-form fallback).
@@ -59,7 +64,7 @@ read_task_from_tareas() {
     ' "$tareas_file")
 
     # Extract dependencies: lines matching "Dependencies:" or "Depends on:" in description
-    TASK_DEPENDENCIES=$(echo "$TASK_DESCRIPTION" | grep -iE '(dependenc|depends on|requires):' | sed -E 's/.*(F[0-9]-[0-9]+)/\1/g' | grep -oE 'F[0-9]-[0-9]+' | tr '\n' ' ')
+    TASK_DEPENDENCIES=$(echo "$TASK_DESCRIPTION" | grep -iE '(dependenc|depends on|requires):' | grep -oE 'F[0-9]-[0-9]+' | tr '\n' ' ')
 
     log "Task loaded: ${TASK_ID} — ${TASK_TITLE} (${TASK_EFFORT:-?h}, status=${TASK_STATUS})"
 }
@@ -94,7 +99,7 @@ check_dependencies() {
 # ── Mark task in-progress ──────────────────────────────
 mark_task_in_progress() {
     local tareas_file="$SCRIPT_DIR/$CFG_TAREAS_FILE"
-    sed -i '' "s/\- \[ \] \*\*${TASK_ID}\*\*/- [~] **${TASK_ID}**/" "$tareas_file"
+    _sed_i "s/\- \[ \] \*\*${TASK_ID}\*\*/- [~] **${TASK_ID}**/" "$tareas_file"
     git add "$tareas_file"
     git commit -m "chore: mark ${TASK_ID} as in-progress"
     log "Marked ${TASK_ID} as [~] in-progress"
@@ -103,7 +108,7 @@ mark_task_in_progress() {
 # ── Mark task complete ─────────────────────────────────
 mark_task_complete() {
     local tareas_file="$SCRIPT_DIR/$CFG_TAREAS_FILE"
-    sed -i '' "s/\- \[~\] \*\*${TASK_ID}\*\*/- [x] **${TASK_ID}**/" "$tareas_file"
+    _sed_i "s/\- \[~\] \*\*${TASK_ID}\*\*/- [x] **${TASK_ID}**/" "$tareas_file"
     log "Marked ${TASK_ID} as [x] complete"
 }
 
