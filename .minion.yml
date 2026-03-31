@@ -1,0 +1,116 @@
+project:
+  name: "pencaviva"
+  description: "Social sports prediction app - React Native + Expo + Supabase"
+
+commands:
+  install: "npm ci"
+  lint: "npm run lint"
+  format: "npm run format"
+  typecheck: "npm run typecheck"
+  test: "npm run test:ci"
+
+agent:
+  max_fix_attempts: 2
+  max_plan_iterations: 3
+  min_review_score: 8
+  max_turns:
+    implementation: 75
+    plan: 15
+    review: 5
+    fix: 15
+    code_review: 5
+    security: 5
+  plan_model: "opus"
+  plan_effort: "high"
+  plan_escalation_model: "opus"
+  plan_escalation_effort: "high"
+  fix_model: "sonnet"
+  fix_effort: "high"
+  fix_escalation_model: "opus"
+  fix_escalation_effort: "high"
+  review_model: "sonnet"
+  review_effort: "medium"
+  review_escalation_model: "opus"
+  review_escalation_effort: "high"
+  code_review_model: "sonnet"
+  code_review_effort: "medium"
+  security_model: "sonnet"
+  security_effort: "medium"
+  min_code_review_score: 7
+  tools:
+    default: "Bash,Read,Write,Edit,Glob,Grep"
+    plan: "Read,Glob,Grep"
+    review: "Read,Glob,Grep"
+    fix: "Bash,Read,Write,Edit,Glob,Grep"
+    code_review: "Read,Glob,Grep"
+    security: "Read,Glob,Grep"
+
+blueprints:
+  implement:
+    model: "opus"
+    effort: "high"
+  fix-issue:
+    model: "opus"
+    effort: "high"
+  refactor:
+    model: "opus"
+    effort: "high"
+  add-tests:
+    model: "sonnet"
+    effort: "high"
+  migrate:
+    model: "sonnet"
+    effort: "medium"
+  update-deps:
+    model: "sonnet"
+    effort: "medium"
+
+context:
+  global_rules: |
+    - All code, comments, commits, and docs in English
+    - TDD mandatory: write failing test first, then implement
+    - TypeScript strict mode. No `any`.
+    - Follow existing project patterns. Read CLAUDE.md before starting.
+    - NativeWind v5 (Tailwind CSS v4) for styling
+    - Expo Router v55 for navigation (file-based routing)
+    - Supabase for backend (PostgreSQL + RLS + Edge Functions)
+    - Zustand for client state, TanStack React Query for server state
+    - Commit after each logical subtask using Conventional Commits
+    - Path aliases: @/* -> src/*, @components/*, @hooks/*, @lib/*, @stores/*
+    - Dark mode first. Primary: #00D4AA, Secondary: #7C5CFC, Accent: #FFB800
+  blueprint_rules:
+    implement: |
+      - Navigation: tab screens in app/(tabs)/, detail screens at app/<feature>/
+      - Components organized by feature in src/components/<feature>/
+      - Services in src/lib/<feature>-service.ts
+      - Hooks in src/hooks/use<Feature>.ts
+      - Mock data: verify mock system handles new operations
+      - Skeleton loading components for async screens
+    fix-issue: |
+      - Diagnose root cause, not just symptom
+      - If the bug pattern exists elsewhere, mention it
+      - Prefer fixing implementation over fixing tests
+    refactor: |
+      - Each refactoring step must leave code functional
+      - Do not change behavior, only structure
+      - Maintain existing invariants and contracts
+    add-tests: |
+      - Use existing mocks in src/__mocks__/
+      - Follow pattern: tests in src/__tests__/ subdirectories
+      - Jest config in jest.config.js with moduleNameMapper for path aliases
+    migrate: |
+      - Systematic, consistent changes across all affected files
+      - Update imports, types, and references
+      - Do not leave files half-migrated
+    update-deps: |
+      - Prefer stable versions over pre-releases
+      - Do NOT update dependencies not requested
+      - Verify breaking changes in changelogs
+
+tareas:
+  file: "TAREAS.md"
+  plan_maestro: "PLAN_MAESTRO.md"
+
+git:
+  base_branch: "develop"
+  prefix: "minion/"
