@@ -19,6 +19,8 @@ ${TASK_CONTEXT}
    a. Run: npm run format && npm run lint:fix
    b. Stage relevant files: git add <specific files>
    c. Commit: git commit -m "refactor(<scope>): migrate <what>"
+6. Do NOT use git add -A. Stage specific files only.
+7. Do NOT commit .env, credentials, or secret files.
 
 ## Project Rules
 ${CFG_EFFECTIVE_RULES}

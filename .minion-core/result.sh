@@ -7,8 +7,12 @@ run_result() {
         # ── Fallback: commit any uncommitted changes ────────────
         if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
             log "Found uncommitted changes — creating fallback commit..."
-            git add -A
-            git reset HEAD -- .minion-logs/ .minion-plans/ 2>/dev/null || true
+            # Stage tracked modified files
+            git add -u
+            # Stage untracked files excluding runtime/OS artifacts
+            git ls-files --others --exclude-standard \
+                | grep -vE '^\.(minion-logs|minion-plans|DS_Store)|\.swp$|~$' \
+                | xargs -r git add --
             if ! git diff --cached --quiet; then
                 git commit -m "feat(minion): uncommitted changes from ${TASK_DISPLAY}" 2>&1 | tee -a "$RUN_LOG"
             fi

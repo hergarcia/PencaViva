@@ -186,6 +186,7 @@ source "$CORE_DIR/agent.sh"
 source "$CORE_DIR/loader.sh"
 source "$CORE_DIR/plan-review.sh"
 source "$CORE_DIR/validation.sh"
+source "$CORE_DIR/execution.sh"
 source "$CORE_DIR/setup.sh"
 source "$CORE_DIR/review.sh"
 source "$CORE_DIR/security.sh"
@@ -255,35 +256,14 @@ if [ "$BLUEPRINT_TYPE" = "plan" ]; then
 fi
 
 # Phase 3: Execute
-step "3. Execution"
-timer_start
-local_prompt=$(execute_prompt)
-if ! run_agent "$local_prompt" "$CFG_BLUEPRINT_MODEL" "$CFG_BLUEPRINT_EFFORT" "$CFG_DEFAULT_TOOLS" "$CFG_MAX_TURNS_IMPL"; then
-    log "${RED}Execution agent failed.${NC}"
-    echo "execution_agent_failed=true" >> "$RUN_METRICS"
-else
-    echo "execution_agent_failed=false" >> "$RUN_METRICS"
+if ! run_execution; then
+    RUN_SUCCESS=false
+    step "7. Result"
+    timer_start
+    run_result
+    timer_end "result"
+    exit 1
 fi
-timer_end "execution"
-
-# Check if agent produced any changes
-if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
-    # Also check if any commits were made on branch (per-subtask commits)
-    local_commits=$(git rev-list "$CFG_BASE_BRANCH"..HEAD --count 2>/dev/null || echo "0")
-    # Subtract 1 for the task-in-progress commit if it exists
-    [ -n "${TASK_ID:-}" ] && local_commits=$((local_commits - 1))
-    if [ "$local_commits" -le 0 ]; then
-        log "${YELLOW}No changes detected. Nothing to validate.${NC}"
-        echo "agent_produced_changes=false" >> "$RUN_METRICS"
-        RUN_SUCCESS=false
-        step "7. Result"
-        timer_start
-        run_result
-        timer_end "result"
-        exit 1
-    fi
-fi
-echo "agent_produced_changes=true" >> "$RUN_METRICS"
 
 # Phase 4: Validation
 step "4. Validation"

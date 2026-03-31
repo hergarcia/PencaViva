@@ -19,6 +19,8 @@ ${TASK_CONTEXT}
 6. After completing the update:
    a. Stage relevant files: git add package.json package-lock.json <other changed files>
    b. Commit: git commit -m "chore(deps): update <packages>"
+7. Do NOT use git add -A. Stage specific files only.
+8. Do NOT commit .env, credentials, or secret files.
 
 ## Project Rules
 ${CFG_EFFECTIVE_RULES}

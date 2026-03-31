@@ -99,6 +99,14 @@ check_dependencies() {
 # ── Mark task in-progress ──────────────────────────────
 mark_task_in_progress() {
     local tareas_file="$SCRIPT_DIR/$CFG_TAREAS_FILE"
+    if [ "$TASK_STATUS" = "~" ]; then
+        log "${YELLOW}Warning: ${TASK_ID} is already in-progress [~]. Skipping mark.${NC}"
+        return 0
+    fi
+    if [ "$TASK_STATUS" = "x" ]; then
+        log "${YELLOW}Warning: ${TASK_ID} is already completed [x]. Skipping mark.${NC}"
+        return 0
+    fi
     _sed_i "s/\- \[ \] \*\*${TASK_ID}\*\*/- [~] **${TASK_ID}**/" "$tareas_file"
     git add "$tareas_file"
     git commit -m "chore: mark ${TASK_ID} as in-progress"
@@ -108,6 +116,10 @@ mark_task_in_progress() {
 # ── Mark task complete ─────────────────────────────────
 mark_task_complete() {
     local tareas_file="$SCRIPT_DIR/$CFG_TAREAS_FILE"
+    if [ "$TASK_STATUS" = "x" ]; then
+        log "${YELLOW}Warning: ${TASK_ID} is already completed [x]. Skipping mark.${NC}"
+        return 0
+    fi
     _sed_i "s/\- \[~\] \*\*${TASK_ID}\*\*/- [x] **${TASK_ID}**/" "$tareas_file"
     log "Marked ${TASK_ID} as [x] complete"
 }
